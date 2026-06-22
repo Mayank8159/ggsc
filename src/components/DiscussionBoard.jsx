@@ -130,7 +130,7 @@ function ChatRoom({ groupId }) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col" style={{ height: '600px' }}>
+    <div className="w-full max-w-3xl mx-auto flex flex-col" style={{ height: 'min(600px, 70vh)' }}>
       {/* Header */}
       <div className="glass-deep rounded-t-3xl px-6 py-4 flex items-center justify-between border-b" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
         <div className="flex items-center gap-3">

@@ -48,6 +48,8 @@ const NegativeCursor = () => {
   const location = useLocation();
 
   useEffect(() => {
+    if ("ontouchstart" in window) return;
+
     const ring = ringRef.current;
     const dot = dotRef.current;
     const label = labelRef.current;
@@ -341,7 +343,7 @@ function App() {
   }, [isHome]);
 
   return (
-    <main className="relative min-h-screen w-screen overflow-x-hidden" style={{ cursor: "none", background: "transparent" }}>
+    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: "none", background: "transparent" }}>
       <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",

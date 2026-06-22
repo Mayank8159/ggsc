@@ -287,7 +287,7 @@ const Features = () => {
           </BentoTilt>
 
           {/* SKILLS */}
-          <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
+          <BentoTilt className="bento-tilt_1 row-span-1 ms-0 md:col-span-1 md:ms-0">
             <BentoCard
               src="img/skills.jpeg"
               accentColor="#FBBC05"
@@ -302,7 +302,7 @@ const Features = () => {
           </BentoTilt>
 
           {/* RESEARCH */}
-          <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+          <BentoTilt className="bento-tilt_1 me-0 md:col-span-1 md:me-0">
             <BentoCard
               src="img/research.jpeg"
               accentColor="#34A853"

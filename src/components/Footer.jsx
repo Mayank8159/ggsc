@@ -11,7 +11,7 @@ const socialLinks = [
 ];
 
 const Footer = () => (
-  <footer className="w-screen bg-white border-t border-black/6 relative overflow-hidden">
+  <footer className="w-full bg-white border-t border-black/6 relative overflow-hidden">
     <div className="absolute top-0 left-0 right-0 h-[2px]"
       style={{ background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)" }} />
     <div className="absolute inset-0 dot-grid-bg opacity-15 pointer-events-none" />

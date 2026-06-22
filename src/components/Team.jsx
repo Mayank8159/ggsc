@@ -100,6 +100,33 @@ const Team = () => {
   const member = TEAM[active];
 
   return (
+    <>
+      <style>{`
+        .team-panel {
+          display: grid;
+          grid-template-columns: 1fr 480px;
+          min-height: 600px;
+          margin: 0 60px;
+          border-radius: 32px;
+          overflow: hidden;
+          box-shadow: 0 40px 120px rgba(0,0,0,0.12);
+        }
+        .team-heading {
+          padding: 0 60px;
+          margin-bottom: 60px;
+          perspective: 600px;
+        }
+        @media (max-width: 900px) {
+          .team-panel {
+            grid-template-columns: 1fr;
+            margin: 0 20px;
+            min-height: auto;
+          }
+          .team-heading {
+            padding: 0 24px;
+          }
+        }
+      `}</style>
     <section
       id="team"
       ref={sectionRef}
@@ -111,7 +138,7 @@ const Team = () => {
       }}
     >
       {/* Heading */}
-      <div style={{ padding: "0 60px", marginBottom: "60px", perspective: "600px" }}>
+      <div className="team-heading" style={{ marginBottom: "60px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
           <div style={{ width: "40px", height: "1px", background: "linear-gradient(90deg,transparent,#4285F4)" }} />
           <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "10px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(0,0,0,0.35)" }}>
@@ -139,12 +166,7 @@ const Team = () => {
       </div>
 
       {/* Main panel - split layout */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 480px", gap: "0",
-        minHeight: "600px", margin: "0 60px",
-        borderRadius: "32px", overflow: "hidden",
-        boxShadow: "0 40px 120px rgba(0,0,0,0.12)",
-      }}>
+      <div className="team-panel">
 
         {/* Left: active member showcase */}
         <div style={{
@@ -331,6 +353,7 @@ const Team = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

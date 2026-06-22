@@ -127,7 +127,7 @@ const Story = () => {
     <section
       id="story"
       ref={sectionRef}
-      className="relative min-h-screen w-screen overflow-hidden bg-[#f5f5f2]"
+      className="relative min-h-screen w-full overflow-hidden bg-[#f5f5f2]"
     >
       {/* GRID BACKGROUND */}
       <div

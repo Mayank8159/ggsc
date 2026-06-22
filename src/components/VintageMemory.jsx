@@ -73,7 +73,7 @@ const VintageMemory = () => {
     <section
       ref={sectionRef}
       id="memory"
-      className="relative w-screen overflow-hidden"
+      className="relative w-full overflow-hidden"
       style={{ minHeight: "90vh", background: "#0e0b08" }}
     >
       {/* Vintage photo */}

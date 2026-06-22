@@ -21,7 +21,7 @@ const About = () => {
   });
 
   return (
-    <div id="about" className="min-h-screen w-screen relative overflow-hidden" style={{ background: "transparent" }}>
+    <div id="about" className="min-h-screen w-full relative overflow-hidden" style={{ background: "transparent" }}>
       {/* Subtle dot grid */}
       <div className="absolute inset-0 dot-grid-bg opacity-30 pointer-events-none" />
 
@@ -55,7 +55,7 @@ const About = () => {
         </div>
       </div>
 
-      <div className="h-dvh w-screen" id="clip">
+      <div className="h-dvh w-full" id="clip">
         <div className="mask-clip-path about-image"
           style={{ boxShadow: "0 0 100px rgba(66,133,244,0.15)" }}>
           <img src="/img/aboutv.png" alt="About GGSC"

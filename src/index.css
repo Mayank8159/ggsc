@@ -22,7 +22,7 @@
 html { scroll-behavior: smooth; }
 
 body {
-  width: 100dvw;
+  width: 100%;
   overflow-x: hidden;
   background-color: #f8f6f2;
   font-family: 'Nanum Gothic', 'General Sans', sans-serif;

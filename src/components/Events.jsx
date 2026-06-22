@@ -345,6 +345,7 @@ function EventModal({ event, onClose }) {
       <div
         ref={cardRef}
         onClick={(e) => e.stopPropagation()}
+        className="event-modal-grid"
         style={{
           width: "100%",
           maxWidth: 860,
@@ -352,13 +353,11 @@ function EventModal({ event, onClose }) {
           borderRadius: 28,
           overflow: "hidden",
           position: "relative",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
           boxShadow: "0 40px 100px rgba(0,0,0,0.25)",
         }}
       >
         {/* Left – image */}
-        <div style={{ position: "relative", minHeight: 520 }}>
+        <div className="modal-image" style={{ position: "relative", minHeight: 520 }}>
           <img
             src={event.img}
             alt={event.title}
@@ -557,6 +556,16 @@ const Events = () => {
           gap: 20px;
         }
 
+        .featured-card-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .event-modal-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
         @media (max-width: 960px) {
           .upcoming-card {
             grid-template-columns: 1fr;
@@ -564,11 +573,29 @@ const Events = () => {
           .past-grid {
             grid-template-columns: repeat(2, 1fr);
           }
+          .featured-card-grid {
+            grid-template-columns: 1fr;
+          }
+          .event-modal-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .event-modal-grid .modal-image {
+            min-height: 280px;
+          }
         }
 
         @media (max-width: 600px) {
           .past-grid {
             grid-template-columns: 1fr;
+          }
+          .featured-card-grid {
+            min-height: auto;
+          }
+          .featured-card-grid .featured-content {
+            padding: 32px 24px;
           }
         }
       `}</style>
@@ -703,20 +730,18 @@ const Events = () => {
           <div className="fade-up" style={{ marginBottom: 80 }}>
             <SectionLabel label="Featured" title="Flagship Event" />
 
-            <div
+            <div className="featured-card-grid"
               style={{
                 borderRadius: 28,
                 overflow: "hidden",
                 background: T.surface,
                 border: `1px solid ${T.border}`,
                 boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
                 minHeight: 420,
               }}
             >
               {/* Left – content */}
-              <div
+              <div className="featured-content"
                 style={{
                   padding: "48px 48px",
                   display: "flex",

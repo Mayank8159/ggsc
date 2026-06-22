@@ -84,9 +84,9 @@ const Hero = () => {
   });
 
   return (
-    <div className="relative h-dvh w-screen overflow-x-hidden bg-white">
+    <div className="relative h-dvh w-full overflow-x-hidden bg-white">
       {loading && (
-        <div className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden bg-white/80 backdrop-blur-xl">
+        <div className="flex-center absolute z-[100] h-dvh w-full overflow-hidden bg-white/80 backdrop-blur-xl">
           <div className="flex flex-col items-center gap-6">
             <div className="three-body">
               <div className="three-body__dot" />
@@ -100,7 +100,7 @@ const Hero = () => {
         </div>
       )}
 
-      <div id="video-frame" data-dark="true" className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-black">
+      <div id="video-frame" data-dark="true" className="relative z-10 h-dvh w-full overflow-hidden rounded-lg bg-black">
         {/* Adjusted gradient for visibility without inverse filter */}
         <div className="absolute inset-0 z-10"
           style={{ background: "linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.6) 100%)" }} />

@@ -179,7 +179,7 @@ const Contact = () => {
       id="contact"
       ref={sectionRef}
       className="
-        relative w-screen overflow-hidden
+        relative w-full overflow-hidden
         bg-[#030305] px-5 py-28 md:px-10
       "
     >
