@@ -38,6 +38,7 @@ function HomePage() {
 
 /* ─── Ultra-Smooth Negative Cursor ─────────────── */
 const NegativeCursor = () => {
+  const [isTouch] = useState(() => typeof window !== "undefined" && "ontouchstart" in window);
   const ringRef = useRef(null);
   const dotRef = useRef(null);
   const labelRef = useRef(null);
@@ -46,6 +47,8 @@ const NegativeCursor = () => {
   const isText = useRef(false);
   const isLink = useRef(false);
   const location = useLocation();
+
+  if (isTouch) return null;
 
   useEffect(() => {
     if ("ontouchstart" in window) return;

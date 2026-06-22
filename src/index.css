@@ -31,6 +31,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  body { cursor: auto; }
+}
+
 /* Make most sections transparent so gradient bleeds through */
 #about,
 #story,
