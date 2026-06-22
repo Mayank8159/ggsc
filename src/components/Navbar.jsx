@@ -2,7 +2,7 @@ import clsx from "clsx";
 import gsap from "gsap";
 import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TiLocationArrow } from "react-icons/ti";
 import { FiLogOut } from "react-icons/fi";
 import Button from "./Button";
@@ -23,6 +23,7 @@ const NavBar = () => {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
 
   const toggleAudioIndicator = () => {
@@ -96,10 +97,9 @@ const NavBar = () => {
                   </button>
                 </div>
               ) : (
-                <Link to="/login">
-                  <Button id="product-button" title="Join Community" rightIcon={<TiLocationArrow />}
-                    containerClass="items-center justify-center gap-1" />
-                </Link>
+                <Button id="product-button" title="Join Community" rightIcon={<TiLocationArrow />}
+                  containerClass="items-center justify-center gap-1"
+                  onClick={() => navigate('/login')} />
               )}
             </div>
           </div>
