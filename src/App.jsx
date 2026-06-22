@@ -17,6 +17,7 @@ import Contact from "./components/Contact";
 import VintageMemory from "./components/VintageMemory";
 import Footer from "./components/Footer";
 import DiscussionBoard from "./components/DiscussionBoard";
+import NotFound from "./components/NotFound";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -372,6 +373,7 @@ function App() {
           <Route path="/login" element={<DiscussionBoard />} />
           <Route path="/events" element={<Events />} />
           <Route path="/teams" element={<Team />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
       </div>
