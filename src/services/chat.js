@@ -10,6 +10,7 @@ export function useChat(token, groupId = 'default') {
   const retryCountRef = useRef(0)
   const retryTimerRef = useRef(null)
   const wsRef = useRef(null)
+  const authedRef = useRef(false)
 
   const connect = useCallback(() => {
     if (!token) {
@@ -17,27 +18,37 @@ export function useChat(token, groupId = 'default') {
       return
     }
 
-    const url = `${WS_BASE}?token=${encodeURIComponent(token)}&groupId=${encodeURIComponent(groupId)}`
     let ws
 
     try {
-      ws = new WebSocket(url)
+      ws = new WebSocket(WS_BASE)
     } catch (e) {
-      setError(`Failed to create WebSocket: ${e.message}`)
+      setError('Failed to create WebSocket connection')
       return
     }
 
     wsRef.current = ws
+    authedRef.current = false
 
     ws.onopen = () => {
-      setConnected(true)
       setError(null)
       retryCountRef.current = 0
+      ws.send(JSON.stringify({ action: 'auth', token, groupId }))
     }
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data)
+
+        if (data.type === 'auth') {
+          if (data.success) {
+            authedRef.current = true
+            setConnected(true)
+          } else {
+            setError(data.error || 'Authentication failed. Please log in again.')
+          }
+          return
+        }
 
         if (data.type === 'message') {
           setMessages((prev) => [...prev, data.message])
@@ -56,13 +67,14 @@ export function useChat(token, groupId = 'default') {
     }
 
     ws.onerror = () => {
-      if (!wsRef.current || wsRef.current !== ws) return // stale — was intentionally replaced
-      setError('WebSocket connection error — cannot reach chat server')
+      if (!wsRef.current || wsRef.current !== ws) return
+      setError('WebSocket connection error')
     }
 
     ws.onclose = (event) => {
-      if (!wsRef.current || wsRef.current !== ws) return // stale — was intentionally replaced
+      if (!wsRef.current || wsRef.current !== ws) return
       setConnected(false)
+      authedRef.current = false
       if (event.code === 1006) {
         setError('Connection dropped — server may be down or token invalid')
       } else if (event.code === 4001 || event.code === 401) {
@@ -93,7 +105,7 @@ export function useChat(token, groupId = 'default') {
   }, [connect])
 
   const sendMessage = useCallback((content) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && authedRef.current) {
       wsRef.current.send(JSON.stringify({ action: 'sendMessage', content }))
     }
   }, [])
