@@ -2,10 +2,17 @@ import clsx from "clsx";
 import gsap from "gsap";
 import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { TiLocationArrow } from "react-icons/ti";
+import { FiLogOut } from "react-icons/fi";
 import Button from "./Button";
+import { useAuth } from "../context/AuthContext";
 
-const navItems = ["Discussion Board", "Events", "Team"];
+const navItems = [
+  { label: "Discussion Board", to: "/discussion" },
+  { label: "Events", to: "/events" },
+  { label: "Team", to: "/teams" },
+];
 
 const NavBar = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -15,6 +22,8 @@ const NavBar = () => {
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
@@ -56,8 +65,7 @@ const NavBar = () => {
         <nav className="flex size-full items-center justify-between p-4">
           {/* Logo */}
           <div className="flex items-center gap-4">
-            <div className="relative flex items-center gap-2.5">
-              {/* G logo */}
+            <Link to="/" className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-base select-none"
                 style={{ background: "linear-gradient(135deg,#4285F4,#EA4335)" }}>
                 <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "16px" }}>G</span>
@@ -70,17 +78,39 @@ const NavBar = () => {
                   UEM Kolkata
                 </span>
               </div>
+            </Link>
+
+            {/* Join Community / User Avatar */}
+            <div className="md:flex hidden items-center ml-3">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold select-none"
+                    style={{ background: "linear-gradient(135deg,#4285F4,#34A853)" }}
+                    title={user?.displayName}>
+                    {user?.displayName?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  <button onClick={logout}
+                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-all duration-200 hover:opacity-60"
+                    style={{ color: "rgba(0,0,0,0.35)" }}>
+                    <FiLogOut size={14} />
+                  </button>
+                </div>
+              ) : (
+                <Link to="/login">
+                  <Button id="product-button" title="Join Community" rightIcon={<TiLocationArrow />}
+                    containerClass="items-center justify-center gap-1" />
+                </Link>
+              )}
             </div>
-            <Button id="product-button" title="Join Community" rightIcon={<TiLocationArrow />}
-              containerClass="md:flex hidden items-center justify-center gap-1 ml-3" />
           </div>
 
           {/* Nav links + audio */}
           <div className="flex h-full items-center">
             <div className="hidden md:block">
               {navItems.map((item, i) => (
-                <a key={i} href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="nav-hover-btn">{item}</a>
+                <Link key={i} to={item.to}
+                  className="nav-hover-btn"
+                  style={location.pathname === item.to ? { color: "#0a0a0a" } : undefined}>{item.label}</Link>
               ))}
             </div>
             <button onClick={toggleAudioIndicator} className="ml-10 flex items-center space-x-0.5">

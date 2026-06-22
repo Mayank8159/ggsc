@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -15,8 +16,25 @@ import Team from "./components/Team";
 import Contact from "./components/Contact";
 import VintageMemory from "./components/VintageMemory";
 import Footer from "./components/Footer";
+import DiscussionBoard from "./components/DiscussionBoard";
 
 gsap.registerPlugin(ScrollTrigger);
+
+function HomePage() {
+  return (
+    <>
+      <Hero />
+      <About />
+      <HorizontalScroll />
+      <BigTextScroll />
+      <Features />
+      <StackedCards />
+      <Story />
+      <Contact />
+      <VintageMemory />
+    </>
+  );
+}
 
 /* ─── Ultra-Smooth Negative Cursor ─────────────── */
 const NegativeCursor = () => {
@@ -27,6 +45,7 @@ const NegativeCursor = () => {
   const pos = useRef({ x: -100, y: -100 });
   const isText = useRef(false);
   const isLink = useRef(false);
+  const location = useLocation();
 
   useEffect(() => {
     const ring = ringRef.current;
@@ -103,14 +122,12 @@ const NegativeCursor = () => {
 
     window.addEventListener("mousemove", onMove, { passive: true });
 
-    // Text hover - on all text-containing elements
     const textEls = document.querySelectorAll("p, h1, h2, h3, h4, span:not(button span), li");
     textEls.forEach(el => {
       el.addEventListener("mouseenter", onEnterText);
       el.addEventListener("mouseleave", onLeaveText);
     });
 
-    // Link hover - exclude buttons
     const linkEls = document.querySelectorAll("a, [role=button], .ethos-card, .team-card-item");
     linkEls.forEach(el => {
       el.addEventListener("mouseenter", onEnterLink);
@@ -129,7 +146,7 @@ const NegativeCursor = () => {
         el.removeEventListener("mouseleave", onLeaveLink);
       });
     };
-  }, []);
+  }, [location]);
 
   return (
     <>
@@ -171,7 +188,6 @@ const GoogleGradientBG = () => {
   const blob4 = useRef(null);
 
   useEffect(() => {
-    // Slow-breathing blob animations
     gsap.to(blob1.current, { x: 60, y: -40, duration: 8, ease: "sine.inOut", yoyo: true, repeat: -1 });
     gsap.to(blob2.current, { x: -80, y: 60, duration: 11, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2 });
     gsap.to(blob3.current, { x: 40, y: 80, duration: 9, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1 });
@@ -181,39 +197,32 @@ const GoogleGradientBG = () => {
   return (
     <div style={{
       position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden",
-      // Base: warm off-white with a subtle tint
       background: "#f8f6f2",
     }}>
-      {/* Blue blob - top right */}
       <div ref={blob1} style={{
         position: "absolute", width: "70vw", height: "70vw",
         top: "-25vw", right: "-20vw", borderRadius: "50%",
         background: "radial-gradient(circle at 40% 40%, rgba(66,133,244,0.22) 0%, rgba(66,133,244,0.08) 40%, transparent 70%)",
         filter: "blur(60px)",
       }} />
-      {/* Red blob - bottom left */}
       <div ref={blob2} style={{
         position: "absolute", width: "60vw", height: "60vw",
         bottom: "-20vw", left: "-15vw", borderRadius: "50%",
         background: "radial-gradient(circle at 60% 60%, rgba(234,67,53,0.18) 0%, rgba(234,67,53,0.07) 40%, transparent 70%)",
         filter: "blur(70px)",
       }} />
-      {/* Yellow blob - center */}
       <div ref={blob3} style={{
         position: "absolute", width: "50vw", height: "50vw",
         top: "30%", left: "25%", borderRadius: "50%",
         background: "radial-gradient(circle, rgba(251,188,5,0.14) 0%, rgba(251,188,5,0.05) 45%, transparent 70%)",
         filter: "blur(80px)",
       }} />
-      {/* Green blob - bottom right */}
       <div ref={blob4} style={{
         position: "absolute", width: "55vw", height: "55vw",
         bottom: "5%", right: "-10vw", borderRadius: "50%",
         background: "radial-gradient(circle, rgba(52,168,83,0.16) 0%, rgba(52,168,83,0.06) 45%, transparent 70%)",
         filter: "blur(70px)",
       }} />
-
-      {/* Subtle mesh gradient overlay */}
       <div style={{
         position: "absolute", inset: 0,
         background: `
@@ -221,16 +230,12 @@ const GoogleGradientBG = () => {
           conic-gradient(from 180deg at 80% 80%, rgba(234,67,53,0.05) 0deg, transparent 60deg, transparent 300deg, rgba(234,67,53,0.03) 360deg)
         `,
       }} />
-
-      {/* Fine dot grid */}
       <div style={{
         position: "absolute", inset: 0,
         backgroundImage: "radial-gradient(circle, rgba(66,133,244,0.08) 1px, transparent 1px)",
         backgroundSize: "44px 44px",
         opacity: 0.5,
       }} />
-
-      {/* Decorative SVG rings */}
       <svg style={{
         position: "absolute", top: "-8%", right: "-8%",
         width: "60vw", height: "60vw", opacity: 0.04,
@@ -241,8 +246,6 @@ const GoogleGradientBG = () => {
         <circle cx="250" cy="250" r="120" stroke="#FBBC05" strokeWidth="0.8"/>
         <circle cx="250" cy="250" r="60" stroke="#34A853" strokeWidth="0.6" strokeDasharray="4 6"/>
       </svg>
-
-      {/* Bottom left smaller rings */}
       <svg style={{
         position: "absolute", bottom: "-5%", left: "-5%",
         width: "40vw", height: "40vw", opacity: 0.035,
@@ -252,8 +255,6 @@ const GoogleGradientBG = () => {
         <circle cx="150" cy="150" r="95" stroke="#34A853" strokeWidth="0.8" strokeDasharray="6 5"/>
         <circle cx="150" cy="150" r="50" stroke="#FBBC05" strokeWidth="0.6"/>
       </svg>
-
-      {/* Noise overlay for texture */}
       <div className="noise-overlay" />
     </div>
   );
@@ -269,7 +270,6 @@ const BGMButton = () => {
     audioRef.current = new Audio("/audio/loop.mp3");
     audioRef.current.loop = true;
     audioRef.current.volume = 0.25;
-    // Show after 1.5s
     setTimeout(() => setVisible(true), 1500);
     return () => {
       audioRef.current.pause();
@@ -305,7 +305,6 @@ const BGMButton = () => {
       }}
     >
       {playing ? (
-        // Bars icon
         <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "18px" }}>
           {[1,0.6,1,0.8].map((h, i) => (
             <div key={i} style={{
@@ -317,7 +316,6 @@ const BGMButton = () => {
           ))}
         </div>
       ) : (
-        // Play icon
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M8 5.14v14l11-7-11-7z" fill="#4285F4"/>
         </svg>
@@ -327,21 +325,24 @@ const BGMButton = () => {
 };
 
 function App() {
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+  const barRef = useRef(null);
+
   useEffect(() => {
-    const bar = document.getElementById("scroll-progress");
-    if (!bar) return;
+    const bar = barRef.current;
+    if (!bar || !isHome) { bar && (bar.style.width = "0%"); return; }
     const update = () => {
       const total = document.body.scrollHeight - window.innerHeight;
       bar.style.width = ((window.scrollY / total) * 100) + "%";
     };
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
-  }, []);
+  }, [isHome]);
 
   return (
     <main className="relative min-h-screen w-screen overflow-x-hidden" style={{ cursor: "none", background: "transparent" }}>
-      {/* Scroll progress */}
-      <div id="scroll-progress" style={{
+      <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",
         zIndex: 9999, transition: "width 0.1s linear",
@@ -360,17 +361,13 @@ function App() {
 
       <div style={{ position: "relative", zIndex: 2 }}>
         <NavBar />
-        <Hero />
-        <About />
-        <HorizontalScroll />
-        <BigTextScroll />
-        <Features />
-        <StackedCards />
-        <Story />
-        <Events />
-        <Team />
-        <Contact />
-        <VintageMemory />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/discussion" element={<DiscussionBoard />} />
+          <Route path="/login" element={<DiscussionBoard />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/teams" element={<Team />} />
+        </Routes>
         <Footer />
       </div>
     </main>

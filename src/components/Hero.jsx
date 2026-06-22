@@ -110,7 +110,7 @@ const Hero = () => {
           ref={videoRef}
           muted
           playsInline
-          className="absolute left-0 top-0 size-full object-cover object-center"
+          className="absolute left-0 top-0 size-full object-cover object-[50%_28%] md:object-center"
           onCanPlay={() => setLoading(false)}
         >
           <source src="/videos/herobw.mp4" type="video/mp4" />
@@ -120,7 +120,7 @@ const Hero = () => {
         <img
           src="/img/herobgimg.jpeg"
           alt="GGSC Hero"
-          className="absolute left-0 top-0 size-full object-cover object-center"
+          className="absolute left-0 top-0 size-full object-cover object-[50%_28%] md:object-center"
           style={{ zIndex: -1 }}
           onLoad={() => setLoading(false)}
         />

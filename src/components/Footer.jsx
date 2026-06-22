@@ -1,5 +1,6 @@
 import { FaInstagram, FaLinkedin, FaYoutube, FaGithub } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 const socialLinks = [
   { href: "https://instagram.com/ggsc_uemk", icon: <FaInstagram />, label: "Instagram", color: "#EA4335" },
@@ -32,14 +33,30 @@ const Footer = () => (
 
         {/* nav links */}
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          {["Discussion Board","Events","Team","Contact"].map((item, i) => (
-            <a key={i} href={`#${item.toLowerCase().replace(/\s+/g,"-")}`}
-              style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", transition: "color 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#0a0a0a"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(0,0,0,0.4)"}>
-              {item}
-            </a>
-          ))}
+          <Link to="/discussion"
+            style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0a0a0a"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(0,0,0,0.4)"}>
+            Discussion Board
+          </Link>
+          <Link to="/events"
+            style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0a0a0a"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(0,0,0,0.4)"}>
+            Events
+          </Link>
+          <Link to="/teams"
+            style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0a0a0a"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(0,0,0,0.4)"}>
+            Team
+          </Link>
+          <a href="/#contact"
+            style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(0,0,0,0.4)", transition: "color 0.2s" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#0a0a0a"}
+            onMouseLeave={e => e.currentTarget.style.color = "rgba(0,0,0,0.4)"}>
+            Contact
+          </a>
           <a href="mailto:gambassador2025@gmail.com"
             style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "#4285F4" }}>
             gambassador2025@gmail.com
