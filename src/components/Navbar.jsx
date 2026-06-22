@@ -67,9 +67,9 @@ const NavBar = () => {
           {/* Logo */}
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-base select-none"
-                style={{ background: "linear-gradient(135deg,#4285F4,#EA4335)" }}>
-                <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "16px" }}>G</span>
+              <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center select-none" style={{ background: "#000" }}>
+                <img src="/img/main.png" alt="GGSC"
+                  className="w-full h-full object-cover" />
               </div>
               <div className="hidden md:flex flex-col leading-none">
                 <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "12px", letterSpacing: "0.15em", color: "#0a0a0a" }}>

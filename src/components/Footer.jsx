@@ -21,10 +21,8 @@ const Footer = () => (
         {/* brand */}
         <div className="flex flex-col items-center md:items-start gap-1">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm select-none"
-              style={{ background: "linear-gradient(135deg,#4285F4,#EA4335)" }}>
-              <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "14px" }}>G</span>
-            </div>
+            <img src="/img/main.png" alt="GGSC"
+              className="w-7 h-7 rounded-lg object-cover select-none" />
             <span style={{ fontFamily: "'Bungee', sans-serif", fontSize: "14px", letterSpacing: "0.12em", color: "#0a0a0a" }}>GGSC</span>
           </div>
           <p style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "10px", color: "rgba(0,0,0,0.35)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Google Gemini Student Community</p>
