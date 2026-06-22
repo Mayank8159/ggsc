@@ -82,23 +82,23 @@ const NavBar = () => {
             </Link>
 
             {/* Join Community / User Avatar */}
-            <div className="md:flex hidden items-center ml-3">
+            <div className="hidden md:flex items-center ml-3 flex-nowrap">
               {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold select-none"
+                <div className="flex items-center gap-1.5 flex-nowrap">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold select-none flex-shrink-0"
                     style={{ background: "linear-gradient(135deg,#4285F4,#34A853)" }}
                     title={user?.displayName}>
                     {user?.displayName?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   <button onClick={logout}
-                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-all duration-200 hover:opacity-60"
-                    style={{ color: "rgba(0,0,0,0.35)" }}>
+                    className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 hover:opacity-60 flex-shrink-0"
+                    style={{ color: "rgba(0,0,0,0.35)", background: "rgba(0,0,0,0.04)" }}>
                     <FiLogOut size={14} />
                   </button>
                 </div>
               ) : (
                 <Button id="product-button" title="Join Community" rightIcon={<TiLocationArrow />}
-                  containerClass="items-center justify-center gap-1"
+                  containerClass="items-center justify-center gap-1 flex-nowrap"
                   onClick={() => navigate('/login')} />
               )}
             </div>

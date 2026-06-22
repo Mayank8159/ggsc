@@ -1,7 +1,7 @@
 import clsx from "clsx";
 
 const Button = ({ id, title, rightIcon, leftIcon, containerClass, onClick, variant = "gradient" }) => {
-  const baseClass = "group relative z-10 w-fit cursor-pointer overflow-hidden rounded-full px-7 py-3 font-semibold text-xs uppercase tracking-widest transition-all duration-400";
+  const baseClass = "group relative z-10 w-fit cursor-pointer overflow-hidden rounded-full px-7 py-3 font-semibold text-xs uppercase tracking-widest transition-all duration-400 inline-flex items-center flex-nowrap";
 
   const variants = {
     gradient: {
