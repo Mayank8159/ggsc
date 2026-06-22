@@ -6,13 +6,27 @@ export function useChat(token, groupId = 'default') {
   const [messages, setMessages] = useState([])
   const [connected, setConnected] = useState(false)
   const [error, setError] = useState(null)
+  const [retry, setRetry] = useState(0)
   const wsRef = useRef(null)
 
+  const reconnect = useCallback(() => setRetry((r) => r + 1), [])
+
   useEffect(() => {
-    if (!token) return
+    if (!token) {
+      setError('No auth token available. Please log in again.')
+      return
+    }
 
     const url = `${WS_BASE}?token=${encodeURIComponent(token)}&groupId=${encodeURIComponent(groupId)}`
-    const ws = new WebSocket(url)
+    let ws
+
+    try {
+      ws = new WebSocket(url)
+    } catch (e) {
+      setError(`Failed to create WebSocket: ${e.message}`)
+      return
+    }
+
     wsRef.current = ws
 
     ws.onopen = () => {
@@ -31,24 +45,33 @@ export function useChat(token, groupId = 'default') {
         if (data.type === 'history') {
           setMessages(data.messages || [])
         }
+
+        if (data.type === 'error') {
+          setError(data.error || 'Server error')
+        }
       } catch {
         // ignore parse errors
       }
     }
 
     ws.onerror = () => {
-      setError('WebSocket connection error')
+      setError('WebSocket connection error — cannot reach chat server')
     }
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
       setConnected(false)
+      if (event.code === 1006) {
+        setError('Connection dropped — server may be down or token invalid')
+      } else if (event.code === 4001 || event.code === 401) {
+        setError('Invalid or expired token. Please log in again.')
+      }
     }
 
     return () => {
       ws.close()
       wsRef.current = null
     }
-  }, [token, groupId])
+  }, [token, groupId, retry])
 
   const sendMessage = useCallback((content) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -60,5 +83,5 @@ export function useChat(token, groupId = 'default') {
     sendMessage('__fetch_history__')
   }, [sendMessage])
 
-  return { messages, sendMessage, fetchHistory, connected, error }
+  return { messages, sendMessage, fetchHistory, connected, error, reconnect }
 }

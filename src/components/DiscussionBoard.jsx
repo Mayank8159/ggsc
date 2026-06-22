@@ -100,7 +100,7 @@ function AuthForm({ onSuccess }) {
 
 function ChatRoom({ groupId }) {
   const { user, token, logout } = useAuth()
-  const { messages, sendMessage, connected, error } = useChat(token, groupId)
+  const { messages, sendMessage, connected, error, reconnect } = useChat(token, groupId)
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -162,7 +162,10 @@ function ChatRoom({ groupId }) {
         {error && (
           <div className="flex items-center gap-2 text-xs font-medium px-4 py-3 rounded-xl" style={{ background: 'rgba(234,67,53,0.08)', color: '#EA4335' }}>
             <FiAlertCircle size={14} />
-            {error}
+            <span className="flex-1">{error}</span>
+            <button onClick={reconnect} className="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all duration-200 hover:opacity-70" style={{ background: 'rgba(234,67,53,0.15)' }}>
+              Retry
+            </button>
           </div>
         )}
 
