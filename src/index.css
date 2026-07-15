@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Nanum+Gothic:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@300;400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap');
 @import url("https://fonts.cdnfonts.com/css/general-sans");
 
 @tailwind base;
@@ -454,4 +454,146 @@ section, .section-wrapper {
   height: 16px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* ── GeminiFlowPanel liquid animations ── */
+.flow-liquid {
+  stroke-dasharray: 8 280;
+  stroke-dashoffset: 1200;
+  animation: flow-liquid 4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.flow-liquid-glow {
+  stroke-dasharray: 12 280;
+  stroke-dashoffset: 1200;
+  animation: flow-liquid 4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+.flow-liquid-bright {
+  stroke-dasharray: 4 280;
+  stroke-dashoffset: 1200;
+  animation: flow-liquid 4s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes flow-liquid {
+  0% { stroke-dashoffset: 1200; }
+  100% { stroke-dashoffset: -400; }
+}
+
+/* ── Hero gradient text ── */
+.hero-gradient-text {
+  background: linear-gradient(135deg, #4285F4 0%, #EA4335 40%, #FBBC05 70%, #34A853 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Animated gradient border bar ── */
+.hero-gradient-bar {
+  background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4);
+  animation: hero-gradient-slide 3s linear infinite;
+}
+
+@keyframes hero-gradient-slide {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+/* ── Scroll indicator dot bounce ── */
+.hero-scroll-dot {
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(28px); }
+}
+
+/* ── Panel subtle glow pulse ── */
+.hero-panel-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(66,133,244,0.15), rgba(234,67,53,0.1), rgba(124,77,255,0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.hero-panel-glow:hover::before {
+  opacity: 1;
+}
+
+/* ── Alvio Hero – Neural brain bob ── */
+.hero-brain-bob {
+  animation: brain-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes brain-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+/* ── Alvio Hero – Entrance animations ── */
+.hero-pill {
+  animation: alvio-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+.hero-headline {
+  animation: alvio-fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+
+.hero-headline-accent {
+  animation: alvio-gradient-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+}
+
+.hero-sub {
+  animation: alvio-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+}
+
+.hero-buttons {
+  animation: alvio-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+}
+
+.hero-visual {
+  animation: alvio-fade-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.5s forwards;
+}
+
+@keyframes alvio-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes alvio-gradient-in {
+  from { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0px); }
+}
+
+/* ── Flowing particles along the SVG path ── */
+.flow-particle {
+  offset-path: path("M 150 20 C 260 20, 260 140, 150 160 C 40 180, 40 300, 150 320 C 260 340, 260 460, 150 480");
+  offset-distance: 0%;
+  will-change: offset-distance;
+}
+
+.flow-particle-1 { animation: flow-particle-move 3.5s linear infinite; }
+.flow-particle-2 { animation: flow-particle-move 4.2s linear infinite 0.8s; }
+.flow-particle-3 { animation: flow-particle-move 5s linear infinite 1.6s; }
+.flow-particle-4 { animation: flow-particle-move 3.8s linear infinite 2.4s; }
+
+@keyframes flow-particle-move {
+  0% { offset-distance: 0%; opacity: 0; }
+  5% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
 }

@@ -2,196 +2,199 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TiLocationArrow } from "react-icons/ti";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Button from "./Button";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
-  const [loading, setLoading] = useState(true);
   const headingRef = useRef(null);
-  const videoRef = useRef(null); // Ref to control the video
 
   useEffect(() => {
-    if (!loading && headingRef.current) {
-      // Content Animations
-      const words = headingRef.current.querySelectorAll(".hero-word");
-      gsap.fromTo(words,
-        { y: 100, opacity: 0, filter: "blur(12px)" },
-        { y: 0, opacity: 1, filter: "blur(0px)", stagger: 0.08, duration: 1.4, ease: "power4.out", delay: 0.4 }
-      );
-      gsap.fromTo(".hero-sub-line",
-        { x: -30, opacity: 0 },
-        { x: 0, opacity: 1, stagger: 0.15, duration: 1, ease: "power3.out", delay: 0.9 }
-      );
-      gsap.fromTo(".hero-cta",
+    if (!headingRef.current) return;
+
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    tl.fromTo(
+      ".hero-pill",
+      { y: 20, opacity: 0, scale: 0.9 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.8 },
+      0.3
+    )
+      .fromTo(
+        headingRef.current.querySelectorAll(".hero-word"),
+        { y: 80, opacity: 0, rotateX: -20 },
+        { y: 0, opacity: 1, rotateX: 0, stagger: 0.1, duration: 1.2 },
+        0.4
+      )
+      .fromTo(
+        ".hero-gradient-line",
+        { scaleX: 0 },
+        { scaleX: 1, duration: 1, ease: "power4.out" },
+        0.7
+      )
+      .fromTo(
+        ".hero-sub",
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.12, duration: 0.9 },
+        0.8
+      )
+      .fromTo(
+        ".hero-cta",
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.1, duration: 0.7 },
+        1.2
+      )
+      .fromTo(
+        ".hero-stat",
         { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.1, duration: 0.8, ease: "power3.out", delay: 1.4 }
+        { y: 0, opacity: 1, stagger: 0.08, duration: 0.6 },
+        1.4
+      )
+      .fromTo(
+        ".hero-scroll-hint",
+        { opacity: 0 },
+        { opacity: 1, duration: 1 },
+        2
       );
-
-      // Video Entrance Animation
-      gsap.fromTo("#video-frame",
-        { scale: 0.95, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 1.5, ease: "power3.out" }
-      );
-    }
-  }, [loading]);
-
-  // Video Playback Logic (Play once and pause 1s before end)
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || loading) return;
-
-    const handleTimeUpdate = () => {
-      // If the video is within 1 second of ending, pause it
-      if (video.duration && video.currentTime >= video.duration - 1) {
-        video.pause();
-        // Remove listener once paused to prevent it from firing repeatedly
-        video.removeEventListener("timeupdate", handleTimeUpdate);
-      }
-    };
-
-    // Attempt to play the video programmatically
-    video.play().catch(error => {
-      console.log("Autoplay was prevented by the browser:", error);
-    });
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-
-    return () => {
-      if (video) {
-        video.removeEventListener("timeupdate", handleTimeUpdate);
-      }
-    };
-  }, [loading]);
+  }, []);
 
   useGSAP(() => {
-    gsap.set("#video-frame", {
-      clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
-      borderRadius: "0% 0% 40% 10%",
+    gsap.to(".hero-aurora-1", {
+      x: 60, y: -40, scale: 1.1, duration: 20, ease: "sine.inOut", yoyo: true, repeat: -1,
     });
-    gsap.from("#video-frame", {
-      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      borderRadius: "0% 0% 0% 0%",
-      ease: "power1.inOut",
-      scrollTrigger: {
-        trigger: "#video-frame",
-        start: "center center",
-        end: "bottom center",
-        scrub: true,
-      },
+    gsap.to(".hero-aurora-2", {
+      x: -50, y: 30, scale: 0.95, duration: 25, ease: "sine.inOut", yoyo: true, repeat: -1,
+    });
+    gsap.to(".hero-aurora-3", {
+      x: 30, y: 50, scale: 1.05, duration: 22, ease: "sine.inOut", yoyo: true, repeat: -1,
     });
   });
 
   return (
-    <div className="relative h-dvh w-full overflow-x-hidden bg-white">
-      {loading && (
-        <div className="flex-center absolute z-[100] h-dvh w-full overflow-hidden bg-white/80 backdrop-blur-xl">
-          <div className="flex flex-col items-center gap-6">
-            <div className="three-body">
-              <div className="three-body__dot" />
-              <div className="three-body__dot" />
-              <div className="three-body__dot" />
-            </div>
-            <p style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "11px", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(0,0,0,0.3)" }}>
-              Initializing GGSC Portal
-            </p>
+    <div className="relative min-h-dvh w-full overflow-hidden" style={{ backgroundColor: "#f8f6f2" }}>
+      {/* ── Floating aurora blobs ── */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <div className="hero-aurora-1 absolute left-[-5%] top-[10%] h-[500px] w-[500px] rounded-full bg-gradient-to-br from-blue-300/25 via-cyan-200/15 to-transparent blur-[120px]" />
+        <div className="hero-aurora-2 absolute right-[-8%] top-[20%] h-[450px] w-[450px] rounded-full bg-gradient-to-bl from-purple-300/20 via-pink-200/10 to-transparent blur-[100px]" />
+        <div className="hero-aurora-3 absolute bottom-[5%] left-[30%] h-[350px] w-[350px] rounded-full bg-gradient-to-tr from-amber-200/15 via-orange-100/10 to-transparent blur-[90px]" />
+      </div>
+
+      {/* ── Subtle dot grid ── */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.4) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
+      {/* ── Main content ── */}
+      <div className="relative z-10 mx-auto flex min-h-dvh max-w-4xl flex-col items-start justify-center px-6 pt-32 pb-12 sm:px-8 lg:px-12">
+        {/* Pill badge */}
+        <div className="hero-pill mb-8 inline-flex w-fit items-center gap-2.5 rounded-full border border-blue-200/60 bg-blue-50/50 px-4 py-2 opacity-0 backdrop-blur-sm">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm" style={{ color: "#4285F4" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </div>
+          <span className="font-nanum text-xs font-semibold tracking-wide text-blue-700/80">
+            AI-First Student Community
+          </span>
+        </div>
+
+        {/* Heading */}
+        <div ref={headingRef} className="mb-6" style={{ perspective: "1000px" }}>
+          <h1
+            className="overflow-hidden"
+            style={{
+              fontFamily: "'zentry', sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(2.6rem, 6.5vw, 7.5rem)",
+              textTransform: "uppercase",
+              lineHeight: 0.92,
+              letterSpacing: "-0.03em",
+              color: "#0a0a0a",
+            }}
+          >
+            <span className="hero-word block opacity-0" style={{ transformOrigin: "left bottom" }}>
+              Shaping
+            </span>
+            <span className="hero-word block opacity-0" style={{ transformOrigin: "left bottom" }}>
+              the Future
+            </span>
+            <span className="hero-word hero-gradient-text block opacity-0" style={{ transformOrigin: "left bottom" }}>
+              with Gemini
+            </span>
+          </h1>
+        </div>
+
+        {/* Animated gradient line */}
+        <div className="hero-gradient-line mb-8 h-[3px] w-24 origin-left rounded-full" style={{ background: "linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853)" }} />
+
+        {/* Subtitle */}
+        <div className="mb-4">
+          <p className="hero-sub font-nanum text-lg font-bold leading-relaxed text-black/80 sm:text-xl opacity-0">
+            The official Google Gemini Student Community at{" "}
+            <span className="text-[#EA4335]">UEM Kolkata</span>.
+          </p>
+          <p className="hero-sub font-nanum text-sm leading-relaxed text-black/40 opacity-0">
+            Exploring the power of Google Gemini &amp; AI through workshops, hackathons, and research.
+          </p>
+        </div>
+
+        {/* Ambassador pill */}
+        <div className="hero-sub mb-8 inline-flex w-fit items-center gap-2.5 rounded-full border border-green-200/50 bg-green-50/40 px-4 py-2 opacity-0">
+          <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm" style={{ color: "#4285F4", fontSize: "10px", fontWeight: 800 }}>
+            G
+          </div>
+          <span className="font-nanum text-xs font-semibold text-green-700/70">
+            Google Student Ambassador Program
+          </span>
+        </div>
+
+        {/* CTAs */}
+        <div className="mb-10 flex flex-wrap gap-3">
+          <div className="hero-cta opacity-0">
+            <Button
+              id="cta-main"
+              title="Get Started"
+              leftIcon={<TiLocationArrow />}
+              containerClass="flex-center gap-1"
+            />
+          </div>
+          <div className="hero-cta opacity-0">
+            <Button
+              id="cta-events"
+              title="View Events"
+              containerClass="flex-center gap-1"
+              variant="outline"
+            />
           </div>
         </div>
-      )}
 
-      <div id="video-frame" data-dark="true" className="relative z-10 h-dvh w-full overflow-hidden rounded-lg bg-black">
-        {/* Adjusted gradient for visibility without inverse filter */}
-        <div className="absolute inset-0 z-10"
-          style={{ background: "linear-gradient(180deg,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.6) 100%)" }} />
-
-        {/* Video controlled via ref, removed autoPlay and loop */}
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          className="absolute left-0 top-0 size-full object-cover object-[50%_28%] md:object-center"
-          onCanPlay={() => setLoading(false)}
-        >
-          <source src="/videos/herobw.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Fallback image */}
-        <img
-          src="/img/herobgimg.jpeg"
-          alt="GGSC Hero"
-          className="absolute left-0 top-0 size-full object-cover object-[50%_28%] md:object-center"
-          style={{ zIndex: -1 }}
-          onLoad={() => setLoading(false)}
-        />
-
-        {/* Ghost watermark */}
-        <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 select-none"
-          style={{ color: "rgba(255,255,255,0.04)" }}>
-          G<b>G</b>SC
-        </h1>
-
-        {/* Hero copy */}
-        <div className="absolute left-0 top-0 z-40 size-full">
-          <div className="mt-[42vh] px-6 sm:px-12 max-w-5xl">
-
-            {/* Main Heading Text */}
-            <div ref={headingRef} className="overflow-hidden mb-6" style={{ perspective: "1000px" }}>
-              <h1 style={{
-                fontFamily: "'zentry', sans-serif", fontWeight: 900,
-                fontSize: "clamp(3rem, 8vw, 10rem)", textTransform: "uppercase",
-                lineHeight: 0.9, color: "#ffffff", letterSpacing: "-0.02em",
-              }}>
-                <span className="hero-word" style={{ display: "inline-block", opacity: 0 }}>
-                  
-                </span>
-              </h1>
-              <h2 className="hero-word mt-2 text-2xl md:text-4xl text-white font-serif tracking-wide" style={{ opacity: 0 }}>
-                
-              </h2>
+        {/* Stats row */}
+        <div className="flex items-center gap-6 sm:gap-10">
+          {[
+            { value: "200+", label: "Members" },
+            { value: "12+", label: "Events" },
+            { value: "50+", label: "Projects" },
+          ].map((stat, i) => (
+            <div key={i} className="hero-stat opacity-0">
+              <p className="font-zentry text-2xl font-black text-black sm:text-3xl">{stat.value}</p>
+              <p className="font-nanum text-[10px] uppercase tracking-[0.15em] text-black/30">{stat.label}</p>
             </div>
-
-            {/* Subtext Lines */}
-            <p className="hero-sub-line mb-1 font-nanum text-white text-xl leading-relaxed"
-              style={{ opacity: 0 }}>
-              AI-first student leadership at{" "}
-              <span style={{ color: "#FBBC05", fontWeight: 700 }}>UEM Kolkata.</span>
-            </p>
-            <p className="hero-sub-line mb-4 font-nanum text-sm leading-relaxed max-w-lg"
-              style={{ opacity: 0, color: "rgba(255,255,255,0.8)" }}>
-              Exploring the power of Google Gemini & AI.
-            </p>
-
-            {/* Google Ambassador Program Pill */}
-            <div className="hero-sub-line mb-10 inline-flex items-center gap-3 rounded-full px-4 py-2"
-              style={{ background: "rgba(52, 168, 83, 0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(52, 168, 83, 0.4)", opacity: 0 }}>
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white font-bold" style={{ color: "#4285F4" }}>
-                G
-              </div>
-              <span style={{ fontFamily: "'Nanum Gothic', sans-serif", fontSize: "14px", fontWeight: "600", color: "#4ade80" }}>
-                Google Student Ambassador Program
-              </span>
-            </div>
-
-            {/* Call to Action Buttons */}
-            <div className="flex gap-4 flex-wrap">
-              <div className="hero-cta" style={{ opacity: 0 }}>
-                <Button id="cta-main" title="Get Started" leftIcon={<TiLocationArrow />}
-                  containerClass="flex-center gap-1" />
-              </div>
-              <div className="hero-cta" style={{ opacity: 0 }}>
-                <Button id="cta-events" title="View Events"
-                  containerClass="flex-center gap-1" variant="glass" />
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      <h1 className="special-font hero-heading absolute bottom-5 right-5 select-none"
-        style={{ color: "rgba(0,0,0,0.03)" }}>
-        G<b>G</b>SC
-      </h1>
+      {/* ── Scroll hint ── */}
+      <div className="hero-scroll-hint pointer-events-none absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 opacity-0">
+        <span className="font-nanum text-[10px] uppercase tracking-[0.2em] text-black/20">Scroll</span>
+        <div className="flex h-10 w-[1px] items-start overflow-hidden rounded-full bg-black/10">
+          <div className="hero-scroll-dot h-3 w-full rounded-full bg-gradient-to-b from-[#4285F4] to-[#EA4335]" />
+        </div>
+      </div>
     </div>
   );
 };

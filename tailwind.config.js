@@ -7,6 +7,7 @@ export default {
         nanum: ["Nanum Gothic", "sans-serif"],
         bungee: ["Bungee", "sans-serif"],
         zentry: ["zentry", "sans-serif"],
+        inter: ["Inter", "system-ui", "sans-serif"],
         outfit: ["Nanum Gothic", "General Sans", "sans-serif"],
         "circular-web": ["circular-web", "sans-serif"],
         general: ["general", "sans-serif"],
