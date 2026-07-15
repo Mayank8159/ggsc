@@ -2,16 +2,46 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- ── PWA meta tags ── -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4285F4" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="GGSC" />
+    <link rel="apple-touch-icon" href="/img/main.png" />
+
+    <!-- ── Standard meta ── -->
     <link rel="icon" type="image/png" href="/img/main.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Google Gemini Student Community @ UEM Kolkata — AI-first student leadership under the Google Ambassador Program." />
+    <meta name="theme-color" content="#4285F4" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <title>GGSC @ UEM Kolkata | Google Gemini Student Community</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@300;400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- ── Service Worker registration ── -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((reg) => {
+              console.log("SW registered:", reg.scope);
+            })
+            .catch((err) => {
+              console.warn("SW registration failed:", err);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

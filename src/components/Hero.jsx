@@ -3,12 +3,16 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TiLocationArrow } from "react-icons/ti";
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "./Button";
+import { useAuth } from "../context/AuthContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Hero = () => {
   const headingRef = useRef(null);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (!headingRef.current) return;
@@ -155,14 +159,17 @@ const Hero = () => {
 
         {/* CTAs */}
         <div className="mb-10 flex flex-wrap gap-3">
-          <div className="hero-cta opacity-0">
-            <Button
-              id="cta-main"
-              title="Get Started"
-              leftIcon={<TiLocationArrow />}
-              containerClass="flex-center gap-1"
-            />
-          </div>
+          {!isAuthenticated && (
+            <div className="hero-cta opacity-0">
+              <Button
+                id="cta-main"
+                title="Get Started"
+                leftIcon={<TiLocationArrow />}
+                containerClass="flex-center gap-1"
+                onClick={() => navigate("/login")}
+              />
+            </div>
+          )}
           <div className="hero-cta opacity-0">
             <Button
               id="cta-events"

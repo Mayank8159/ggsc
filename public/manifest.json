@@ -1,0 +1,30 @@
+{
+  "name": "GGSC — Google Gemini Student Community",
+  "short_name": "GGSC",
+  "description": "AI-first student leadership under the Google Gemini Student Community at UEM Kolkata.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f6f2",
+  "theme_color": "#4285F4",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["education", "technology"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/img/main.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/main.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
