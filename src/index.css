@@ -533,6 +533,12 @@ section, .section-wrapper {
   opacity: 1;
 }
 
+/* ── PWA install prompt slide-up ── */
+@keyframes pwa-slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Alvio Hero – Neural brain bob ── */
 .hero-brain-bob {
   animation: brain-float 6s ease-in-out infinite;
