@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TiLocationArrow } from "react-icons/ti";
@@ -34,6 +35,17 @@ const FEATURED_EVENT = {
 };
 
 const UPCOMING_EVENTS = [
+  {
+    id: 100,
+    title: "Cydropreneur",
+    date: "July 09, 2026",
+    venue: "Main Tech Auditorium",
+    desc: "Build AI-powered Android applications with Google AI Studio in an immersive, hands-on workshop",
+    img: "/img/static.png",
+    tag: "AI & Android",
+    color: T.purple,
+    route: "/events/Cydropreneur",
+  },
   {
     id: 2,
     title: "Gemini API Workshop",
@@ -493,6 +505,7 @@ function EventModal({ event, onClose }) {
 const Events = () => {
   const sectionRef = useRef(null);
   const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -865,7 +878,13 @@ const Events = () => {
                 <div
                   key={event.id}
                   className="upcoming-card"
-                  onClick={() => setSelected(event)}
+                  onClick={() => {
+                    if (event.route) {
+                      navigate(event.route);
+                    } else {
+                      setSelected(event);
+                    }
+                  }}
                 >
                   {/* Image */}
                   <div

@@ -19,6 +19,7 @@ import Footer from "./components/Footer";
 import DiscussionBoard from "./components/DiscussionBoard";
 import NotFound from "./components/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import Cydropreneur from "./components/Cydropreneur";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -272,6 +273,8 @@ const BGMButton = () => {
   const [playing, setPlaying] = useState(false);
   const [visible, setVisible] = useState(false);
   const audioRef = useRef(null);
+  const location = useLocation();
+  const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
 
   useEffect(() => {
     audioRef.current = new Audio("/audio/loop.mp3");
@@ -283,13 +286,45 @@ const BGMButton = () => {
     };
   }, []);
 
-  const toggle = () => {
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
+  useEffect(() => {
+    if (isCydropreneur) {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+      }
+      const cydroVideo = document.querySelector("#home video");
+      if (cydroVideo) {
+        setPlaying(!cydroVideo.muted && !cydroVideo.paused);
+      } else {
+        setPlaying(false);
+      }
     } else {
-      audioRef.current.play().catch(() => {});
-      setPlaying(true);
+      setPlaying(audioRef.current && !audioRef.current.paused);
+    }
+  }, [location, isCydropreneur]);
+
+  const toggle = () => {
+    if (isCydropreneur) {
+      if (audioRef.current) audioRef.current.pause();
+
+      const cydroVideo = document.querySelector("#home video");
+      if (cydroVideo) {
+        if (cydroVideo.muted || cydroVideo.paused) {
+          cydroVideo.muted = false;
+          cydroVideo.play().catch(() => {});
+          setPlaying(true);
+        } else {
+          cydroVideo.muted = true;
+          setPlaying(false);
+        }
+      }
+    } else {
+      if (playing) {
+        audioRef.current.pause();
+        setPlaying(false);
+      } else {
+        audioRef.current.play().catch(() => {});
+        setPlaying(true);
+      }
     }
   };
 
@@ -297,13 +332,17 @@ const BGMButton = () => {
     <button
       onClick={toggle}
       style={{
-        position: "fixed", bottom: "32px", right: "32px", zIndex: 9998,
+        position: "fixed",
+        bottom: "36px",
+        left: isCydropreneur ? "36px" : "auto",
+        right: isCydropreneur ? "auto" : "32px",
+        zIndex: 9998,
         width: "52px", height: "52px", borderRadius: "50%",
-        background: "rgba(255,255,255,0.7)",
+        background: isCydropreneur ? "rgba(18,10,36,0.75)" : "rgba(255,255,255,0.7)",
         backdropFilter: "blur(24px) saturate(200%)",
         WebkitBackdropFilter: "blur(24px) saturate(200%)",
-        border: "1px solid rgba(255,255,255,0.9)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1)",
+        border: isCydropreneur ? "1px solid rgba(192,132,252,0.4)" : "1px solid rgba(255,255,255,0.9)",
+        boxShadow: isCydropreneur ? "0 8px 32px rgba(168,85,247,0.5)" : "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1)",
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: "pointer",
         opacity: visible ? 1 : 0,
@@ -334,6 +373,7 @@ const BGMButton = () => {
 function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
   const barRef = useRef(null);
 
   useEffect(() => {
@@ -368,16 +408,17 @@ function App() {
       <PWAInstallPrompt />
 
       <div style={{ position: "relative", zIndex: 2 }}>
-        <NavBar />
+        {!isCydropreneur && <NavBar />}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/discussion" element={<DiscussionBoard />} />
           <Route path="/login" element={<DiscussionBoard />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/Cydropreneur" element={<Cydropreneur />} />
           <Route path="/teams" element={<Team />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <Footer />
+        {!isCydropreneur && <Footer />}
       </div>
     </main>
   );

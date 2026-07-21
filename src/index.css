@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@300;400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Share+Tech+Mono&family=Bungee&family=Inter:wght@300;400;500;600;700&family=Nanum+Gothic:wght@400;700;800&display=swap');
 @import url("https://fonts.cdnfonts.com/css/general-sans");
 
 @tailwind base;
@@ -65,6 +65,10 @@ body {
   .font-zentry { font-family: 'zentry', sans-serif; }
   .font-outfit { font-family: 'Nanum Gothic', 'General Sans', sans-serif; }
   .font-circular-web { font-family: 'circular-web', sans-serif; }
+  .font-orbitron { font-family: 'Orbitron', sans-serif; }
+  .font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+  .font-chakra { font-family: 'Chakra Petch', sans-serif; }
+  .font-sharetech { font-family: 'Share Tech Mono', monospace; }
 
   .border-hsla { @apply border border-black/10; }
 
