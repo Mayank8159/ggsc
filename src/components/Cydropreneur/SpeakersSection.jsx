@@ -1,25 +1,13 @@
-import { FiLinkedin, FiGithub } from "react-icons/fi";
-
 const SpeakersSection = () => {
-  const speakers = [
-    {
-      name: "David Chen",
-      role: "Google Developer Expert (AI)",
-      company: "Google AI Studio Mentor",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      name: "Lucy Vance",
-      role: "Android Systems Architect",
-      company: "Android Dev Rel",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      name: "Alex Rivera",
-      role: "GGSC Lead Organizer",
-      company: "Founder Track Host",
-      image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop",
-    },
+  const topRowSpeakers = [
+    { name: "Narendra Nath Chatterjee", img: "/img/narendra.png" },
+    { name: "Shantanu Mukhopadhyay", img: "/img/shantanu.png" },
+    { name: "Suman Mondal", img: "/img/suman front.png" },
+  ];
+
+  const bottomRowSpeakers = [
+    { name: "Sayantan Samanta", img: "/img/sayantan.png" },
+    { name: "Nilanjan Joarder", img: "/img/nilanjan.png" },
   ];
 
   return (
@@ -27,19 +15,21 @@ const SpeakersSection = () => {
       id="speakers"
       style={{
         width: "100%",
-        minHeight: "80vh",
-        padding: "120px 24px",
-        background: "#0b0518",
+        minHeight: "100vh",
+        padding: "80px 16px",
+        background: "transparent",
         position: "relative",
         overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxSizing: "border-box",
+        border: "16px solid #000000",
       }}
     >
       <div
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1360px",
           width: "100%",
           margin: "0 auto",
           position: "relative",
@@ -47,7 +37,7 @@ const SpeakersSection = () => {
         }}
       >
         {/* Section Header */}
-        <div style={{ textAlign: "center", marginBottom: "60px" }}>
+        <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <h2
             style={{
               fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
@@ -59,7 +49,7 @@ const SpeakersSection = () => {
               textShadow: "0 0 25px rgba(168, 85, 247, 0.4)",
             }}
           >
-            SPEAKERS & MENTORS
+            SPEAKERS
           </h2>
           <p
             style={{
@@ -76,117 +66,87 @@ const SpeakersSection = () => {
           </p>
         </div>
 
-        {/* Speakers Grid Placeholder */}
+        {/* Speakers Grid Container */}
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "36px",
+            width: "100%",
+            alignItems: "center",
           }}
         >
-          {speakers.map((speaker, index) => (
-            <div
-              key={index}
-              style={{
-                background: "rgba(22, 12, 44, 0.65)",
-                backdropFilter: "blur(20px)",
-                border: "1px solid rgba(192, 132, 252, 0.2)",
-                borderRadius: "24px",
-                padding: "24px",
-                textAlign: "center",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
-              }}
-            >
+          {/* Top Row: 3 Speakers */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "36px",
+              width: "100%",
+            }}
+          >
+            {topRowSpeakers.map((speaker, index) => (
               <div
+                key={index}
                 style={{
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
+                  width: "280px",
+                  maxWidth: "100%",
+                  borderRadius: "24px",
                   overflow: "hidden",
-                  margin: "0 auto 20px",
-                  border: "2px solid rgba(192, 132, 252, 0.5)",
-                  boxShadow: "0 0 20px rgba(168, 85, 247, 0.4)",
+                  transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
+                  cursor: "pointer",
                 }}
+                className="hover:scale-105 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
               >
                 <img
-                  src={speaker.image}
+                  src={speaker.img}
                   alt={speaker.name}
                   style={{
                     width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
+                    height: "auto",
+                    display: "block",
                   }}
                 />
               </div>
-              <h3
-                style={{
-                  fontSize: "1.25rem",
-                  fontWeight: 800,
-                  color: "#ffffff",
-                  marginBottom: "4px",
-                }}
-              >
-                {speaker.name}
-              </h3>
-              <p
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: "#c084fc",
-                  marginBottom: "4px",
-                }}
-              >
-                {speaker.role}
-              </p>
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#d8b4fe",
-                  marginBottom: "16px",
-                }}
-              >
-                {speaker.company}
-              </p>
+            ))}
+          </div>
+
+          {/* Bottom Row: 2 Speakers */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "36px",
+              width: "100%",
+            }}
+          >
+            {bottomRowSpeakers.map((speaker, index) => (
               <div
+                key={index}
                 style={{
-                  display: "flex",
-                  gap: "12px",
-                  justifyContent: "center",
+                  width: "280px",
+                  maxWidth: "100%",
+                  borderRadius: "24px",
+                  overflow: "hidden",
+                  transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
+                  cursor: "pointer",
                 }}
+                className="hover:scale-105 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
               >
-                <a
-                  href="#"
+                <img
+                  src={speaker.img}
+                  alt={speaker.name}
                   style={{
-                    width: "34px",
-                    height: "34px",
-                    borderRadius: "50%",
-                    background: "rgba(168, 85, 247, 0.15)",
-                    border: "1px solid rgba(192, 132, 252, 0.3)",
-                    display: "grid",
-                    placeItems: "center",
-                    color: "#e9d5ff",
+                    width: "100%",
+                    height: "auto",
+                    display: "block",
                   }}
-                >
-                  <FiLinkedin size={14} />
-                </a>
-                <a
-                  href="#"
-                  style={{
-                    width: "34px",
-                    height: "34px",
-                    borderRadius: "50%",
-                    background: "rgba(168, 85, 247, 0.15)",
-                    border: "1px solid rgba(192, 132, 252, 0.3)",
-                    display: "grid",
-                    placeItems: "center",
-                    color: "#e9d5ff",
-                  }}
-                >
-                  <FiGithub size={14} />
-                </a>
+                />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

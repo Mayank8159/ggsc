@@ -249,19 +249,19 @@ const GoogleGradientBG = () => {
         width: "60vw", height: "60vw", opacity: 0.04,
         pointerEvents: "none",
       }} viewBox="0 0 500 500" fill="none">
-        <circle cx="250" cy="250" r="240" stroke="#4285F4" strokeWidth="1.5"/>
-        <circle cx="250" cy="250" r="180" stroke="#EA4335" strokeWidth="1" strokeDasharray="10 8"/>
-        <circle cx="250" cy="250" r="120" stroke="#FBBC05" strokeWidth="0.8"/>
-        <circle cx="250" cy="250" r="60" stroke="#34A853" strokeWidth="0.6" strokeDasharray="4 6"/>
+        <circle cx="250" cy="250" r="240" stroke="#4285F4" strokeWidth="1.5" />
+        <circle cx="250" cy="250" r="180" stroke="#EA4335" strokeWidth="1" strokeDasharray="10 8" />
+        <circle cx="250" cy="250" r="120" stroke="#FBBC05" strokeWidth="0.8" />
+        <circle cx="250" cy="250" r="60" stroke="#34A853" strokeWidth="0.6" strokeDasharray="4 6" />
       </svg>
       <svg style={{
         position: "absolute", bottom: "-5%", left: "-5%",
         width: "40vw", height: "40vw", opacity: 0.035,
         pointerEvents: "none",
       }} viewBox="0 0 300 300" fill="none">
-        <circle cx="150" cy="150" r="140" stroke="#EA4335" strokeWidth="1.2"/>
-        <circle cx="150" cy="150" r="95" stroke="#34A853" strokeWidth="0.8" strokeDasharray="6 5"/>
-        <circle cx="150" cy="150" r="50" stroke="#FBBC05" strokeWidth="0.6"/>
+        <circle cx="150" cy="150" r="140" stroke="#EA4335" strokeWidth="1.2" />
+        <circle cx="150" cy="150" r="95" stroke="#34A853" strokeWidth="0.8" strokeDasharray="6 5" />
+        <circle cx="150" cy="150" r="50" stroke="#FBBC05" strokeWidth="0.6" />
       </svg>
       <div className="noise-overlay" />
     </div>
@@ -310,7 +310,7 @@ const BGMButton = () => {
       if (cydroVideo) {
         if (cydroVideo.muted || cydroVideo.paused) {
           cydroVideo.muted = false;
-          cydroVideo.play().catch(() => {});
+          cydroVideo.play().catch(() => { });
           setPlaying(true);
         } else {
           cydroVideo.muted = true;
@@ -322,7 +322,7 @@ const BGMButton = () => {
         audioRef.current.pause();
         setPlaying(false);
       } else {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch(() => { });
         setPlaying(true);
       }
     }
@@ -352,7 +352,7 @@ const BGMButton = () => {
     >
       {playing ? (
         <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "18px" }}>
-          {[1,0.6,1,0.8].map((h, i) => (
+          {[1, 0.6, 1, 0.8].map((h, i) => (
             <div key={i} style={{
               width: "3px", borderRadius: "2px",
               background: "linear-gradient(180deg,#4285F4,#34A853)",
@@ -363,7 +363,7 @@ const BGMButton = () => {
         </div>
       ) : (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M8 5.14v14l11-7-11-7z" fill="#4285F4"/>
+          <path d="M8 5.14v14l11-7-11-7z" fill="#4285F4" />
         </svg>
       )}
     </button>

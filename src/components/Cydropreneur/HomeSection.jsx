@@ -45,6 +45,7 @@ const HomeSection = () => {
         boxSizing: "border-box",
         overflow: "hidden",
         background: "#000000",
+        zIndex: 1,
       }}
     >
       <video
@@ -52,6 +53,7 @@ const HomeSection = () => {
         loop
         muted
         playsInline
+        src="/videos/Home page main.mp4"
         style={{
           width: "100%",
           height: "100%",
@@ -60,12 +62,7 @@ const HomeSection = () => {
           display: "block",
           margin: 0,
         }}
-      >
-        <source
-          src="/videos/Untitled design.mp4"
-          type="video/mp4"
-        />
-      </video>
+      />
 
       {/* Floating Register Now Button on Bottom Right of Video Frame */}
       <div

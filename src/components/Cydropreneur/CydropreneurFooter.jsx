@@ -4,11 +4,12 @@ const CydropreneurFooter = () => {
       style={{
         width: "100%",
         padding: "40px 24px",
-        background: "#04020a",
+        background: "#000000",
         borderTop: "1px solid rgba(192, 132, 252, 0.15)",
         textAlign: "center",
         color: "#a855f7",
         fontSize: "13px",
+        boxSizing: "border-box",
       }}
     >
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
