@@ -5,7 +5,6 @@ import AboutSection from "./AboutSection";
 import WhyToAttendSection from "./WhyToAttendSection";
 import SpeakersSection from "./SpeakersSection";
 import ContactSection from "./ContactSection";
-import CydropreneurFooter from "./CydropreneurFooter";
 import ShaderBackground from "./ShaderBackground";
 import { FaArrowUp } from "react-icons/fa";
 
@@ -78,7 +77,6 @@ const Cydropreneur = () => {
       <WhyToAttendSection />
       <SpeakersSection />
       <ContactSection />
-      <CydropreneurFooter />
       
       {/* Back to Top Button */}
       <button

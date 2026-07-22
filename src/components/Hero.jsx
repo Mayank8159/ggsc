@@ -143,7 +143,7 @@ const Hero = () => {
             <span className="text-[#EA4335]">UEM Kolkata</span>.
           </p>
           <p className="hero-sub font-nanum text-sm leading-relaxed text-black/40 opacity-0">
-            Exploring the power of Google Gemini &amp; AI through workshops, hackathons, and research.
+            Exploring the power of Google Gemini &amp; AI through workshops, interactive sessions, and research.
           </p>
         </div>
 

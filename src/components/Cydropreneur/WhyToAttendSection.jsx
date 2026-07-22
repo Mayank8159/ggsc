@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 // Cydropreneur WhyToAttendSection - Updated Layout
 const WhyToAttendSection = () => {
@@ -14,7 +16,7 @@ const WhyToAttendSection = () => {
 
   const questionsLeft = [
     {
-      question: "Is this just another hackathon?",
+      question: "Is this just another workshop?",
       answer: "No! It's a high-energy hybrid workshop & venture accelerator combining Google AI Studio, Android dev, and startup pitching.",
     },
     {
@@ -26,7 +28,7 @@ const WhyToAttendSection = () => {
   const questionsRight = [
     {
       question: "What do I gain from participating?",
-      answer: "Hands-on AI skills, direct guidance from tech founders, cash prizes, cool goodies, and complimentary lunch!",
+      answer: "Hands-on AI skills, direct guidance from tech founders, cool developer swags, goodies, and complimentary lunch!",
     },
     {
       question: "Is it worth my time?",
@@ -45,7 +47,7 @@ const WhyToAttendSection = () => {
     },
     {
       question: "What rewards, swags, and academic credits can participants earn?",
-      answer: "Compete for substantial cash prize pools, exclusive developer swags, cool goodies, and receive an official Certificate of Participation recognized for university MAR Points.",
+      answer: "Earn exclusive developer swags, cool goodies, and receive an official Certificate of Participation recognized for university MAR Points.",
     },
     {
       question: "Who will be guiding and reviewing participant projects?",
@@ -87,6 +89,13 @@ const WhyToAttendSection = () => {
           transform: translateY(-4px) scale(1.02);
           filter: drop-shadow(0 12px 25px rgba(255, 255, 255, 0.3));
         }
+        .saas-faq-card {
+          transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .saas-faq-card:hover {
+          border-color: rgba(192, 132, 252, 0.45) !important;
+          transform: translateY(-2px);
+        }
       `}} />
 
       <div
@@ -120,40 +129,72 @@ const WhyToAttendSection = () => {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1.2fr 1fr",
-            gap: isMobile ? "24px" : "30px",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr auto 1fr",
+            gap: isMobile ? "24px" : "36px",
             alignItems: "center",
+            justifyContent: "center",
             marginBottom: "50px",
           }}
         >
           {/* Left Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "12px" : "0", width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", alignItems: isMobile ? "center" : "flex-end", height: "100%", minHeight: isMobile ? "auto" : "500px", gap: isMobile ? "12px" : "28px", width: "100%" }}>
             {questionsLeft.map((q, idx) => (
               <div
                 key={idx}
                 className="speech-bubble-card"
                 style={{
                   position: "relative",
-                  flex: 1,
                   width: "100%",
-                  maxWidth: "340px",
-                  margin: "0 auto",
+                  maxWidth: isMobile ? "100%" : "280px",
+                  margin: isMobile ? "0 auto" : "0 0 0 auto",
                   background: "linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(88, 28, 135, 0.5) 100%)",
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
                   border: "1px solid rgba(192, 132, 252, 0.4)",
-                  borderRadius: "24px",
-                  padding: isMobile ? "16px 12px" : "28px 24px",
+                  borderRadius: "20px",
+                  padding: isMobile ? "12px 14px" : "16px 20px",
                   boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
                   color: "#ffffff",
                   fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                  fontSize: isMobile ? "13px" : "19px",
+                  fontSize: isMobile ? "13px" : "15px",
                   fontWeight: 800,
-                  lineHeight: 1.3,
+                  lineHeight: 1.35,
                   textAlign: "center",
                 }}
               >
                 {q.question}
+
+                {/* Curved SVG Dotted Line connecting left bubbles to character */}
+                {!isMobile && (
+                  <svg
+                    style={{
+                      position: "absolute",
+                      top: idx === 0 ? "50%" : "auto",
+                      bottom: idx === 1 ? "50%" : "auto",
+                      right: "-48px",
+                      width: "50px",
+                      height: "40px",
+                      overflow: "visible",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <path
+                      d={idx === 0 ? "M 0 0 C 25 5, 35 25, 48 35" : "M 0 40 C 25 35, 35 15, 48 5"}
+                      fill="none"
+                      stroke="rgba(192, 132, 252, 0.85)"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      strokeLinecap="round"
+                    />
+                    <circle
+                      cx="48"
+                      cy={idx === 0 ? "35" : "5"}
+                      r="4"
+                      fill="#c084fc"
+                      style={{ filter: "drop-shadow(0 0 6px #c084fc)" }}
+                    />
+                  </svg>
+                )}
               </div>
             ))}
           </div>
@@ -164,7 +205,7 @@ const WhyToAttendSection = () => {
               src="/img/David-lucy-why-attend.png"
               alt="Cydropreneur Characters David & Lucy"
               style={{
-                maxHeight: isMobile ? "440px" : "680px",
+                maxHeight: isMobile ? "440px" : "600px",
                 width: "auto",
                 objectFit: "contain",
                 margin: "0 auto",
@@ -174,54 +215,90 @@ const WhyToAttendSection = () => {
           </div>
 
           {/* Right Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "12px" : "0", width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", alignItems: isMobile ? "center" : "flex-start", height: "100%", minHeight: isMobile ? "auto" : "500px", gap: isMobile ? "12px" : "28px", width: "100%" }}>
             {questionsRight.map((q, idx) => (
               <div
                 key={idx}
                 className="speech-bubble-card"
                 style={{
                   position: "relative",
-                  flex: 1,
                   width: "100%",
-                  maxWidth: "340px",
-                  margin: "0 auto",
+                  maxWidth: isMobile ? "100%" : "280px",
+                  margin: isMobile ? "0 auto" : "0 auto 0 0",
                   background: "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 116, 144, 0.5) 100%)",
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
                   border: "1px solid rgba(56, 189, 248, 0.4)",
-                  borderRadius: "24px",
-                  padding: isMobile ? "16px 12px" : "28px 24px",
+                  borderRadius: "20px",
+                  padding: isMobile ? "12px 14px" : "16px 20px",
                   boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
                   color: "#ffffff",
                   fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                  fontSize: isMobile ? "13px" : "19px",
+                  fontSize: isMobile ? "13px" : "15px",
                   fontWeight: 800,
-                  lineHeight: 1.3,
+                  lineHeight: 1.35,
                   textAlign: "center",
                 }}
               >
                 {q.question}
+
+                {/* Curved SVG Dotted Line connecting right bubbles to character */}
+                {!isMobile && (
+                  <svg
+                    style={{
+                      position: "absolute",
+                      top: idx === 0 ? "50%" : "auto",
+                      bottom: idx === 1 ? "50%" : "auto",
+                      left: "-48px",
+                      width: "50px",
+                      height: "40px",
+                      overflow: "visible",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <path
+                      d={idx === 0 ? "M 50 0 C 25 5, 15 25, 2 35" : "M 50 40 C 25 35, 15 15, 2 5"}
+                      fill="none"
+                      stroke="rgba(56, 189, 248, 0.85)"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      strokeLinecap="round"
+                    />
+                    <circle
+                      cx="2"
+                      cy={idx === 0 ? "35" : "5"}
+                      r="4"
+                      fill="#38bdf8"
+                      style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
+                    />
+                  </svg>
+                )}
               </div>
             ))}
           </div>
         </div>
 
 
-        {/* Clean FAQ Accordion Section */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Modern SaaS FAQ Accordion Section */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px", maxWidth: "980px", margin: "0 auto" }}>
           {perksFaq.map((faq, i) => {
             const isOpen = openFaq === i;
             return (
               <div
                 key={i}
+                className="saas-faq-card"
                 style={{
-                  background: isOpen ? "rgba(28, 14, 56, 0.85)" : "rgba(14, 7, 30, 0.6)",
-                  backdropFilter: "blur(16px)",
-                  border: isOpen ? "1.5px solid rgba(192, 132, 252, 0.6)" : "1px solid rgba(168, 85, 247, 0.25)",
-                  borderRadius: "18px",
+                  background: isOpen
+                    ? "linear-gradient(135deg, rgba(32, 16, 64, 0.85) 0%, rgba(16, 8, 36, 0.95) 100%)"
+                    : "linear-gradient(135deg, rgba(22, 12, 44, 0.45) 0%, rgba(12, 6, 26, 0.65) 100%)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: isOpen ? "1px solid rgba(192, 132, 252, 0.55)" : "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "20px",
                   overflow: "hidden",
-                  transition: "all 0.3s ease",
-                  boxShadow: isOpen ? "0 10px 30px rgba(168, 85, 247, 0.25)" : "none",
+                  boxShadow: isOpen
+                    ? "0 20px 45px -10px rgba(168, 85, 247, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15)"
+                    : "0 6px 24px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.04)",
                 }}
               >
                 {/* FAQ Header Row */}
@@ -229,7 +306,7 @@ const WhyToAttendSection = () => {
                   onClick={() => setOpenFaq(isOpen ? null : i)}
                   style={{
                     width: "100%",
-                    padding: "20px 24px",
+                    padding: isMobile ? "16px 18px" : "22px 28px",
                     background: "transparent",
                     border: "none",
                     color: "#ffffff",
@@ -242,55 +319,73 @@ const WhyToAttendSection = () => {
                     outline: "none",
                   }}
                 >
-                  <div style={{ fontFamily: "'Orbitron', 'Rajdhani', sans-serif", fontSize: isMobile ? "15px" : "17px", fontWeight: 800, color: isOpen ? "#38bdf8" : "#ffffff", flex: 1, lineHeight: 1.35 }}>
+                  <div
+                    style={{
+                      fontFamily: "'Orbitron', 'Rajdhani', sans-serif",
+                      fontSize: isMobile ? "15px" : "17px",
+                      fontWeight: 800,
+                      color: "#ffffff",
+                      flex: 1,
+                      lineHeight: 1.35,
+                    }}
+                  >
                     {faq.question}
                   </div>
 
                   <div
                     style={{
-                      fontFamily: "sans-serif",
-                      fontSize: "20px",
-                      fontWeight: 800,
-                      color: isOpen ? "#38bdf8" : "#c084fc",
-                      background: "rgba(168, 85, 247, 0.15)",
-                      width: "34px",
-                      height: "34px",
-                      borderRadius: "10px",
+                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+                      background: isOpen ? "rgba(168, 85, 247, 0.25)" : "rgba(255, 255, 255, 0.06)",
+                      border: isOpen ? "1px solid rgba(192, 132, 252, 0.4)" : "1px solid rgba(255, 255, 255, 0.1)",
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "12px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "1px solid rgba(168, 85, 247, 0.3)",
+                      color: "#ffffff",
                       flexShrink: 0,
                     }}
                   >
-                    {isOpen ? "−" : "+"}
+                    <ChevronDown size={18} />
                   </div>
                 </button>
 
                 {/* FAQ Expanded Answer */}
-                {isOpen && (
-                  <div
-                    style={{
-                      padding: "0 24px 22px 24px",
-                      borderTop: "1px solid rgba(168, 85, 247, 0.2)",
-                      paddingTop: "16px",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontFamily: "'Rajdhani', sans-serif",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "#e9d5ff",
-                        lineHeight: 1.65,
-                        margin: 0,
-                        letterSpacing: "0.02em",
-                      }}
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      style={{ overflow: "hidden" }}
                     >
-                      {faq.answer}
-                    </p>
-                  </div>
-                )}
+                      <div
+                        style={{
+                          padding: isMobile ? "0 18px 20px 18px" : "0 28px 24px 28px",
+                          borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+                          paddingTop: "18px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontFamily: "'Rajdhani', sans-serif",
+                            fontSize: isMobile ? "15px" : "16px",
+                            fontWeight: 600,
+                            color: "#ffffff",
+                            lineHeight: 1.65,
+                            margin: 0,
+                            letterSpacing: "0.02em",
+                          }}
+                        >
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}

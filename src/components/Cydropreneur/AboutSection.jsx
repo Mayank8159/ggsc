@@ -87,10 +87,10 @@ const AboutSection = () => {
           style={{
             flex: isMobile ? "1 1 100%" : "1.15 1 520px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: "flex-end",
+            justifyContent: "flex-start",
             position: "relative",
-            minHeight: isMobile ? "300px" : "580px",
+            minHeight: isMobile ? "280px" : "540px",
             boxSizing: "border-box",
             overflow: "hidden",
             order: isMobile ? 2 : 1, // Ensure image is second on mobile
@@ -100,11 +100,14 @@ const AboutSection = () => {
             src="/img/about img.png"
             alt="Android Developer Character"
             style={{
-              width: "100%",
+              width: isMobile ? "95%" : "102%",
               height: "auto",
-              maxHeight: "690px",
+              maxHeight: isMobile ? "400px" : "630px",
               objectFit: "contain",
+              objectPosition: "left bottom",
               display: "block",
+              transform: isMobile ? "none" : "scale(1.02)",
+              transformOrigin: "left bottom",
             }}
           />
         </div>

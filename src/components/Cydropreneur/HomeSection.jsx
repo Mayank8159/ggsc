@@ -48,20 +48,36 @@ const HomeSection = () => {
         zIndex: 1,
       }}
     >
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        src="/videos/Home page main.mp4"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-          margin: 0,
-        }}
-      />
+      {screenSize.width < 768 ? (
+        <img
+          src="/img/mob view home page .png"
+          alt="Cydropreneur Mobile Hero"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            objectPosition: "center",
+            display: "block",
+            margin: "0 auto",
+            backgroundColor: "#000000",
+          }}
+        />
+      ) : (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          src="/videos/Home page main.mp4"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block",
+            margin: 0,
+          }}
+        />
+      )}
 
       {/* Floating Register Now Button on Bottom Right of Video Frame */}
       <div

@@ -28,9 +28,9 @@ const FEATURED_EVENT = {
   title: "Build with AI",
   date: "July 12–13, 2026",
   venue: "Main Auditorium • UEM Kolkata",
-  desc: "A next-generation AI hackathon powered by Gemini APIs where developers, designers, and creators collaborate to build immersive products.",
+  desc: "A next-generation AI workshop powered by Gemini APIs where developers, designers, and creators collaborate to build immersive products.",
   img: "/img/hackathon.jpeg",
-  tag: "Hackathon",
+  tag: "Workshop",
   color: T.blue,
 };
 
@@ -738,7 +738,7 @@ const Events = () => {
           </div>
 
           {/* ══════════════════════════════
-              FEATURED HACKATHON
+              FEATURED WORKSHOP
           ══════════════════════════════ */}
           <div className="fade-up" style={{ marginBottom: 80 }}>
             <SectionLabel label="Featured" title="Flagship Event" />
@@ -763,7 +763,7 @@ const Events = () => {
                 }}
               >
                 <div>
-                  <Pill color={T.blue}>Hackathon</Pill>
+                  <Pill color={T.blue}>Workshop</Pill>
 
                   <h2
                     style={{

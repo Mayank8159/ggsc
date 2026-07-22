@@ -6,7 +6,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const CARDS = [
   { title: "Build with Gemini", desc: "Hands-on workshops where students ship real AI-powered products using the Gemini API.", accent: "#4285F4", tag: "Workshops", img: "/img/skills.jpeg" },
-  { title: "Hack the Future", desc: "48-hour hackathons with mentorship from Google engineers and prizes that open doors.", accent: "#EA4335", tag: "Hackathons", img: "/img/coding.jpeg" },
+  { title: "Build the Future", desc: "Interactive workshops with mentorship from Google engineers and hands-on guidance.", accent: "#EA4335", tag: "Workshops", img: "/img/coding.jpeg" },
   { title: "Research & Publish", desc: "From prompt engineering to fine-tuning — explore AI's frontier and make your mark.", accent: "#FBBC05", tag: "Research", img: "/img/research.jpeg" },
   { title: "Lead & Inspire", desc: "Grow as a Google Student Ambassador and represent your college to the world.", accent: "#34A853", tag: "Leadership", img: "/img/inno.png" },
   { title: "Connect & Grow", desc: "A thriving community of 200+ students, mentors, and AI enthusiasts united by curiosity.", accent: "#4285F4", tag: "Community", img: "/img/collab.jpeg" },

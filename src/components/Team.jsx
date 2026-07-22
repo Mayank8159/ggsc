@@ -26,7 +26,7 @@ const TEAM = [
     role: "Secretary",
     color: "#FBBC05",
     img: "/img/parnatash.jpeg",
-    desc: "Keeping GGSC operations smooth — from documentation to coordinating workshops and hackathons.",
+    desc: "Keeping GGSC operations smooth — from documentation to coordinating workshops and tech sessions.",
     emoji: "📋",
   },
   {
