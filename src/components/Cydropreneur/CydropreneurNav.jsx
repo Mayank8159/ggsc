@@ -1,106 +1,188 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Home, Info, Sparkles, Users, Mail, ArrowLeft } from "lucide-react";
+import { FiHome } from "react-icons/fi";
 import { NavBar } from "../ui/tubelight-navbar";
 
+const NAV_ITEMS_HOME = [
+  { label: "ABOUT",         target: "about"         },
+  { label: "WHY TO ATTEND", target: "why-to-attend" },
+  { label: "SPEAKERS",      target: "speakers"      },
+  { label: "CONTACT US",    target: "contact-us"    },
+];
+
 const CydropreneurNav = () => {
-  const [activeTab, setActiveTab] = useState("HOME");
-  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
+  const [activeTab, setActiveTab] = useState("HOME");
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1440
+  );
+
   const navItems = [
-    { name: "HOME", url: "#home", icon: Home },
-    { name: "ABOUT", url: "#about", icon: Info },
+    { name: "HOME",          url: "#home",          icon: Home     },
+    { name: "ABOUT",         url: "#about",         icon: Info     },
     { name: "WHY TO ATTEND", url: "#why-to-attend", icon: Sparkles },
-    { name: "SPEAKERS", url: "#speakers", icon: Users },
-    { name: "CONTACT US", url: "#contact-us", icon: Mail },
+    { name: "SPEAKERS",      url: "#speakers",      icon: Users    },
+    { name: "CONTACT US",    url: "#contact-us",    icon: Mail     },
   ];
 
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = navItems.map((item) =>
-        document.getElementById(item.url.replace("#", ""))
-      );
-      const scrollPosition = window.scrollY + 250;
+    const onResize = () => setScreenWidth(window.innerWidth);
+    onResize();
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && section.offsetTop <= scrollPosition) {
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollPos = window.scrollY + 300;
+      for (let i = navItems.length - 1; i >= 0; i--) {
+        const el = document.getElementById(navItems[i].url.replace("#", ""));
+        if (el && el.offsetTop <= scrollPos) {
           setActiveTab(navItems[i].name);
           break;
         }
       }
     };
-
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize, { passive: true });
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
-    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleSelect = (item) => {
-    setActiveTab(item.name);
-    const targetId = item.url.replace("#", "");
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const isDesktop  = screenWidth >= 768;
+  const isHome     = activeTab === "HOME";
+
+  // Show absolute Home buttons on desktop ONLY when activeTab is HOME (scrolled within Home section)
+  const showAbsoluteHomeButtons = isDesktop && isHome;
+
+  // Show universal NavBar on desktop when NOT on Home, and ALWAYS show it on mobile
+  const showNavBar = isDesktop ? !isHome : true;
+
+  /* ── shared glass button style ── */
+  const glass = {
+    background:           "rgba(18, 10, 36, 0.78)",
+    backdropFilter:       "blur(18px)",
+    WebkitBackdropFilter: "blur(18px)",
+    border:               "1px solid rgba(168, 85, 247, 0.42)",
+    color:                "#ffffff",
+    cursor:               "pointer",
+    display:              "inline-flex",
+    alignItems:           "center",
+    justifyContent:       "center",
+    boxShadow:            "0 4px 18px rgba(0,0,0,0.55)",
+    fontFamily:           "'Ethnocentric','Orbitron',sans-serif",
+    fontWeight:           800,
+    letterSpacing:        "0.08em",
+    whiteSpace:           "nowrap",
+    overflow:             "hidden",
   };
 
   return (
     <>
-      {/* Top Left: Back to GGSC Events Button */}
-      <div
-        style={{
-          position: "fixed",
-          top: "24px",
-          left: isMobile ? "16px" : "32px",
-          zIndex: 100,
-        }}
-      >
+      {/* ── Back to Events button (always visible, always fixed) ── */}
+      <div style={{ position: "fixed", top: "14px", left: "14px", zIndex: 100000 }}>
         <button
           onClick={() => navigate("/events")}
           style={{
-            fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: isMobile ? "10px" : "10px 18px",
-            borderRadius: "999px",
-            background: "rgba(18, 10, 36, 0.75)",
-            backdropFilter: "blur(20px)",
+            display:              "inline-flex",
+            alignItems:           "center",
+            justifyContent:       "center",
+            width:                "42px",
+            height:               "42px",
+            borderRadius:         "50%",
+            background:           "rgba(18, 10, 36, 0.75)",
+            backdropFilter:       "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(168, 85, 247, 0.35)",
-            color: "#e9d5ff",
-            fontSize: "12px",
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
-            transition: "all 0.3s ease",
+            border:               "1px solid rgba(168, 85, 247, 0.35)",
+            color:                "#e9d5ff",
+            cursor:               "pointer",
+            boxShadow:            "0 8px 32px rgba(0,0,0,0.6)",
+            transition:           "all 0.3s ease",
           }}
           className="hover:border-purple-400 hover:text-white hover:scale-105"
         >
-          <ArrowLeft size={14} /> 
-          {!isMobile && <span>Back to Events</span>}
+          <ArrowLeft size={18} />
         </button>
       </div>
 
-      {/* Tubelight Glowing Navbar */}
-      <NavBar
-        items={navItems}
-        activeTab={activeTab}
-        onSelect={handleSelect}
-      />
+      {/*
+        ── STATIC ABSOLUTE HOME BUTTONS ──────────────────────────
+        Rendered with position: absolute at the top of the home page.
+        They scroll UP naturally with the page content.
+      */}
+      {showAbsoluteHomeButtons && (
+        <>
+          {/* Circular Home button */}
+          <div style={{ position: "absolute", top: "6.3vh", left: "3.1vw", zIndex: 9999 }}>
+            <button
+              onClick={() => navigate("/")}
+              title="Go to Home Page"
+              style={{
+                ...glass,
+                width:        "56px",
+                height:       "56px",
+                borderRadius: "50%",
+              }}
+              className="hover:scale-110 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]"
+            >
+              <FiHome size={26} />
+            </button>
+          </div>
+
+          {/* 4 navigation buttons */}
+          <div
+            style={{
+              position:       "absolute",
+              top:            "6.0vh",
+              left:           "30vw",
+              width:          "65vw",
+              height:         "50px",
+              zIndex:         9999,
+              display:        "flex",
+              gap:            "30px",
+              alignItems:     "center",
+              justifyContent: "space-between",
+            }}
+          >
+            {NAV_ITEMS_HOME.map((item, idx) => (
+              <button
+                key={idx}
+                onClick={() => scrollToSection(item.target)}
+                style={{
+                  ...glass,
+                  flex:         1,
+                  height:       "100%",
+                  borderRadius: "20px",
+                  fontSize:     "12px",
+                  padding:      "0 8px",
+                }}
+                className="hover:scale-105 hover:border-purple-400 hover:bg-purple-900/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* ── Universal Tubelight NavBar ── */}
+      {showNavBar && (
+        <NavBar
+          items={navItems}
+          activeTab={activeTab}
+          onSelect={(item) => {
+            setActiveTab(item.name);
+            const el = document.getElementById(item.url.replace("#", ""));
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      )}
     </>
   );
 };

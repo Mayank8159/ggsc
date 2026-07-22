@@ -69,20 +69,14 @@ export function NavBar({ items, activeTab, onSelect, className }) {
                 {isActive && (
                   <motion.div
                     layoutId="lamp"
-                    className="absolute inset-0 w-full bg-purple-500/20 rounded-full -z-10 border border-purple-400/40"
+                    className="absolute inset-0 w-full rounded-full -z-10 border border-purple-400/80 bg-purple-600/30 shadow-[0_0_20px_rgba(168,85,247,0.7),inset_0_0_10px_rgba(192,132,252,0.5)]"
                     initial={false}
                     transition={{
                       type: "spring",
                       stiffness: 350,
                       damping: 30,
                     }}
-                  >
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-10 h-1 bg-purple-400 rounded-t-full shadow-[0_0_12px_#c084fc]">
-                      <div className="absolute w-14 h-6 bg-purple-500/40 rounded-full blur-md -top-2 -left-2" />
-                      <div className="absolute w-10 h-6 bg-purple-400/50 rounded-full blur-sm -top-1" />
-                      <div className="absolute w-5 h-4 bg-purple-300/60 rounded-full blur-xs top-0 left-2.5" />
-                    </div>
-                  </motion.div>
+                  />
                 )}
               </button>
             );

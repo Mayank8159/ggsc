@@ -191,7 +191,7 @@ const AboutSection = () => {
                   justifyContent: "center",
                   gap: "10px",
                   padding: isMobile ? "12px 16px" : "12px 24px",
-                  borderRadius: "999px",
+                  borderRadius: "14px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",
@@ -209,7 +209,7 @@ const AboutSection = () => {
                 }}
               >
                 <MapPin size={15} style={{ color: "#d8b4fe", flexShrink: 0 }} />
-                <span>IEM NEW TOWN, UEM KOLKATA</span>
+                <span>INSTITUTE OF ENGINEERING AND MANAGEMENT, NEWTOWN</span>
               </div>
             </div>
 
@@ -230,7 +230,7 @@ const AboutSection = () => {
                   justifyContent: "center",
                   gap: "10px",
                   padding: isMobile ? "12px 16px" : "12px 24px",
-                  borderRadius: "999px",
+                  borderRadius: "14px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",
@@ -258,7 +258,7 @@ const AboutSection = () => {
                   justifyContent: "center",
                   gap: "10px",
                   padding: isMobile ? "12px 16px" : "12px 24px",
-                  borderRadius: "999px",
+                  borderRadius: "14px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
                   WebkitBackdropFilter: "blur(12px)",

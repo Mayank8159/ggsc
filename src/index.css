@@ -19,11 +19,14 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden; /* prevents horizontal scroll without breaking position:fixed */
+}
 
 body {
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: visible; /* must NOT be hidden — body as scroll container breaks position:fixed */
   background-color: #f8f6f2;
   font-family: 'Nanum Gothic', 'General Sans', sans-serif;
   color: #0a0a0a;

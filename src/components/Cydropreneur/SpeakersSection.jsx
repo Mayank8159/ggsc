@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaLinkedin } from "react-icons/fa";
 
 const SpeakersSection = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -9,15 +10,36 @@ const SpeakersSection = () => {
     window.addEventListener("resize", handleResize, { passive: true });
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   const topRowSpeakers = [
-    { name: "Narendra Nath Chatterjee", img: "/img/narendra.png" },
-    { name: "Shantanu Mukhopadhyay", img: "/img/shantanu.png" },
-    { name: "Suman Mondal", img: "/img/suman front.png" },
+    { 
+      name: "Narendra Nath Chatterjee", 
+      img: "/img/narendra.png",
+      linkedin: "https://www.linkedin.com/in/narendra-nath-chatterjee-8a7651133/" 
+    },
+    { 
+      name: "Shantanu Mukhopadhyay", 
+      img: "/img/shantanu.png",
+      linkedin: "https://www.linkedin.com/in/shantanu-mukhopadhyay-b9403b2b" 
+    },
+    { 
+      name: "Sayantan Samanta", 
+      img: "/img/sayantan.png",
+      linkedin: "https://www.linkedin.com/in/sayantan-samanta-8344ba19b/" 
+    },
   ];
 
   const bottomRowSpeakers = [
-    { name: "Sayantan Samanta", img: "/img/sayantan.png" },
-    { name: "Nilanjan Joarder", img: "/img/nilanjan.png" },
+    { 
+      name: "Suman Mondal", 
+      img: "/img/suman front.png",
+      linkedin: "https://www.linkedin.com/in/suman-mondal03/" 
+    },
+    { 
+      name: "Nilanjan Joarder", 
+      img: "/img/nilanjan.png",
+      linkedin: "https://www.linkedin.com/in/nilanjan-joarder/" 
+    },
   ];
 
   const renderSpeaker = (speaker, index) => (
@@ -28,6 +50,7 @@ const SpeakersSection = () => {
         maxWidth: isMobile ? "200px" : "100%",
         borderRadius: isMobile ? "16px" : "24px",
         overflow: "hidden",
+        position: "relative",
         transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
         cursor: "pointer",
       }}
@@ -42,6 +65,35 @@ const SpeakersSection = () => {
           display: "block",
         }}
       />
+
+      {/* LinkedIn Logo Button in Bottom Left Corner */}
+      {speaker.linkedin && (
+        <a
+          href={speaker.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            position: "absolute",
+            bottom: isMobile ? "6px" : "12px",
+            left: isMobile ? "6px" : "12px",
+            width: isMobile ? "26px" : "34px",
+            height: isMobile ? "26px" : "34px",
+            borderRadius: "50%",
+            background: "#0077b5",
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 4px 12px rgba(0, 119, 181, 0.6)",
+            zIndex: 10,
+            textDecoration: "none",
+            transition: "all 0.2s ease",
+          }}
+          className="hover:scale-115 hover:brightness-125"
+        >
+          <FaLinkedin size={isMobile ? 14 : 18} />
+        </a>
+      )}
     </div>
   );
 
