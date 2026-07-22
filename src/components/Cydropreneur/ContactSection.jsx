@@ -147,7 +147,7 @@ const ContactSection = () => {
       <div
         style={{
           position: "absolute",
-          top: isMobile ? "-10px" : "10px",
+          top: isMobile ? "-30px" : "-10px",
           left: "-10vw",
           width: "120vw",
           height: "220px",
@@ -184,7 +184,7 @@ const ContactSection = () => {
         <div
           style={{
             position: "absolute",
-            top: isMobile ? "35px" : "70px",
+            top: isMobile ? "-25px" : "10px",
             left: "-10%",
             width: "120%",
             height: "46px",
@@ -213,7 +213,7 @@ const ContactSection = () => {
         <div
           style={{
             position: "absolute",
-            top: isMobile ? "35px" : "70px",
+            top: isMobile ? "5px" : "40px",
             left: "-10%",
             width: "120%",
             height: "46px",
@@ -248,22 +248,7 @@ const ContactSection = () => {
           zIndex: 2,
         }}
       >
-        {/* Section Header */}
-        <div style={{ textAlign: "center", marginTop: isMobile ? "120px" : "80px", marginBottom: "36px" }}>
-          <h2
-            style={{
-              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
-              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
-              fontWeight: 900,
-              color: "#ffffff",
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              textShadow: "0 0 25px rgba(168, 85, 247, 0.4)",
-            }}
-          >
-            CONTACT
-          </h2>
-        </div>
+        {/* Main Section Header Removed */}
 
         {/* Citadel-Style Open 4-Column Footer/Contact Layout */}
         <div style={{
@@ -281,18 +266,9 @@ const ContactSection = () => {
             marginBottom: "40px",
           }}>
             {/* Column 1: Branding & Organized By */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0px", marginTop: "-40px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <img src="/img/GGSC.png" alt="CYDROPRENEUR Logo" style={{ height: "36px", objectFit: "contain" }} />
-                <span style={{
-                  fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
-                  fontSize: "1.1rem",
-                  fontWeight: 900,
-                  color: "#ffffff",
-                  letterSpacing: "0.1em",
-                }}>
-                  CYDROPRENEUR
-                </span>
+                <img src="/img/cydro-logo-footer.png" alt="CYDROPRENEUR Logo" style={{ height: "140px", objectFit: "contain" }} />
               </div>
 
               <p style={{
@@ -301,6 +277,7 @@ const ContactSection = () => {
                 color: "#ffffff",
                 lineHeight: 1.5,
                 margin: 0,
+                marginTop: "-30px",
                 fontWeight: 500,
               }}>
                 CydroPreneur is an immersive, hands-on workshop designed to introduce you to learn Android development
@@ -322,15 +299,14 @@ const ContactSection = () => {
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingLeft: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "0.75rem", fontWeight: 900, color: "#ffffff" }}>(UEM)</span>
+                    <img src="/img/iem-logo.png" alt="IEM Logo" style={{ height: "24px", objectFit: "contain" }} />
                     <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.9rem", color: "#ffffff", fontWeight: 600 }}>
-                      University of Engineering and Management, Kolkata
+                      Institute of Engineering and Management, Newtown
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "0.75rem", fontWeight: 900, color: "#ffffff" }}>(IEM)</span>
-                    <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.9rem", color: "#ffffff", fontWeight: 600 }}>
-                      Institute of Engineering and Management, Kolkata
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "34px" }}>
+                    <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.9rem", color: "#a1a1aa", fontWeight: 600 }}>
+                      UEM Kolkata
                     </span>
                   </div>
                 </div>
@@ -376,7 +352,7 @@ const ContactSection = () => {
                 <div>
                   <span style={{ color: "#ffffff" }}>Venue : </span>
                   <span style={{ color: "#ffffff", fontWeight: 700 }}>
-                    UEM Kolkata Newtown Campus
+                    Institute of Engineering and Management, Newtown
                   </span>
                 </div>
               </div>
@@ -533,7 +509,7 @@ const ContactSection = () => {
               fontWeight: 600,
               letterSpacing: "0.05em",
             }}>
-              © 2026 CYDROPRENEUR. All rights reserved.
+              © 2026 Google Gemini Student Community. All rights reserved.
             </div>
           </div>
         </div>
