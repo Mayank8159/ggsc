@@ -67,8 +67,9 @@ const HomeSection = () => {
       <div
         style={{
           position: "absolute",
-          bottom: "36px",
-          right: "36px",
+          bottom: screenSize.width < 768 ? "24px" : "36px",
+          right: screenSize.width < 768 ? "50%" : "36px",
+          transform: screenSize.width < 768 ? "translateX(50%)" : "none",
           zIndex: 10,
           pointerEvents: "auto",
         }}
@@ -79,12 +80,13 @@ const HomeSection = () => {
             fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
             display: "inline-flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: "8px",
-            padding: "12px 28px",
+            padding: screenSize.width < 768 ? "10px 20px" : "12px 28px",
             borderRadius: "999px",
             background: "linear-gradient(135deg, #7e22ce 0%, #a855f7 50%, #c084fc 100%)",
             color: "#ffffff",
-            fontSize: "12px",
+            fontSize: screenSize.width < 768 ? "10px" : "12px",
             fontWeight: 800,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
@@ -93,10 +95,11 @@ const HomeSection = () => {
             boxShadow:
               "0 6px 24px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4)",
             transition: "all 0.3s ease",
+            whiteSpace: "nowrap",
           }}
           className="hover:scale-105 hover:shadow-purple-500/90"
         >
-          REGISTER NOW <FiArrowRight size={15} />
+          REGISTER NOW <FiArrowRight size={screenSize.width < 768 ? 13 : 15} />
         </button>
       </div>
     </section>

@@ -5,6 +5,7 @@ import { NavBar } from "../ui/tubelight-navbar";
 
 const CydropreneurNav = () => {
   const [activeTab, setActiveTab] = useState("HOME");
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
   const navItems = [
@@ -31,8 +32,18 @@ const CydropreneurNav = () => {
       }
     };
 
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const handleSelect = (item) => {
@@ -51,7 +62,7 @@ const CydropreneurNav = () => {
         style={{
           position: "fixed",
           top: "24px",
-          left: "32px",
+          left: isMobile ? "16px" : "32px",
           zIndex: 100,
         }}
       >
@@ -62,7 +73,7 @@ const CydropreneurNav = () => {
             display: "inline-flex",
             alignItems: "center",
             gap: "8px",
-            padding: "10px 18px",
+            padding: isMobile ? "10px" : "10px 18px",
             borderRadius: "999px",
             background: "rgba(18, 10, 36, 0.75)",
             backdropFilter: "blur(20px)",
@@ -79,7 +90,8 @@ const CydropreneurNav = () => {
           }}
           className="hover:border-purple-400 hover:text-white hover:scale-105"
         >
-          <ArrowLeft size={14} /> Back to Events
+          <ArrowLeft size={14} /> 
+          {!isMobile && <span>Back to Events</span>}
         </button>
       </div>
 

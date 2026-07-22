@@ -74,7 +74,7 @@ const WhyToAttendSection = () => {
       }}
     >
       {/* Top-Left Galaxy Decoration */}
-      <div style={{ position: "absolute", top: "5%", left: "-5%", width: "50vw", height: "50vw", maxWidth: "600px", maxHeight: "600px", zIndex: 1, opacity: 0.8, transform: "rotate(15deg)", pointerEvents: "none" }}>
+      <div style={{ position: "absolute", top: "5%", left: "-5%", width: isMobile ? "80vw" : "50vw", height: isMobile ? "80vw" : "50vw", maxWidth: "600px", maxHeight: "600px", zIndex: 1, opacity: 0.8, transform: "rotate(15deg)", pointerEvents: "none" }}>
         <img src="/img/galaxy.jpeg" alt="Galaxy Decoration" style={{ width: "100%", height: "100%", objectFit: "cover", maskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", WebkitMaskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", mixBlendMode: "screen" }} />
       </div>
 
@@ -127,13 +127,14 @@ const WhyToAttendSection = () => {
           }}
         >
           {/* Left Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "24px" : "0" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "12px" : "0", width: "100%" }}>
             {questionsLeft.map((q, idx) => (
               <div
                 key={idx}
                 className="speech-bubble-card"
                 style={{
                   position: "relative",
+                  flex: 1,
                   width: "100%",
                   maxWidth: "340px",
                   margin: "0 auto",
@@ -141,12 +142,12 @@ const WhyToAttendSection = () => {
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
                   border: "1px solid rgba(192, 132, 252, 0.4)",
-                  borderRadius: "24px 24px 4px 24px",
-                  padding: "28px 24px",
+                  borderRadius: "24px",
+                  padding: isMobile ? "16px 12px" : "28px 24px",
                   boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
                   color: "#ffffff",
                   fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                  fontSize: isMobile ? "16px" : "19px",
+                  fontSize: isMobile ? "13px" : "19px",
                   fontWeight: 800,
                   lineHeight: 1.3,
                   textAlign: "center",
@@ -173,13 +174,14 @@ const WhyToAttendSection = () => {
           </div>
 
           {/* Right Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "24px" : "0" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "12px" : "0", width: "100%" }}>
             {questionsRight.map((q, idx) => (
               <div
                 key={idx}
                 className="speech-bubble-card"
                 style={{
                   position: "relative",
+                  flex: 1,
                   width: "100%",
                   maxWidth: "340px",
                   margin: "0 auto",
@@ -187,12 +189,12 @@ const WhyToAttendSection = () => {
                   backdropFilter: "blur(16px)",
                   WebkitBackdropFilter: "blur(16px)",
                   border: "1px solid rgba(56, 189, 248, 0.4)",
-                  borderRadius: "24px 24px 24px 4px",
-                  padding: "28px 24px",
+                  borderRadius: "24px",
+                  padding: isMobile ? "16px 12px" : "28px 24px",
                   boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
                   color: "#ffffff",
                   fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                  fontSize: isMobile ? "16px" : "19px",
+                  fontSize: isMobile ? "13px" : "19px",
                   fontWeight: 800,
                   lineHeight: 1.3,
                   textAlign: "center",

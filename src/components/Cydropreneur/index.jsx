@@ -11,7 +11,13 @@ import { FaArrowUp } from "react-icons/fa";
 
 const Cydropreneur = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+    
     window.scrollTo(0, 0);
 
     const handleScroll = () => {
@@ -21,8 +27,12 @@ const Cydropreneur = () => {
         setShowScrollTop(false);
       }
     };
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -44,6 +54,23 @@ const Cydropreneur = () => {
         position: "relative",
       }}
     >
+      {/* Premium Black Frame (All Devices) */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          border: isMobile ? "8px solid #000000" : "14px solid #000000",
+          borderRadius: isMobile ? "24px" : "40px",
+          boxShadow: "0 0 0 40px #000000",
+          boxSizing: "border-box",
+          pointerEvents: "none",
+          zIndex: 99999,
+        }}
+      />
+
       <ShaderBackground />
       <CydropreneurNav />
       <HomeSection />

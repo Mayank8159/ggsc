@@ -1,4 +1,14 @@
+import React, { useState, useEffect } from "react";
+
 const SpeakersSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const topRowSpeakers = [
     { name: "Narendra Nath Chatterjee", img: "/img/narendra.png" },
     { name: "Shantanu Mukhopadhyay", img: "/img/shantanu.png" },
@@ -9,6 +19,31 @@ const SpeakersSection = () => {
     { name: "Sayantan Samanta", img: "/img/sayantan.png" },
     { name: "Nilanjan Joarder", img: "/img/nilanjan.png" },
   ];
+
+  const renderSpeaker = (speaker, index) => (
+    <div
+      key={index}
+      style={{
+        width: isMobile ? "calc(50% - 8px)" : "280px",
+        maxWidth: isMobile ? "200px" : "100%",
+        borderRadius: isMobile ? "16px" : "24px",
+        overflow: "hidden",
+        transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
+        cursor: "pointer",
+      }}
+      className="hover:scale-105 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
+    >
+      <img
+        src={speaker.img}
+        alt={speaker.name}
+        style={{
+          width: "100%",
+          height: "auto",
+          display: "block",
+        }}
+      />
+    </div>
+  );
 
   return (
     <section
@@ -66,87 +101,28 @@ const SpeakersSection = () => {
         </div>
 
         {/* Speakers Grid Container */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "80px",
-            width: "100%",
-            alignItems: "center",
-          }}
-        >
-          {/* Top Row: 3 Speakers */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "64px",
-              width: "100%",
-            }}
-          >
-            {topRowSpeakers.map((speaker, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "280px",
-                  maxWidth: "100%",
-                  borderRadius: "24px",
-                  overflow: "hidden",
-                  transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
-                  cursor: "pointer",
-                }}
-                className="hover:scale-105 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
-              >
-                <img
-                  src={speaker.img}
-                  alt={speaker.name}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                  }}
-                />
-              </div>
-            ))}
+        {isMobile ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center", width: "100%" }}>
+              {[topRowSpeakers[0], topRowSpeakers[1]].map((s, i) => renderSpeaker(s, i))}
+            </div>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center", width: "100%" }}>
+              {[topRowSpeakers[2]].map((s, i) => renderSpeaker(s, i + 2))}
+            </div>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center", width: "100%" }}>
+              {[bottomRowSpeakers[0], bottomRowSpeakers[1]].map((s, i) => renderSpeaker(s, i + 3))}
+            </div>
           </div>
-
-          {/* Bottom Row: 2 Speakers */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: "64px",
-              width: "100%",
-            }}
-          >
-            {bottomRowSpeakers.map((speaker, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "280px",
-                  maxWidth: "100%",
-                  borderRadius: "24px",
-                  overflow: "hidden",
-                  transition: "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease",
-                  cursor: "pointer",
-                }}
-                className="hover:scale-105 hover:shadow-[0_0_40px_rgba(168,85,247,0.5)]"
-              >
-                <img
-                  src={speaker.img}
-                  alt={speaker.name}
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                  }}
-                />
-              </div>
-            ))}
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "80px", width: "100%", alignItems: "center" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "64px", width: "100%" }}>
+              {topRowSpeakers.map((s, i) => renderSpeaker(s, i))}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "64px", width: "100%" }}>
+              {bottomRowSpeakers.map((s, i) => renderSpeaker(s, i + 3))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

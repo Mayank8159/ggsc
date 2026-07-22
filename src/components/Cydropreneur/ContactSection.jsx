@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGlobe, FaWhatsapp, FaFacebook, FaInstagram, FaLinkedin, FaPhone, FaEnvelope } from "react-icons/fa";
 
 const GoogleText = () => {
@@ -59,13 +59,22 @@ const CyberLink = ({ href, icon, text }) => {
   );
 };
 const ContactSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <section
       id="contact-us"
       style={{
         width: "100%",
         minHeight: "85vh",
-        padding: "120px 24px",
+        padding: isMobile ? "80px 16px" : "120px 24px",
         background: "transparent",
         position: "relative",
         overflow: "hidden",
@@ -133,7 +142,6 @@ const ContactSection = () => {
           <div className="ticker-inner-left" style={{ color: "#000000", fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap", display: "flex" }}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <span key={i} style={{ paddingRight: "60px", flexShrink: 0, display: "flex", alignItems: "center", gap: "16px" }}>
-                <span>CREATE - LEAD - INSPIRE - BUILD - CYDROPRENEUR -</span>
                 <img src="/img/GGSC.png" alt="GGSC" style={{ height: "24px", objectFit: "contain" }} />
                 <GoogleText />
                 <span>-</span>
@@ -166,9 +174,6 @@ const ContactSection = () => {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <span key={i} style={{ paddingRight: "60px", flexShrink: 0, color: "#d8b4fe", display: "flex", alignItems: "center", gap: "16px" }}>
                 <span>THANKS FOR VISITING - SEE YOU AT CYDROPRENEUR -</span>
-                <img src="/img/GGSC.png" alt="GGSC" style={{ height: "24px", objectFit: "contain" }} />
-                <GoogleText />
-                <span>-</span>
               </span>
             ))}
           </div>
@@ -204,11 +209,11 @@ const ContactSection = () => {
         {/* Content Layout: Left Grid, Center Image, Right Grid */}
         <div style={{
           display: "flex",
-          flexDirection: "row",
+          flexDirection: isMobile ? "column" : "row",
           flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "center",
-          gap: "40px",
+          gap: isMobile ? "48px" : "40px",
           width: "100%",
           marginBottom: "60px",
         }}>

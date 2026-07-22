@@ -1,6 +1,17 @@
+import React, { useState, useEffect } from "react";
 import { MapPin, Clock, Calendar } from "lucide-react";
 
 const AboutSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   return (
     <section
       id="about"
@@ -51,17 +62,38 @@ const AboutSection = () => {
           flexWrap: "wrap",
         }}
       >
-        {/* Left Column: Character Image (fits without cropping or distortion) */}
+        {isMobile && (
+          <h2
+            style={{
+              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+              fontSize: "clamp(2.5rem, 8vw, 4rem)",
+              fontWeight: 900,
+              color: "#d946ef",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              textAlign: "center",
+              width: "100%",
+              marginTop: "40px",
+              marginBottom: "10px",
+              textShadow: "0 0 20px rgba(217, 70, 239, 0.3)",
+            }}
+          >
+            ABOUT
+          </h2>
+        )}
+
+        {/* Left Column: Character Image */}
         <div
           style={{
-            flex: "1.15 1 520px",
+            flex: isMobile ? "1 1 100%" : "1.15 1 520px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
-            minHeight: "580px",
+            minHeight: isMobile ? "300px" : "580px",
             boxSizing: "border-box",
             overflow: "hidden",
+            order: isMobile ? 2 : 1, // Ensure image is second on mobile
           }}
         >
           <img
@@ -71,7 +103,7 @@ const AboutSection = () => {
               width: "100%",
               height: "auto",
               maxHeight: "690px",
-              objectFit: "contain", // Preserves original aspect ratio without cropping
+              objectFit: "contain",
               display: "block",
             }}
           />
@@ -80,28 +112,32 @@ const AboutSection = () => {
         {/* Right Column: Title, Description, and Info Pills */}
         <div
           style={{
-            flex: "1.2 1 500px",
-            padding: "clamp(30px, 4.5vw, 60px) clamp(30px, 4.5vw, 60px) 20px clamp(30px, 4.5vw, 60px)",
+            flex: isMobile ? "1 1 100%" : "1.2 1 500px",
+            padding: isMobile ? "20px" : "clamp(30px, 4.5vw, 60px) clamp(30px, 4.5vw, 60px) 20px clamp(30px, 4.5vw, 60px)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             boxSizing: "border-box",
+            textAlign: isMobile ? "center" : "left",
+            order: isMobile ? 3 : 2, // Ensure text is third on mobile
           }}
         >
-          <h2
-            style={{
-              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
-              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
-              fontWeight: 900,
-              color: "#d946ef", // Vibrant magenta/purple matching reference photo
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: "28px",
-              textShadow: "0 0 20px rgba(217, 70, 239, 0.3)",
-            }}
-          >
-            ABOUT
-          </h2>
+          {!isMobile && (
+            <h2
+              style={{
+                fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+                fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
+                fontWeight: 900,
+                color: "#d946ef",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                marginBottom: "28px",
+                textShadow: "0 0 20px rgba(217, 70, 239, 0.3)",
+              }}
+            >
+              ABOUT
+            </h2>
+          )}
 
           <div
             style={{
@@ -114,7 +150,7 @@ const AboutSection = () => {
               display: "flex",
               flexDirection: "column",
               gap: "20px",
-              marginBottom: "28px",
+              marginBottom: "32px",
             }}
           >
             <p style={{ margin: 0 }}>
@@ -151,7 +187,7 @@ const AboutSection = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "10px",
-                  padding: "12px 24px",
+                  padding: isMobile ? "12px 16px" : "12px 24px",
                   borderRadius: "999px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
@@ -159,16 +195,17 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "12px",
+                  fontSize: isMobile ? "10px" : "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                   width: "100%",
                   boxSizing: "border-box",
+                  textAlign: "center",
                 }}
               >
-                <MapPin size={15} style={{ color: "#d8b4fe" }} />
+                <MapPin size={15} style={{ color: "#d8b4fe", flexShrink: 0 }} />
                 <span>IEM NEW TOWN, UEM KOLKATA</span>
               </div>
             </div>
@@ -177,6 +214,7 @@ const AboutSection = () => {
             <div
               style={{
                 display: "flex",
+                flexDirection: "row", // Keep side-by-side on mobile
                 gap: "12px",
                 justifyContent: "space-between",
                 width: "100%",
@@ -188,7 +226,7 @@ const AboutSection = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "10px",
-                  padding: "12px 24px",
+                  padding: isMobile ? "12px 16px" : "12px 24px",
                   borderRadius: "999px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
@@ -196,16 +234,17 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "12px",
+                  fontSize: isMobile ? "10px" : "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                   flex: 1,
                   boxSizing: "border-box",
+                  textAlign: "center",
                 }}
               >
-                <Clock size={15} style={{ color: "#d8b4fe" }} />
+                <Clock size={15} style={{ color: "#d8b4fe", flexShrink: 0 }} />
                 <span>10:00 AM</span>
               </div>
 
@@ -215,7 +254,7 @@ const AboutSection = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "10px",
-                  padding: "12px 24px",
+                  padding: isMobile ? "12px 16px" : "12px 24px",
                   borderRadius: "999px",
                   background: "rgba(147, 51, 234, 0.35)",
                   backdropFilter: "blur(12px)",
@@ -223,21 +262,22 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "12px",
+                  fontSize: isMobile ? "10px" : "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                   flex: 1,
                   boxSizing: "border-box",
+                  textAlign: "center",
                 }}
               >
-                <Calendar size={15} style={{ color: "#d8b4fe" }} />
+                <Calendar size={15} style={{ color: "#d8b4fe", flexShrink: 0 }} />
                 <span>8th August</span>
               </div>
             </div>
 
-            {/* Organized-by Badge Container (Moved here for alignment) */}
+            {/* Organized-by Badge Container */}
             <div
               style={{
                 width: "100%",
@@ -246,7 +286,7 @@ const AboutSection = () => {
                 WebkitBackdropFilter: "blur(12px)",
                 border: "1px solid rgba(192, 132, 252, 0.2)",
                 borderRadius: "20px",
-                padding: "20px 24px",
+                padding: isMobile ? "16px 20px" : "20px 24px",
                 boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
                 color: "#ffffff",
                 fontFamily: "'Rajdhani', sans-serif",
