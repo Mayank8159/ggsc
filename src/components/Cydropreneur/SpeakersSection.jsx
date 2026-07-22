@@ -40,8 +40,8 @@ const SpeakersSection = () => {
         <div style={{ textAlign: "center", marginBottom: "50px" }}>
           <h2
             style={{
-              fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
-              fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
               fontWeight: 900,
               color: "#ffffff",
               textTransform: "uppercase",

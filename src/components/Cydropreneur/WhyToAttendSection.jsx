@@ -98,13 +98,13 @@ const WhyToAttendSection = () => {
         <div style={{ textAlign: "center", marginBottom: isMobile ? "30px" : "50px" }}>
           <h2
             style={{
-              fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
-              fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
+              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+              fontSize: "clamp(1.6rem, 3.8vw, 3.2rem)",
               fontWeight: 900,
               color: "#ffffff",
               textTransform: "uppercase",
               letterSpacing: "0.04em",
-              lineHeight: 1.15,
+              lineHeight: 1.25,
               textShadow: "0 0 25px rgba(168, 85, 247, 0.4)",
             }}
           >

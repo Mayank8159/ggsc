@@ -57,7 +57,7 @@ export function NavBar({ items, activeTab, onSelect, className }) {
                 isActive && "text-white font-extrabold"
               )}
             >
-              <span className="hidden md:inline">{item.name}</span>
+              <span className="hidden md:inline" style={{ fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "10px" }}>{item.name}</span>
               <span className="md:hidden">
                 {Icon && <Icon size={18} strokeWidth={2.5} />}
               </span>

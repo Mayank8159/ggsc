@@ -73,7 +73,7 @@ const ContactSection = () => {
             overflow: "hidden",
           }}
         >
-          <div className="ticker-inner-left" style={{ color: "#000000", fontFamily: "'Orbitron', 'Chakra Petch', sans-serif", fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap", display: "flex" }}>
+          <div className="ticker-inner-left" style={{ color: "#000000", fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap", display: "flex" }}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <span key={i} style={{ paddingRight: "60px", flexShrink: 0 }}>
                 CREATE - LEAD - INSPIRE - BUILD - CYDROPRENEUR -
@@ -102,7 +102,7 @@ const ContactSection = () => {
             overflow: "hidden",
           }}
         >
-          <div className="ticker-inner-right" style={{ color: "#ffffff", fontFamily: "'Orbitron', 'Chakra Petch', sans-serif", fontSize: "14px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap", display: "flex" }}>
+          <div className="ticker-inner-right" style={{ color: "#ffffff", fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.15em", whiteSpace: "nowrap", display: "flex" }}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <span key={i} style={{ paddingRight: "60px", flexShrink: 0, color: "#d8b4fe" }}>
                 THANKS FOR VISITING - SEE YOU AT CYDROPRENEUR -
@@ -125,8 +125,8 @@ const ContactSection = () => {
         <div style={{ textAlign: "center", marginTop: "80px", marginBottom: "30px" }}>
           <h2
             style={{
-              fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
-              fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
               fontWeight: 900,
               color: "#ffffff",
               textTransform: "uppercase",

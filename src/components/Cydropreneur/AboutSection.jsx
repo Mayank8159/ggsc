@@ -91,8 +91,8 @@ const AboutSection = () => {
         >
           <h2
             style={{
-              fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
-              fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+              fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
               fontWeight: 900,
               color: "#d946ef", // Vibrant magenta/purple matching reference photo
               textTransform: "uppercase",
@@ -159,11 +159,11 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "13px",
+                  fontSize: "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
-                  fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
+                  fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                 }}
               >
                 <MapPin size={15} style={{ color: "#d8b4fe" }} />
@@ -194,11 +194,11 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "13px",
+                  fontSize: "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
-                  fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
+                  fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                 }}
               >
                 <Clock size={15} style={{ color: "#d8b4fe" }} />
@@ -218,11 +218,11 @@ const AboutSection = () => {
                   border: "1px solid rgba(192, 132, 252, 0.3)",
                   boxShadow: "0 4px 20px rgba(147, 51, 234, 0.15)",
                   color: "#ffffff",
-                  fontSize: "13px",
+                  fontSize: "12px",
                   fontWeight: 800,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
-                  fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
+                  fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
                 }}
               >
                 <Calendar size={15} style={{ color: "#d8b4fe" }} />

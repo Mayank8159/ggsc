@@ -58,7 +58,7 @@ const CydropreneurNav = () => {
         <button
           onClick={() => navigate("/events")}
           style={{
-            fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
+            fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
             display: "inline-flex",
             alignItems: "center",
             gap: "8px",

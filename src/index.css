@@ -52,6 +52,7 @@ body {
 }
 
 @layer base {
+  @font-face { font-family: "Ethnocentric"; src: url("/fonts/Ethnocentric-Regular.otf") format("opentype"); font-display: swap; }
   @font-face { font-family: "circular-web"; src: url("/fonts/circularweb-book.woff2") format("woff2"); font-display: swap; }
   @font-face { font-family: "zentry"; src: url("/fonts/zentry-regular.woff2") format("woff2"); font-display: swap; }
   @font-face { font-family: "general"; src: url("/fonts/general.woff2") format("woff2"); font-display: swap; }
@@ -60,6 +61,7 @@ body {
 }
 
 @layer utilities {
+  .font-ethnocentric { font-family: 'Ethnocentric', sans-serif; }
   .font-nanum { font-family: 'Nanum Gothic', sans-serif; }
   .font-bungee { font-family: 'Bungee', sans-serif; }
   .font-zentry { font-family: 'zentry', sans-serif; }

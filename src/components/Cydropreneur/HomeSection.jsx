@@ -77,7 +77,7 @@ const HomeSection = () => {
         <button
           onClick={scrollToRegister}
           style={{
-            fontFamily: "'Orbitron', 'Chakra Petch', sans-serif",
+            fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
             display: "inline-flex",
             alignItems: "center",
             gap: "8px",
