@@ -23,17 +23,17 @@ const SpeakersSection = () => {
       linkedin: "https://www.linkedin.com/in/shantanu-mukhopadhyay-b9403b2b" 
     },
     { 
-      name: "Sayantan Samanta", 
-      img: "/img/sayantan.png",
-      linkedin: "https://www.linkedin.com/in/sayantan-samanta-8344ba19b/" 
+      name: "Suman Mondal", 
+      img: "/img/suman front.png",
+      linkedin: "https://www.linkedin.com/in/suman-mondal03/" 
     },
   ];
 
   const bottomRowSpeakers = [
     { 
-      name: "Suman Mondal", 
-      img: "/img/suman front.png",
-      linkedin: "https://www.linkedin.com/in/suman-mondal03/" 
+      name: "Sayantan Samanta", 
+      img: "/img/sayantan.png",
+      linkedin: "https://www.linkedin.com/in/sayantan-samanta-8344ba19b/" 
     },
     { 
       name: "Nilanjan Joarder", 
