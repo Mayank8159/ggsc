@@ -33,18 +33,18 @@ const ClassySocialRow = ({ href, icon, platform, handle }) => {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "14px 18px",
-        background: hover 
-          ? "linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, rgba(30, 15, 60, 0.4) 100%)" 
+        background: hover
+          ? "linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, rgba(30, 15, 60, 0.4) 100%)"
           : "rgba(255, 255, 255, 0.03)",
-        border: hover 
-          ? "1px solid rgba(192, 132, 252, 0.45)" 
+        border: hover
+          ? "1px solid rgba(192, 132, 252, 0.45)"
           : "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "16px",
         textDecoration: "none",
         transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         transform: hover ? "translateX(4px)" : "none",
-        boxShadow: hover 
-          ? "0 8px 24px rgba(168, 85, 247, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15)" 
+        boxShadow: hover
+          ? "0 8px 24px rgba(168, 85, 247, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
           : "none",
       }}
     >
@@ -294,7 +294,7 @@ const ContactSection = () => {
                   CYDROPRENEUR
                 </span>
               </div>
-              
+
               <p style={{
                 fontFamily: "'Rajdhani', sans-serif",
                 fontSize: "0.95rem",
@@ -438,12 +438,12 @@ const ContactSection = () => {
               </h3>
 
               {/* Social Icons Row */}
-              <div style={{ display: "flex", gap: "12px" }}>
+              <div style={{ display: "flex", gap: "24px" }}>
                 {[
-                  { icon: <FaWhatsapp size={18} />, href: "https://chat.whatsapp.com/ImdIqwRXTdcHxy0LirVSQQ" },
-                  { icon: <FaInstagram size={18} />, href: "https://www.instagram.com/ggsc_uemk" },
-                  { icon: <FaLinkedin size={18} />, href: "https://www.linkedin.com/in/ggsc-uemk" },
-                  { icon: <FaFacebook size={18} />, href: "https://www.facebook.com/share/1Cd7Y97m99/" },
+                  { icon: <FaWhatsapp size={26} />, href: "https://chat.whatsapp.com/ImdIqwRXTdcHxy0LirVSQQ" },
+                  { icon: <FaInstagram size={26} />, href: "https://www.instagram.com/ggsc_uemk" },
+                  { icon: <FaLinkedin size={26} />, href: "https://www.linkedin.com/in/ggsc-uemk" },
+                  { icon: <FaFacebook size={26} />, href: "https://www.facebook.com/share/1Cd7Y97m99/" },
                 ].map((s, idx) => (
                   <a
                     key={idx}
@@ -452,8 +452,8 @@ const ContactSection = () => {
                     rel="noopener noreferrer"
                     className="interactive"
                     style={{
-                      width: "40px",
-                      height: "40px",
+                      width: "56px",
+                      height: "56px",
                       borderRadius: "12px",
                       background: "rgba(255, 255, 255, 0.08)",
                       border: "1px solid rgba(255, 255, 255, 0.2)",

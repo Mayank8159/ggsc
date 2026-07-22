@@ -38,23 +38,13 @@ const UPCOMING_EVENTS = [
   {
     id: 100,
     title: "Cydropreneur",
-    date: "July 09, 2026",
-    venue: "Main Tech Auditorium",
-    desc: "Build AI-powered Android applications with Google AI Studio in an immersive, hands-on workshop",
+    date: "08th August 2026",
+    venue: "FICCI Auditorium",
+    desc: "Build Android applications in an immersive, hands-on workshop",
     img: "/img/static.png",
     tag: "AI & Android",
     color: T.purple,
     route: "/events/Cydropreneur",
-  },
-  {
-    id: 2,
-    title: "Gemini API Workshop",
-    date: "June 15, 2026",
-    venue: "Seminar Hall",
-    desc: "Hands-on workshop exploring multimodal AI systems, prompting, and integrations.",
-    img: "/img/gemini.jpeg",
-    tag: "Workshop",
-    color: T.purple,
   },
 ];
 
@@ -833,6 +823,7 @@ const Events = () => {
                     title="Register Now"
                     leftIcon={<TiLocationArrow />}
                     containerClass=""
+                    onClick={() => window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank")}
                   />
                 </div>
               </div>

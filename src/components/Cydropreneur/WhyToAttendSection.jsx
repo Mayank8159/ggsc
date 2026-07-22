@@ -17,7 +17,7 @@ const WhyToAttendSection = () => {
   const questionsLeft = [
     {
       question: "Is this just another workshop?",
-      answer: "No! It's a high-energy hybrid workshop & venture accelerator combining Google AI Studio, Android dev, and startup pitching.",
+      answer: "No! It's a high-energy hybrid workshop & venture accelerator combining Android dev and startup pitching.",
     },
     {
       question: "Will this help me beyond exams?",
@@ -28,7 +28,7 @@ const WhyToAttendSection = () => {
   const questionsRight = [
     {
       question: "What do I gain from participating?",
-      answer: "Hands-on AI skills, direct guidance from tech founders, cool developer swags, goodies, and complimentary lunch!",
+      answer: "Hands-on tech skills, direct guidance from tech founders, certificates and quiz winning prizes, and complimentary lunch!",
     },
     {
       question: "Is it worth my time?",
@@ -39,19 +39,19 @@ const WhyToAttendSection = () => {
   const perksFaq = [
     {
       question: "What hands-on technical skills will I gain during the event?",
-      answer: "You will master Android mobile app development fundamentals integrated with Google AI Studio and Gemini API. Build production-ready intelligent mobile applications from scratch under expert guidance.",
+      answer: "You will master Android mobile app development fundamentals. Build production-ready intelligent mobile applications from scratch under expert guidance.",
     },
     {
       question: "How does Cydropreneur help me launch my app as a startup?",
       answer: "Learn the complete founder journey from initial idea validation to building an MVP and delivering a high-impact demo pitch to industry investors and venture mentors.",
     },
     {
-      question: "What rewards, swags, and academic credits can participants earn?",
-      answer: "Earn exclusive developer swags, cool goodies, and receive an official Certificate of Participation recognized for university MAR Points.",
+      question: "What rewards, certificates, and academic credits can participants earn?",
+      answer: "Receive an official Certificate of Participation recognized for university MAR Points, win exciting quiz winning prizes, and build portfolio projects.",
     },
     {
       question: "Who will be guiding and reviewing participant projects?",
-      answer: "Get direct 1-on-1 mentorship from successful tech founders, Google Developer Group leaders, and senior software engineers for real-time code feedback and career networking.",
+      answer: "Get direct 1-on-1 mentorship from successful tech founders and senior software engineers for real-time code feedback and career networking.",
     },
     {
       question: "Are food, beverages, and event hospitality included?",
@@ -100,7 +100,7 @@ const WhyToAttendSection = () => {
 
       <div
         style={{
-          maxWidth: "1280px",
+          maxWidth: "1360px",
           width: "100%",
           margin: "0 auto",
           position: "relative",
@@ -121,7 +121,7 @@ const WhyToAttendSection = () => {
               textShadow: "0 0 25px rgba(168, 85, 247, 0.4)",
             }}
           >
-            WHY YOU CAN'T MISS CYDROPRENEUR!
+            WHY YOU SHOULDN'T MISS CYDROPRENEUR!
           </h2>
         </div>
 
