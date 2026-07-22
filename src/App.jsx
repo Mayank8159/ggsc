@@ -19,6 +19,7 @@ import Footer from "./components/Footer";
 import DiscussionBoard from "./components/DiscussionBoard";
 import NotFound from "./components/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import Cydropreneur from "./components/Cydropreneur";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -248,19 +249,19 @@ const GoogleGradientBG = () => {
         width: "60vw", height: "60vw", opacity: 0.04,
         pointerEvents: "none",
       }} viewBox="0 0 500 500" fill="none">
-        <circle cx="250" cy="250" r="240" stroke="#4285F4" strokeWidth="1.5"/>
-        <circle cx="250" cy="250" r="180" stroke="#EA4335" strokeWidth="1" strokeDasharray="10 8"/>
-        <circle cx="250" cy="250" r="120" stroke="#FBBC05" strokeWidth="0.8"/>
-        <circle cx="250" cy="250" r="60" stroke="#34A853" strokeWidth="0.6" strokeDasharray="4 6"/>
+        <circle cx="250" cy="250" r="240" stroke="#4285F4" strokeWidth="1.5" />
+        <circle cx="250" cy="250" r="180" stroke="#EA4335" strokeWidth="1" strokeDasharray="10 8" />
+        <circle cx="250" cy="250" r="120" stroke="#FBBC05" strokeWidth="0.8" />
+        <circle cx="250" cy="250" r="60" stroke="#34A853" strokeWidth="0.6" strokeDasharray="4 6" />
       </svg>
       <svg style={{
         position: "absolute", bottom: "-5%", left: "-5%",
         width: "40vw", height: "40vw", opacity: 0.035,
         pointerEvents: "none",
       }} viewBox="0 0 300 300" fill="none">
-        <circle cx="150" cy="150" r="140" stroke="#EA4335" strokeWidth="1.2"/>
-        <circle cx="150" cy="150" r="95" stroke="#34A853" strokeWidth="0.8" strokeDasharray="6 5"/>
-        <circle cx="150" cy="150" r="50" stroke="#FBBC05" strokeWidth="0.6"/>
+        <circle cx="150" cy="150" r="140" stroke="#EA4335" strokeWidth="1.2" />
+        <circle cx="150" cy="150" r="95" stroke="#34A853" strokeWidth="0.8" strokeDasharray="6 5" />
+        <circle cx="150" cy="150" r="50" stroke="#FBBC05" strokeWidth="0.6" />
       </svg>
       <div className="noise-overlay" />
     </div>
@@ -272,6 +273,8 @@ const BGMButton = () => {
   const [playing, setPlaying] = useState(false);
   const [visible, setVisible] = useState(false);
   const audioRef = useRef(null);
+  const location = useLocation();
+  const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
 
   useEffect(() => {
     audioRef.current = new Audio("/audio/loop.mp3");
@@ -283,13 +286,45 @@ const BGMButton = () => {
     };
   }, []);
 
-  const toggle = () => {
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
+  useEffect(() => {
+    if (isCydropreneur) {
+      if (audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause();
+      }
+      const cydroVideo = document.querySelector("#home video");
+      if (cydroVideo) {
+        setPlaying(!cydroVideo.muted && !cydroVideo.paused);
+      } else {
+        setPlaying(false);
+      }
     } else {
-      audioRef.current.play().catch(() => {});
-      setPlaying(true);
+      setPlaying(audioRef.current && !audioRef.current.paused);
+    }
+  }, [location, isCydropreneur]);
+
+  const toggle = () => {
+    if (isCydropreneur) {
+      if (audioRef.current) audioRef.current.pause();
+
+      const cydroVideo = document.querySelector("#home video");
+      if (cydroVideo) {
+        if (cydroVideo.muted || cydroVideo.paused) {
+          cydroVideo.muted = false;
+          cydroVideo.play().catch(() => { });
+          setPlaying(true);
+        } else {
+          cydroVideo.muted = true;
+          setPlaying(false);
+        }
+      }
+    } else {
+      if (playing) {
+        audioRef.current.pause();
+        setPlaying(false);
+      } else {
+        audioRef.current.play().catch(() => { });
+        setPlaying(true);
+      }
     }
   };
 
@@ -297,13 +332,17 @@ const BGMButton = () => {
     <button
       onClick={toggle}
       style={{
-        position: "fixed", bottom: "32px", right: "32px", zIndex: 9998,
+        position: "fixed",
+        bottom: "36px",
+        left: isCydropreneur ? "36px" : "auto",
+        right: isCydropreneur ? "auto" : "32px",
+        zIndex: 9998,
         width: "52px", height: "52px", borderRadius: "50%",
-        background: "rgba(255,255,255,0.7)",
+        background: isCydropreneur ? "rgba(18,10,36,0.75)" : "rgba(255,255,255,0.7)",
         backdropFilter: "blur(24px) saturate(200%)",
         WebkitBackdropFilter: "blur(24px) saturate(200%)",
-        border: "1px solid rgba(255,255,255,0.9)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1)",
+        border: isCydropreneur ? "1px solid rgba(192,132,252,0.4)" : "1px solid rgba(255,255,255,0.9)",
+        boxShadow: isCydropreneur ? "0 8px 32px rgba(168,85,247,0.5)" : "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1)",
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: "pointer",
         opacity: visible ? 1 : 0,
@@ -313,7 +352,7 @@ const BGMButton = () => {
     >
       {playing ? (
         <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "18px" }}>
-          {[1,0.6,1,0.8].map((h, i) => (
+          {[1, 0.6, 1, 0.8].map((h, i) => (
             <div key={i} style={{
               width: "3px", borderRadius: "2px",
               background: "linear-gradient(180deg,#4285F4,#34A853)",
@@ -324,16 +363,57 @@ const BGMButton = () => {
         </div>
       ) : (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M8 5.14v14l11-7-11-7z" fill="#4285F4"/>
+          <path d="M8 5.14v14l11-7-11-7z" fill="#4285F4" />
         </svg>
       )}
     </button>
   );
 };
 
+/* ─── Cyberpunk Cursor (Zero Lag CSS) ─────────────── */
+const CyberpunkCursor = () => {
+  useEffect(() => {
+    const defaultSvg = `
+      <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5,5 L11,19 L14,14 L19,11 Z" fill="#4285F4" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    `;
+    const pointerSvg = `
+      <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5,5 L11,19 L14,14 L19,11 Z" fill="rgba(66, 133, 244, 0.2)" stroke="#4285F4" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    `;
+    const defaultUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent(defaultSvg)}') 7 7, auto`;
+    const pointerUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent(pointerSvg)}') 7 7, pointer`;
+
+    const style = document.createElement("style");
+    style.id = "cyberpunk-cursor-style";
+    style.innerHTML = `
+      * {
+        cursor: ${defaultUrl} !important;
+      }
+      a, button, [role="button"], input, select, textarea, .cursor-pointer, .interactive {
+        cursor: ${pointerUrl} !important;
+      }
+      a *, button *, [role="button"] * {
+        cursor: ${pointerUrl} !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      const el = document.getElementById("cyberpunk-cursor-style");
+      if (el) el.remove();
+    };
+  }, []);
+
+  return null;
+};
+
 function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
   const barRef = useRef(null);
 
   useEffect(() => {
@@ -348,7 +428,7 @@ function App() {
   }, [isHome]);
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: "none", background: "transparent" }}>
+    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: isCydropreneur ? "auto" : "none", background: "transparent" }}>
       <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",
@@ -362,22 +442,23 @@ function App() {
         @keyframes bgm-bar-3 { from { height: 70% } to { height: 90% } }
       `}</style>
 
-      <NegativeCursor />
+      {isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
       <GoogleGradientBG />
       <BGMButton />
       <PWAInstallPrompt />
 
       <div style={{ position: "relative", zIndex: 2 }}>
-        <NavBar />
+        {!isCydropreneur && <NavBar />}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/discussion" element={<DiscussionBoard />} />
           <Route path="/login" element={<DiscussionBoard />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/Cydropreneur" element={<Cydropreneur />} />
           <Route path="/teams" element={<Team />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <Footer />
+        {!isCydropreneur && <Footer />}
       </div>
     </main>
   );
