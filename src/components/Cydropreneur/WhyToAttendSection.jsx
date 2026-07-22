@@ -70,10 +70,14 @@ const WhyToAttendSection = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        border: "16px solid #000000",
         boxSizing: "border-box",
       }}
     >
+      {/* Top-Left Galaxy Decoration */}
+      <div style={{ position: "absolute", top: "5%", left: "-5%", width: "50vw", height: "50vw", maxWidth: "600px", maxHeight: "600px", zIndex: 1, opacity: 0.8, transform: "rotate(15deg)", pointerEvents: "none" }}>
+        <img src="/img/galaxy.jpeg" alt="Galaxy Decoration" style={{ width: "100%", height: "100%", objectFit: "cover", maskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", WebkitMaskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", mixBlendMode: "screen" }} />
+      </div>
+
       <style dangerouslySetInnerHTML={{
         __html: `
         .speech-bubble-card {
@@ -123,7 +127,7 @@ const WhyToAttendSection = () => {
           }}
         >
           {/* Left Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "24px" : "0" }}>
             {questionsLeft.map((q, idx) => (
               <div
                 key={idx}
@@ -133,39 +137,22 @@ const WhyToAttendSection = () => {
                   width: "100%",
                   maxWidth: "340px",
                   margin: "0 auto",
+                  background: "linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(88, 28, 135, 0.5) 100%)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(192, 132, 252, 0.4)",
+                  borderRadius: "24px 24px 4px 24px",
+                  padding: "28px 24px",
+                  boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+                  color: "#ffffff",
+                  fontFamily: "'Rajdhani', 'Outfit', sans-serif",
+                  fontSize: isMobile ? "16px" : "19px",
+                  fontWeight: 800,
+                  lineHeight: 1.3,
+                  textAlign: "center",
                 }}
               >
-                <img
-                  src="/img/text-bubble.png"
-                  alt="Speech Bubble"
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                    transform: "scaleX(-1)",
-                    filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.5))",
-                    zIndex: 1,
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "45%",
-                    left: "50%",
-                    transform: "translate(-50%, -58%)",
-                    width: "82%",
-                    textAlign: "center",
-                    color: "#ffffff",
-                    fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                    fontSize: isMobile ? "15px" : "17px",
-                    fontWeight: 800,
-                    lineHeight: 1.25,
-                    zIndex: 2,
-                  }}
-                >
-                  {q.question}
-                </div>
+                {q.question}
               </div>
             ))}
           </div>
@@ -186,7 +173,7 @@ const WhyToAttendSection = () => {
           </div>
 
           {/* Right Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-evenly", height: "100%", minHeight: isMobile ? "auto" : "550px", gap: isMobile ? "24px" : "0" }}>
             {questionsRight.map((q, idx) => (
               <div
                 key={idx}
@@ -196,38 +183,22 @@ const WhyToAttendSection = () => {
                   width: "100%",
                   maxWidth: "340px",
                   margin: "0 auto",
+                  background: "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 116, 144, 0.5) 100%)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(56, 189, 248, 0.4)",
+                  borderRadius: "24px 24px 24px 4px",
+                  padding: "28px 24px",
+                  boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+                  color: "#ffffff",
+                  fontFamily: "'Rajdhani', 'Outfit', sans-serif",
+                  fontSize: isMobile ? "16px" : "19px",
+                  fontWeight: 800,
+                  lineHeight: 1.3,
+                  textAlign: "center",
                 }}
               >
-                <img
-                  src="/img/text-bubble.png"
-                  alt="Speech Bubble"
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    height: "auto",
-                    display: "block",
-                    filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.5))",
-                    zIndex: 1,
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "45%",
-                    left: "50%",
-                    transform: "translate(-50%, -58%)",
-                    width: "82%",
-                    textAlign: "center",
-                    color: "#ffffff",
-                    fontFamily: "'Rajdhani', 'Outfit', sans-serif",
-                    fontSize: isMobile ? "15px" : "17px",
-                    fontWeight: 800,
-                    lineHeight: 1.25,
-                    zIndex: 2,
-                  }}
-                >
-                  {q.question}
-                </div>
+                {q.question}
               </div>
             ))}
           </div>

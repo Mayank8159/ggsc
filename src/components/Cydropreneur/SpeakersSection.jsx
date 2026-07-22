@@ -24,7 +24,6 @@ const SpeakersSection = () => {
         alignItems: "center",
         justifyContent: "center",
         boxSizing: "border-box",
-        border: "16px solid #000000",
       }}
     >
       <div
@@ -71,7 +70,7 @@ const SpeakersSection = () => {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "36px",
+            gap: "80px",
             width: "100%",
             alignItems: "center",
           }}
@@ -82,7 +81,7 @@ const SpeakersSection = () => {
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
-              gap: "36px",
+              gap: "64px",
               width: "100%",
             }}
           >
@@ -118,7 +117,7 @@ const SpeakersSection = () => {
               display: "flex",
               flexWrap: "wrap",
               justifyContent: "center",
-              gap: "36px",
+              gap: "64px",
               width: "100%",
             }}
           >

@@ -14,7 +14,6 @@ const AboutSection = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        border: "16px solid #000000",
         boxSizing: "border-box",
       }}
     >
@@ -139,17 +138,18 @@ const AboutSection = () => {
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-end",
+              alignItems: "center",
               gap: "12px",
               width: "100%",
             }}
           >
             {/* Location Pill Row */}
-            <div>
+            <div style={{ width: "100%" }}>
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "10px",
                   padding: "12px 24px",
                   borderRadius: "999px",
@@ -164,6 +164,8 @@ const AboutSection = () => {
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+                  width: "100%",
+                  boxSizing: "border-box",
                 }}
               >
                 <MapPin size={15} style={{ color: "#d8b4fe" }} />
@@ -175,16 +177,16 @@ const AboutSection = () => {
             <div
               style={{
                 display: "flex",
-                gap: "14px",
-                justifyContent: "flex-end",
+                gap: "12px",
+                justifyContent: "space-between",
                 width: "100%",
-                flexWrap: "wrap",
               }}
             >
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "10px",
                   padding: "12px 24px",
                   borderRadius: "999px",
@@ -199,6 +201,8 @@ const AboutSection = () => {
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+                  flex: 1,
+                  boxSizing: "border-box",
                 }}
               >
                 <Clock size={15} style={{ color: "#d8b4fe" }} />
@@ -207,8 +211,9 @@ const AboutSection = () => {
 
               <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "10px",
                   padding: "12px 24px",
                   borderRadius: "999px",
@@ -223,48 +228,41 @@ const AboutSection = () => {
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+                  flex: 1,
+                  boxSizing: "border-box",
                 }}
               >
                 <Calendar size={15} style={{ color: "#d8b4fe" }} />
                 <span>8th August</span>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Organized-by Badge Container */}
-        <div
-          style={{
-            flex: "1 1 100%",
-            display: "flex",
-            justifyContent: "flex-end",
-            padding: "0 clamp(30px, 4.5vw, 60px) clamp(30px, 4.5vw, 60px) clamp(30px, 4.5vw, 60px)",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* Organized-by Badge (Spans 2.5/4th width of the glass card wrapper) */}
-          <div
-            style={{
-              width: "62.5%",
-              background: "linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(192, 132, 252, 0.05) 100%)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(192, 132, 252, 0.2)",
-              borderRadius: "20px",
-              padding: "20px 24px",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
-              color: "#ffffff",
-              fontFamily: "'Rajdhani', sans-serif",
-              fontSize: "clamp(0.9rem, 1.1vw, 1.05rem)",
-              fontWeight: 600,
-              lineHeight: 1.5,
-              letterSpacing: "0.03em",
-              boxSizing: "border-box",
-            }}
-          >
-            Organized by: Google Student Club (GGSC) UEMK in
-            collaboration with the Innovation & Entrepreneurship Development
-            Cell and The Dept. of CST, CSIT, CSE (CS) & CSE (NW).
+            {/* Organized-by Badge Container (Moved here for alignment) */}
+            <div
+              style={{
+                width: "100%",
+                background: "linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(192, 132, 252, 0.05) 100%)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(192, 132, 252, 0.2)",
+                borderRadius: "20px",
+                padding: "20px 24px",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+                color: "#ffffff",
+                fontFamily: "'Rajdhani', sans-serif",
+                fontSize: "clamp(0.9rem, 1.1vw, 1.05rem)",
+                fontWeight: 600,
+                lineHeight: 1.5,
+                letterSpacing: "0.03em",
+                boxSizing: "border-box",
+                marginTop: "4px",
+                textAlign: "center",
+              }}
+            >
+              Organized by: Google Student Club (GGSC) UEMK in
+              collaboration with the Innovation & Entrepreneurship Development
+              Cell and The Dept. of CST, CSIT, CSE (CS) & CSE (NW).
+            </div>
           </div>
         </div>
       </div>

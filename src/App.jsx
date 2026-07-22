@@ -370,6 +370,46 @@ const BGMButton = () => {
   );
 };
 
+/* ─── Cyberpunk Cursor (Zero Lag CSS) ─────────────── */
+const CyberpunkCursor = () => {
+  useEffect(() => {
+    const defaultSvg = `
+      <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5,5 L11,19 L14,14 L19,11 Z" fill="#4285F4" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+    `;
+    const pointerSvg = `
+      <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5,5 L11,19 L14,14 L19,11 Z" fill="rgba(66, 133, 244, 0.2)" stroke="#4285F4" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    `;
+    const defaultUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent(defaultSvg)}') 7 7, auto`;
+    const pointerUrl = `url('data:image/svg+xml;utf8,${encodeURIComponent(pointerSvg)}') 7 7, pointer`;
+
+    const style = document.createElement("style");
+    style.id = "cyberpunk-cursor-style";
+    style.innerHTML = `
+      * {
+        cursor: ${defaultUrl} !important;
+      }
+      a, button, [role="button"], input, select, textarea, .cursor-pointer, .interactive {
+        cursor: ${pointerUrl} !important;
+      }
+      a *, button *, [role="button"] * {
+        cursor: ${pointerUrl} !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      const el = document.getElementById("cyberpunk-cursor-style");
+      if (el) el.remove();
+    };
+  }, []);
+
+  return null;
+};
+
 function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
@@ -388,7 +428,7 @@ function App() {
   }, [isHome]);
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: "none", background: "transparent" }}>
+    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: isCydropreneur ? "auto" : "none", background: "transparent" }}>
       <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",
@@ -402,7 +442,7 @@ function App() {
         @keyframes bgm-bar-3 { from { height: 70% } to { height: 90% } }
       `}</style>
 
-      <NegativeCursor />
+      {isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
       <GoogleGradientBG />
       <BGMButton />
       <PWAInstallPrompt />

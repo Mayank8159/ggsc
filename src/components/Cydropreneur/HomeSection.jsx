@@ -41,10 +41,10 @@ const HomeSection = () => {
         height: screenSize.height ? `${screenSize.height}px` : "100vh",
         maxWidth: "100vw",
         margin: 0,
-        padding: "16px",
+        padding: 0,
         boxSizing: "border-box",
         overflow: "hidden",
-        background: "#000000",
+        background: "transparent",
         zIndex: 1,
       }}
     >
@@ -58,7 +58,6 @@ const HomeSection = () => {
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          borderRadius: "16px",
           display: "block",
           margin: 0,
         }}
