@@ -133,7 +133,7 @@ const ContactSection = () => {
       style={{
         width: "100%",
         minHeight: "auto",
-        padding: isMobile ? "60px 16px" : "90px 24px",
+        padding: isMobile ? "110px 16px 60px 16px" : "140px 24px 90px 24px",
         background: "transparent",
         position: "relative",
         overflow: "visible",
@@ -147,7 +147,7 @@ const ContactSection = () => {
       <div
         style={{
           position: "absolute",
-          top: isMobile ? "-30px" : "-10px",
+          top: isMobile ? "20px" : "40px",
           left: "-10vw",
           width: "120vw",
           height: "220px",
@@ -171,12 +171,14 @@ const ContactSection = () => {
             width: max-content;
             animation: ticker-slide-left 25s linear infinite;
             white-space: nowrap;
+            will-change: transform;
           }
           .ticker-inner-right {
             display: flex;
             width: max-content;
             animation: ticker-slide-right 25s linear infinite;
             white-space: nowrap;
+            will-change: transform;
           }
         `}} />
 
@@ -249,6 +251,152 @@ const ContactSection = () => {
         }}
       >
         {/* Main Section Header Removed */}
+
+        {/* Footer Image Banner with Speech Bubbles */}
+        <div style={{
+          width: "100%",
+          padding: isMobile ? "40px 16px 10px 16px" : "60px 40px 40px 40px",
+          boxSizing: "border-box",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: isMobile ? "0" : "50px",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          {/* Left Speech Bubble (PC Only) */}
+          {!isMobile && (
+            <div
+              className="speech-bubble-card"
+              style={{
+                position: "relative",
+                flex: 1,
+                maxWidth: "260px",
+                background: "linear-gradient(135deg, rgba(147, 51, 234, 0.25) 0%, rgba(88, 28, 135, 0.5) 100%)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(192, 132, 252, 0.4)",
+                borderRadius: "20px",
+                padding: "16px 20px",
+                boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+                color: "#ffffff",
+                fontFamily: "'Rajdhani', 'Outfit', sans-serif",
+                fontSize: "15px",
+                fontWeight: 800,
+                lineHeight: 1.35,
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: "auto"
+              }}
+            >
+              Turn your ideas into reality!
+
+              {/* Curved SVG Dotted Line */}
+              <svg
+                style={{
+                  position: "absolute",
+                  top: "30%",
+                  right: "-48px",
+                  width: "50px",
+                  height: "40px",
+                  overflow: "visible",
+                  pointerEvents: "none",
+                }}
+              >
+                <path
+                  d="M 0 0 C 25 5, 35 25, 48 35"
+                  fill="none"
+                  stroke="rgba(192, 132, 252, 0.85)"
+                  strokeWidth="2.5"
+                  strokeDasharray="4 4"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="48"
+                  cy="35"
+                  r="4"
+                  fill="#c084fc"
+                  style={{ filter: "drop-shadow(0 0 6px #c084fc)" }}
+                />
+              </svg>
+            </div>
+          )}
+
+          <img 
+            src="/img/footer--.png" 
+            alt="Cydropreneur Footer Banner" 
+            style={{ 
+              width: "100%", 
+              maxWidth: isMobile ? "340px" : "480px", 
+              height: "auto", 
+              objectFit: "contain",
+              display: "block",
+              position: "relative",
+              zIndex: 2,
+              flexShrink: 0
+            }} 
+          />
+
+          {/* Right Speech Bubble (PC Only) */}
+          {!isMobile && (
+            <div
+              className="speech-bubble-card"
+              style={{
+                position: "relative",
+                flex: 1,
+                maxWidth: "260px",
+                background: "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 116, 144, 0.5) 100%)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(56, 189, 248, 0.4)",
+                borderRadius: "20px",
+                padding: "16px 20px",
+                boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+                color: "#ffffff",
+                fontFamily: "'Rajdhani', 'Outfit', sans-serif",
+                fontSize: "15px",
+                fontWeight: 800,
+                lineHeight: 1.35,
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: "auto"
+              }}
+            >
+              Build the future with us!
+
+              {/* Curved SVG Dotted Line */}
+              <svg
+                style={{
+                  position: "absolute",
+                  bottom: "30%",
+                  left: "-48px",
+                  width: "50px",
+                  height: "40px",
+                  overflow: "visible",
+                  pointerEvents: "none",
+                }}
+              >
+                <path
+                  d="M 50 40 C 25 35, 15 15, 2 5"
+                  fill="none"
+                  stroke="rgba(56, 189, 248, 0.85)"
+                  strokeWidth="2.5"
+                  strokeDasharray="4 4"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="2"
+                  cy="5"
+                  r="4"
+                  fill="#38bdf8"
+                  style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
+                />
+              </svg>
+            </div>
+          )}
+        </div>
 
         {/* Citadel-Style Open 4-Column Footer/Contact Layout */}
         <div style={{

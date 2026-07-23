@@ -12,6 +12,8 @@ const HomeSection = () => {
     height: typeof window !== "undefined" ? window.innerHeight : 0,
   });
 
+  const isMobileView = screenSize.width < 768;
+
   useEffect(() => {
     if (screenSize.width >= 768) return;
 
@@ -49,8 +51,6 @@ const HomeSection = () => {
 
   const scrollToRegister = () =>
     window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank");
-
-  const isMobileView = screenSize.width < 768;
 
   // Calculate contained video frame dimensions (16:9 aspect ratio) for PC view to prevent cropping
   let videoViewport = { width: "100%", height: "100%", top: 0, left: 0 };
