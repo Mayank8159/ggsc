@@ -79,11 +79,11 @@ const HomeSection = () => {
       <div
         style={{
           position: "absolute",
-          bottom: screenSize.width < 768 ? "36px" : "6.8%",
-          right: screenSize.width < 768 ? "50%" : "3.8%",
+          bottom: screenSize.width < 768 ? "16px" : "3%",
+          right: screenSize.width < 768 ? "50%" : "4.8%",
           transform: screenSize.width < 768 ? "translateX(50%)" : "none",
-          width: screenSize.width < 768 ? "auto" : "290px",
-          height: screenSize.width < 768 ? "auto" : "68px",
+          width: screenSize.width < 768 ? "180px" : "268px",
+          height: screenSize.width < 768 ? "74px" : "110px",
           zIndex: 10,
           pointerEvents: "auto",
         }}
@@ -96,25 +96,50 @@ const HomeSection = () => {
             fontFamily: "'Ethnocentric','Orbitron',sans-serif",
             display: "inline-flex",
             alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-            padding: screenSize.width < 768 ? "10px 20px" : "0 28px",
-            borderRadius: screenSize.width < 768 ? "999px" : "24px",
-            background: "linear-gradient(135deg,#7e22ce 0%,#a855f7 50%,#c084fc 100%)",
-            color: "#ffffff",
-            fontSize: screenSize.width < 768 ? "10px" : "13px",
+            justifyContent: "flex-start",
+            padding: "0",
+            paddingLeft: screenSize.width < 768 ? "28px" : "42px",
+            background: "url('/img/CTA Button.png') no-repeat center",
+            backgroundSize: "contain",
+            backgroundColor: "transparent",
+            color: "#eceff1",
+            fontSize: screenSize.width < 768 ? "15px" : "22px",
             fontWeight: 800,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            border: "1px solid rgba(255,255,255,0.4)",
+            border: "none",
             cursor: "pointer",
-            boxShadow: "0 6px 24px rgba(168,85,247,0.6),inset 0 1px 0 rgba(255,255,255,0.4)",
+            boxShadow: "none",
             transition: "all 0.3s ease",
-            whiteSpace: "nowrap",
           }}
-          className="hover:scale-105 hover:shadow-purple-500/90"
+          className="hover:scale-105"
         >
-          REGISTER NOW <FiArrowRight size={screenSize.width < 768 ? 13 : 16} />
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: screenSize.width < 768 ? "6px" : "10px",
+            lineHeight: "1",
+            filter: "drop-shadow(0 0 4px rgba(244, 114, 182, 0.65))",
+          }}>
+            <span style={{
+              background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}>REGISTER</span>
+            <span style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}>
+              <span style={{
+                background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}>NOW</span>
+              <FiArrowRight size={screenSize.width < 768 ? 16 : 22} style={{ color: "#cbd5e1" }} />
+            </span>
+          </div>
         </button>
       </div>
     </section>

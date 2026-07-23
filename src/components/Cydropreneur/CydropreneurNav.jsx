@@ -66,7 +66,7 @@ const CydropreneurNav = () => {
 
   /* ── shared glass button style ── */
   const glass = {
-    background:           "rgba(18, 10, 36, 0.78)",
+    background:           "rgba(0, 0, 0, 0.9)",
     backdropFilter:       "blur(18px)",
     WebkitBackdropFilter: "blur(18px)",
     border:               "1px solid rgba(168, 85, 247, 0.42)",
@@ -96,7 +96,7 @@ const CydropreneurNav = () => {
             width:                "42px",
             height:               "42px",
             borderRadius:         "50%",
-            background:           "rgba(18, 10, 36, 0.75)",
+            background:           "rgba(0, 0, 0, 0.9)",
             backdropFilter:       "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
             border:               "1px solid rgba(168, 85, 247, 0.35)",

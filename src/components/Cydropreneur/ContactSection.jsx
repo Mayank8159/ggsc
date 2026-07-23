@@ -283,32 +283,18 @@ const ContactSection = () => {
                 CydroPreneur is an immersive, hands-on workshop designed to introduce you to learn Android development
               </p>
 
-              <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div style={{
-                  fontFamily: "'Orbitron', sans-serif",
-                  fontSize: "0.8rem",
-                  color: "#ffffff",
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}>
-                  <span style={{ color: "#ffffff" }}>●</span> Organized By
+              <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "0px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px" }}>
+                  <img src="/img/IEM_2.png" alt="IEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
+                  <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>
+                    Institute of Engineering and Management, Newtown
+                  </span>
                 </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", paddingLeft: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img src="/img/iem-logo.png" alt="IEM Logo" style={{ height: "24px", objectFit: "contain" }} />
-                    <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.9rem", color: "#ffffff", fontWeight: 600 }}>
-                      Institute of Engineering and Management, Newtown
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "34px" }}>
-                    <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.9rem", color: "#a1a1aa", fontWeight: 600 }}>
-                      UEM Kolkata
-                    </span>
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px", marginTop: "10px" }}>
+                  <img src="/img/UEM_2.png" alt="UEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
+                  <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>
+                    University of Engineering and Management, Kolkata
+                  </span>
                 </div>
               </div>
             </div>
@@ -352,7 +338,7 @@ const ContactSection = () => {
                 <div>
                   <span style={{ color: "#ffffff" }}>Venue : </span>
                   <span style={{ color: "#ffffff", fontWeight: 700 }}>
-                    Institute of Engineering and Management, Newtown
+                    Ficci Auditorium - IEM, New Town
                   </span>
                 </div>
               </div>
