@@ -1,9 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const ShaderBackground = () => {
   const canvasRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
 
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -405,7 +416,21 @@ const ShaderBackground = () => {
     };
   }, []);
 
-  return (
+  return isMobile ? (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        zIndex: 0,
+        pointerEvents: "none",
+        background: "linear-gradient(135deg, #02010A 0%, #04052E 40%, #1a0b2e 70%, #02010A 100%)",
+        display: "block",
+      }}
+    />
+  ) : (
     <canvas
       ref={canvasRef}
       style={{

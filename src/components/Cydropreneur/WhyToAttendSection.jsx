@@ -137,7 +137,7 @@ const WhyToAttendSection = () => {
           }}
         >
           {/* Left Column Speech Bubbles */}
-          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", alignItems: isMobile ? "center" : "flex-end", height: "100%", minHeight: isMobile ? "auto" : "500px", gap: isMobile ? "12px" : "28px", width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", justifyContent: "space-evenly", alignItems: isMobile ? "center" : "flex-end", height: "100%", minHeight: isMobile ? "auto" : "500px", gap: isMobile ? "12px" : "28px", width: "100%", transform: isMobile ? "translateY(48px)" : "none" }}>
             {questionsLeft.map((q, idx) => (
               <div
                 key={idx}

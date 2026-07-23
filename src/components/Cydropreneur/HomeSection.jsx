@@ -10,14 +10,18 @@ import { FiArrowRight } from "react-icons/fi";
   never clipped by overflow:hidden or a positioned ancestor.
 */
 const HomeSection = () => {
-  const [screenSize, setScreenSize] = useState({
-    width: typeof window !== "undefined" ? window.innerWidth : 0,
-    height: typeof window !== "undefined" ? window.innerHeight : 0,
-  });
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
 
   useEffect(() => {
-    const onResize = () =>
-      setScreenSize({ width: window.innerWidth, height: window.innerHeight });
+    // Only update if crossing the mobile boundary to avoid unnecessary re-renders
+    const onResize = () => {
+      const currentlyMobile = window.innerWidth < 768;
+      if (currentlyMobile !== isMobile) {
+        setIsMobile(currentlyMobile);
+      }
+    };
     onResize();
     window.addEventListener("resize", onResize, { passive: true });
     window.addEventListener("orientationchange", onResize, { passive: true });
@@ -25,7 +29,7 @@ const HomeSection = () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
-  }, []);
+  }, [isMobile]);
 
   const scrollToRegister = () =>
     window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank");
@@ -35,8 +39,8 @@ const HomeSection = () => {
       id="home"
       style={{
         position: "relative",
-        width: screenSize.width ? `${screenSize.width}px` : "100vw",
-        height: screenSize.height ? `${screenSize.height}px` : "100vh",
+        width: "100vw",
+        height: "100dvh",
         maxWidth: "100vw",
         margin: 0,
         padding: 0,
@@ -47,7 +51,7 @@ const HomeSection = () => {
       }}
     >
       {/* ── Background: mobile image or desktop video ── */}
-      {screenSize.width < 768 ? (
+      {isMobile ? (
         <img
           src="/img/mob view--final.png"
           alt="Cydropreneur Mobile Hero"
@@ -79,11 +83,11 @@ const HomeSection = () => {
       <div
         style={{
           position: "absolute",
-          bottom: screenSize.width < 768 ? "36px" : "6.8%",
-          right: screenSize.width < 768 ? "50%" : "3.8%",
-          transform: screenSize.width < 768 ? "translateX(50%)" : "none",
-          width: screenSize.width < 768 ? "auto" : "290px",
-          height: screenSize.width < 768 ? "auto" : "68px",
+          bottom: isMobile ? "36px" : "6.8%",
+          right: isMobile ? "50%" : "3.8%",
+          transform: isMobile ? "translateX(50%)" : "none",
+          width: isMobile ? "auto" : "290px",
+          height: isMobile ? "auto" : "68px",
           zIndex: 10,
           pointerEvents: "auto",
         }}
@@ -98,11 +102,11 @@ const HomeSection = () => {
             alignItems: "center",
             justifyContent: "center",
             gap: "10px",
-            padding: screenSize.width < 768 ? "10px 20px" : "0 28px",
-            borderRadius: screenSize.width < 768 ? "999px" : "24px",
+            padding: isMobile ? "10px 20px" : "0 28px",
+            borderRadius: isMobile ? "999px" : "24px",
             background: "linear-gradient(135deg,#7e22ce 0%,#a855f7 50%,#c084fc 100%)",
             color: "#ffffff",
-            fontSize: screenSize.width < 768 ? "10px" : "13px",
+            fontSize: isMobile ? "10px" : "13px",
             fontWeight: 800,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
@@ -114,7 +118,7 @@ const HomeSection = () => {
           }}
           className="hover:scale-105 hover:shadow-purple-500/90"
         >
-          REGISTER NOW <FiArrowRight size={screenSize.width < 768 ? 13 : 16} />
+          REGISTER NOW <FiArrowRight size={isMobile ? 13 : 16} />
         </button>
       </div>
     </section>
