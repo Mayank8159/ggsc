@@ -73,6 +73,19 @@ const Cydropreneur = () => {
 
     window.scrollTo(0, 0);
 
+    // Preload footer images so they load instantly when scrolling down
+    const footerImages = [
+      "/img/footer--.png",
+      "/img/cydro-logo-footer.png",
+      "/img/IEM.png",
+      "/img/UEM.png",
+      "/img/GGSC.png"
+    ];
+    footerImages.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+
     return () => {
       window.removeEventListener("resize", handleResize);
     };

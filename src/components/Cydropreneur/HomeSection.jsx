@@ -52,36 +52,8 @@ const HomeSection = () => {
   const scrollToRegister = () =>
     window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank");
 
-  // Calculate contained video frame dimensions (16:9 aspect ratio) for PC view to prevent cropping
+  // Make video fill the screen on PC (border is handled by Cydropreneur index.jsx)
   let videoViewport = { width: "100%", height: "100%", top: 0, left: 0 };
-  if (!isMobileView && screenSize.width && screenSize.height) {
-    const videoRatio = 16 / 9;
-    const screenRatio = screenSize.width / screenSize.height;
-
-    if (screenRatio > videoRatio) {
-      // Screen is wider than video ratio -> Pillarbox (black bars left and right)
-      const height = screenSize.height;
-      const width = height * videoRatio;
-      const left = (screenSize.width - width) / 2;
-      videoViewport = {
-        width: `${width}px`,
-        height: `${height}px`,
-        top: 0,
-        left: `${left}px`,
-      };
-    } else {
-      // Screen is taller than video ratio -> Letterbox (black bars top and bottom)
-      const width = screenSize.width;
-      const height = width / videoRatio;
-      const top = (screenSize.height - height) / 2;
-      videoViewport = {
-        width: `${width}px`,
-        height: `${height}px`,
-        top: `${top}px`,
-        left: 0,
-      };
-    }
-  }
 
   return (
     <section
@@ -103,100 +75,67 @@ const HomeSection = () => {
         // Mobile View
         <>
           <style>{`
-            .shooting-star-container {
+            .mobile-comet-container {
               position: absolute;
               top: 0;
               left: 0;
               width: 100%;
-              height: 100%;
+              height: 40%;
               overflow: hidden;
               pointer-events: none;
-              z-index: 2;
+              z-index: 5; /* Over the image */
             }
-            .shooting-star {
+            .mobile-comet {
               position: absolute;
-              width: 200px;
-              height: 3px;
-              background: linear-gradient(-45deg, #c084fc, rgba(255, 255, 255, 0));
-              filter: drop-shadow(0 0 8px #c084fc);
+              width: 150px;
+              height: 2px;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), #ffffff);
+              filter: drop-shadow(0 0 6px rgba(255,255,255,1));
+              border-radius: 50%;
               opacity: 0;
             }
-            .star-1 {
+            .comet-1 {
+              top: 5%;
+              left: -10%;
+              animation: cometMove 3s linear infinite;
+              animation-delay: 0s;
+            }
+            .comet-2 {
+              top: -5%;
+              left: 20%;
+              animation: cometMove 4.5s linear infinite;
+              animation-delay: 1.5s;
+            }
+            .comet-3 {
               top: 15%;
-              right: 10%;
-              animation: shoot1 8s ease-in-out infinite;
-              animation-delay: 1s;
+              left: -15%;
+              animation: cometMove 3.5s linear infinite;
+              animation-delay: 2.8s;
             }
-            .star-2 {
-              top: 30%;
-              right: 35%;
-              animation: shoot2 10s ease-in-out infinite;
-              animation-delay: 3.5s;
-            }
-            .star-3 {
-              top: 8%;
-              right: 20%;
-              animation: shoot3 9s ease-in-out infinite;
-              animation-delay: 6s;
-            }
-            
-            @keyframes shoot1 {
+            @keyframes cometMove {
               0% {
-                transform: translate(0, 0) rotate(-40deg) scale(0.5);
+                transform: rotate(35deg) translateX(-200px);
                 opacity: 0;
               }
-              1% {
+              5% {
                 opacity: 1;
               }
-              25% {
-                transform: translate(-500px, 420px) rotate(-40deg) scale(2.0);
+              30% {
+                transform: rotate(35deg) translateX(150vw);
                 opacity: 0;
               }
               100% {
-                transform: translate(-500px, 420px) rotate(-40deg) scale(2.0);
-                opacity: 0;
-              }
-            }
-            @keyframes shoot2 {
-              0% {
-                transform: translate(0, 0) rotate(-35deg) scale(0.6);
-                opacity: 0;
-              }
-              1% {
-                opacity: 1;
-              }
-              28% {
-                transform: translate(-600px, 480px) rotate(-35deg) scale(2.3);
-                opacity: 0;
-              }
-              100% {
-                transform: translate(-600px, 480px) rotate(-35deg) scale(2.3);
-                opacity: 0;
-              }
-            }
-            @keyframes shoot3 {
-              0% {
-                transform: translate(0, 0) rotate(-42deg) scale(0.4);
-                opacity: 0;
-              }
-              1% {
-                opacity: 1;
-              }
-              24% {
-                transform: translate(-400px, 340px) rotate(-42deg) scale(1.8);
-                opacity: 0;
-              }
-              100% {
-                transform: translate(-400px, 340px) rotate(-42deg) scale(1.8);
+                transform: rotate(35deg) translateX(150vw);
                 opacity: 0;
               }
             }
           `}</style>
-          
-          <div className="shooting-star-container">
-            <div className="shooting-star star-1" />
-            <div className="shooting-star star-2" />
-            <div className="shooting-star star-3" />
+
+          {/* Comet Animation Container restricted to top 30% */}
+          <div className="mobile-comet-container">
+            <div className="mobile-comet comet-1" />
+            <div className="mobile-comet comet-2" />
+            <div className="mobile-comet comet-3" />
           </div>
 
           <img
@@ -206,10 +145,25 @@ const HomeSection = () => {
               width: "100%",
               height: "100%",
               objectFit: "contain",
-              objectPosition: "center",
+              objectPosition: "bottom center",
               display: "block",
               margin: "0 auto",
-              backgroundColor: "#000000",
+              position: "relative",
+              zIndex: 2,
+            }}
+          />
+
+          {/* Top Gradient Overlay to seamlessly blend the top edge of the image into the black background */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "35%",
+              background: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0) 100%)",
+              zIndex: 3,
+              pointerEvents: "none",
             }}
           />
 
@@ -256,7 +210,7 @@ const HomeSection = () => {
                 className="welcome-text"
                 letterSpacing="0.05em"
               >
-                WELCOME FOKES !
+                WELCOME FOLKS!
               </text>
             </svg>
           </div>
@@ -265,7 +219,7 @@ const HomeSection = () => {
           <div
             style={{
               position: "absolute",
-              bottom: "36px",
+              bottom: "6%",
               right: "50%",
               transform: "translateX(50%)",
               width: "auto",
@@ -325,6 +279,7 @@ const HomeSection = () => {
               width: "100%",
               height: "100%",
               objectFit: "cover",
+              objectPosition: "center 20%",
               display: "block",
               margin: 0,
             }}
@@ -334,7 +289,7 @@ const HomeSection = () => {
           <div
             style={{
               position: "absolute",
-              bottom: "3%",
+              bottom: "2%",
               right: "4.8%",
               width: "268px",
               height: "110px",
