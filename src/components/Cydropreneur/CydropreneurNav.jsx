@@ -119,7 +119,7 @@ const CydropreneurNav = () => {
       {showAbsoluteHomeButtons && (
         <>
           {/* Circular Home button */}
-          <div style={{ position: "absolute", top: "6.3vh", left: "3.1vw", zIndex: 9999 }}>
+          <div style={{ position: "absolute", top: "6.5vh", left: "4.5vw", zIndex: 9999 }}>
             <button
               onClick={() => navigate("/")}
               title="Go to Home Page"
