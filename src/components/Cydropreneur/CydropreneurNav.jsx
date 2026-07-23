@@ -98,32 +98,30 @@ const CydropreneurNav = () => {
         <div style={{ position: "fixed", top: "24px", left: "24px", zIndex: 100000 }}>
           <button
             onClick={() => navigate("/events")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "42px",
-            height: "42px",
-            borderRadius: "50%",
-            background: "rgba(18, 10, 36, 0.75)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(168, 85, 247, 0.35)",
-            color: "#e9d5ff",
-            cursor: "pointer",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-            transition: "all 0.3s ease",
-          }}
-          className="hover:border-purple-400 hover:text-white hover:scale-105"
-        >
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              background: "rgba(18, 10, 36, 0.75)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(168, 85, 247, 0.35)",
+              color: "#e9d5ff",
+              cursor: "pointer",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+              transition: "all 0.3s ease",
+            }}
+            className="hover:border-purple-400 hover:text-white hover:scale-105"
+          >
             <ArrowLeft size={18} />
           </button>
         </div>
       )}
 
-      {/*
-        ── STATIC ABSOLUTE HOME BUTTONS ──────────────────────────
-      */}
+      {/* ── STATIC ABSOLUTE HOME BUTTONS ────────────────────────── */}
       <AnimatePresence>
         {showAbsoluteHomeButtons && (
           <motion.div
@@ -133,7 +131,7 @@ const CydropreneurNav = () => {
             className="home-buttons-container"
           >
             {/* Circular Back button (replaces Home) */}
-            <div style={{ position: "absolute", top: "6.3vh", left: "3.1vw", zIndex: 9999 }}>
+            <div style={{ position: "absolute", top: "6.5vh", left: "4.5vw", zIndex: 9999 }}>
               <motion.button
                 layoutId="nav-item-HOME"
                 onClick={() => navigate("/events")}

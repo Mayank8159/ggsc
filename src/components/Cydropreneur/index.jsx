@@ -114,7 +114,6 @@ const Cydropreneur = () => {
       <WhyToAttendSection />
       <SpeakersSection />
       <ContactSection />
-
       <ScrollToTopButton />
     </div>
   );

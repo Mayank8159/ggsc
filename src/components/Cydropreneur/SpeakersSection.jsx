@@ -23,22 +23,22 @@ const SpeakersSection = () => {
       linkedin: "https://www.linkedin.com/in/shantanu-mukhopadhyay-b9403b2b" 
     },
     { 
-      name: "Suman Mondal", 
-      img: "/img/suman front.png",
-      linkedin: "https://www.linkedin.com/in/suman-mondal03/" 
+      name: "Sayantan Samanta", 
+      img: "/img/sayantan.png",
+      linkedin: "https://www.linkedin.com/in/sayantan-samanta-8344ba19b/" 
     },
   ];
 
   const bottomRowSpeakers = [
     { 
-      name: "Sayantan Samanta", 
-      img: "/img/sayantan.png",
-      linkedin: "https://www.linkedin.com/in/sayantan-samanta-8344ba19b/" 
-    },
-    { 
       name: "Nilanjan Joarder", 
       img: "/img/nilanjan.png",
       linkedin: "https://www.linkedin.com/in/nilanjan-joarder/" 
+    },
+    { 
+      name: "Suman Mondal", 
+      img: "/img/suman front.png",
+      linkedin: "https://www.linkedin.com/in/suman-mondal03/" 
     },
   ];
 
@@ -74,24 +74,20 @@ const SpeakersSection = () => {
           rel="noopener noreferrer"
           style={{
             position: "absolute",
-            bottom: isMobile ? "6px" : "12px",
-            left: isMobile ? "6px" : "12px",
-            width: isMobile ? "26px" : "34px",
-            height: isMobile ? "26px" : "34px",
-            borderRadius: "50%",
-            background: "#0077b5",
+            bottom: isMobile ? "12px" : "22px",
+            left: isMobile ? "12px" : "22px",
             color: "#ffffff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 4px 12px rgba(0, 119, 181, 0.6)",
             zIndex: 10,
             textDecoration: "none",
             transition: "all 0.2s ease",
+            filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.5))",
           }}
-          className="hover:scale-115 hover:brightness-125"
+          className="hover:scale-115 hover:text-[#0077b5]"
         >
-          <FaLinkedin size={isMobile ? 14 : 18} />
+          <FaLinkedin size={isMobile ? 16 : 20} />
         </a>
       )}
     </div>
