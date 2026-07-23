@@ -209,6 +209,35 @@ const CydropreneurNav = () => {
               const el = document.getElementById(item.url.replace("#", ""));
               if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
+            actionButton={
+              <button
+                onClick={() => {
+                  window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank");
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "8px 16px",
+                  borderRadius: "999px",
+                  background: "linear-gradient(135deg,#7e22ce 0%,#a855f7 50%,#c084fc 100%)",
+                  color: "#ffffff",
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  border: "1px solid rgba(255,255,255,0.4)",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(168,85,247,0.5),inset 0 1px 0 rgba(255,255,255,0.4)",
+                  transition: "all 0.3s ease",
+                  whiteSpace: "nowrap",
+                  fontFamily: "'Ethnocentric', 'Orbitron', sans-serif"
+                }}
+                className="hover:scale-105"
+              >
+                REGISTER NOW
+              </button>
+            }
           />
         )}
       </AnimatePresence>

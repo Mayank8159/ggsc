@@ -76,7 +76,19 @@ const WhyToAttendSection = () => {
       }}
     >
       {/* Top-Left Galaxy Decoration */}
-      <div style={{ position: "absolute", top: "5%", left: "-5%", width: isMobile ? "80vw" : "50vw", height: isMobile ? "80vw" : "50vw", maxWidth: "600px", maxHeight: "600px", zIndex: 1, opacity: 0.8, transform: "rotate(15deg)", pointerEvents: "none" }}>
+      <div style={{
+        position: "absolute",
+        top: isMobile ? "0%" : "5%",
+        left: isMobile ? "45%" : "-5%",
+        width: isMobile ? "100vw" : "50vw",
+        height: isMobile ? "100vw" : "50vw",
+        maxWidth: "600px",
+        maxHeight: "600px",
+        zIndex: 1,
+        opacity: 0.8,
+        transform: isMobile ? "translateX(-50%) rotate(15deg)" : "rotate(15deg)",
+        pointerEvents: "none"
+      }}>
         <img src="/img/galaxy.jpeg" alt="Galaxy Decoration" style={{ width: "100%", height: "100%", objectFit: "cover", maskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", WebkitMaskImage: "radial-gradient(circle at center, rgba(0,0,0,1) 10%, rgba(0,0,0,0) 60%)", mixBlendMode: "screen" }} />
       </div>
 
@@ -164,43 +176,55 @@ const WhyToAttendSection = () => {
               >
                 {q.question}
 
-                {/* Curved SVG Dotted Line connecting left bubbles to character */}
-                {!isMobile && (
-                  <svg
-                    style={{
-                      position: "absolute",
-                      top: idx === 0 ? "50%" : "auto",
-                      bottom: idx === 1 ? "50%" : "auto",
-                      right: "-48px",
-                      width: "50px",
-                      height: "40px",
-                      overflow: "visible",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    <path
-                      d={idx === 0 ? "M 0 0 C 25 5, 35 25, 48 35" : "M 0 40 C 25 35, 35 15, 48 5"}
-                      fill="none"
-                      stroke="rgba(192, 132, 252, 0.85)"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 4"
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx="48"
-                      cy={idx === 0 ? "35" : "5"}
-                      r="4"
-                      fill="#c084fc"
-                      style={{ filter: "drop-shadow(0 0 6px #c084fc)" }}
-                    />
-                  </svg>
-                )}
+                {/* Curved SVG Dotted Line connecting left (top on mobile) bubbles to character */}
+                <svg
+                  style={{
+                    position: "absolute",
+                    ...(isMobile
+                      ? { bottom: "-70px", ...(idx === 0 ? { left: "15%" } : { right: "15%" }) }
+                      : {
+                        top: idx === 0 ? "50%" : "auto",
+                        bottom: idx === 1 ? "50%" : "auto",
+                        right: "-48px"
+                      }
+                    ),
+                    width: isMobile ? "60px" : "50px",
+                    height: isMobile ? "60px" : "40px",
+                    overflow: "visible",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                  }}
+                >
+                  <path
+                    d={
+                      isMobile
+                        ? (idx === 0 ? "M 10 0 C 10 25, 20 40, 40 50" : "M 50 0 C 50 25, 40 40, 20 50")
+                        : (idx === 0 ? "M 0 0 C 25 5, 35 25, 48 35" : "M 0 40 C 25 35, 35 15, 48 5")
+                    }
+                    fill="none"
+                    stroke="rgba(192, 132, 252, 0.85)"
+                    strokeWidth="2.5"
+                    strokeDasharray="4 4"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx={isMobile ? (idx === 0 ? "40" : "20") : "48"}
+                    cy={isMobile ? "50" : (idx === 0 ? "35" : "5")}
+                    r="4"
+                    fill="#c084fc"
+                    style={{ filter: "drop-shadow(0 0 6px #c084fc)" }}
+                  />
+                </svg>
               </div>
             ))}
           </div>
 
           {/* Center Character Column */}
-          <div style={{ textAlign: "center", position: "relative" }}>
+          <div style={{
+            textAlign: "center",
+            position: "relative",
+            transform: isMobile ? "translateY(-30px)" : "none"
+          }}>
             <img
               src="/img/David-lucy-why-attend.png"
               alt="Cydropreneur Characters David & Lucy"
@@ -242,37 +266,45 @@ const WhyToAttendSection = () => {
               >
                 {q.question}
 
-                {/* Curved SVG Dotted Line connecting right bubbles to character */}
-                {!isMobile && (
-                  <svg
-                    style={{
-                      position: "absolute",
-                      top: idx === 0 ? "50%" : "auto",
-                      bottom: idx === 1 ? "50%" : "auto",
-                      left: "-48px",
-                      width: "50px",
-                      height: "40px",
-                      overflow: "visible",
-                      pointerEvents: "none",
-                    }}
-                  >
-                    <path
-                      d={idx === 0 ? "M 50 0 C 25 5, 15 25, 2 35" : "M 50 40 C 25 35, 15 15, 2 5"}
-                      fill="none"
-                      stroke="rgba(56, 189, 248, 0.85)"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 4"
-                      strokeLinecap="round"
-                    />
-                    <circle
-                      cx="2"
-                      cy={idx === 0 ? "35" : "5"}
-                      r="4"
-                      fill="#38bdf8"
-                      style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
-                    />
-                  </svg>
-                )}
+                {/* Curved SVG Dotted Line connecting right (bottom on mobile) bubbles to character */}
+                <svg
+                  style={{
+                    position: "absolute",
+                    ...(isMobile
+                      ? { top: "-70px", ...(idx === 0 ? { left: "15%" } : { right: "15%" }) }
+                      : {
+                        top: idx === 0 ? "50%" : "auto",
+                        bottom: idx === 1 ? "50%" : "auto",
+                        left: "-48px"
+                      }
+                    ),
+                    width: isMobile ? "60px" : "50px",
+                    height: isMobile ? "60px" : "40px",
+                    overflow: "visible",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                  }}
+                >
+                  <path
+                    d={
+                      isMobile
+                        ? (idx === 0 ? "M 10 60 C 10 35, 20 20, 40 10" : "M 50 60 C 50 35, 40 20, 20 10")
+                        : (idx === 0 ? "M 50 0 C 25 5, 15 25, 2 35" : "M 50 40 C 25 35, 15 15, 2 5")
+                    }
+                    fill="none"
+                    stroke="rgba(56, 189, 248, 0.85)"
+                    strokeWidth="2.5"
+                    strokeDasharray="4 4"
+                    strokeLinecap="round"
+                  />
+                  <circle
+                    cx={isMobile ? (idx === 0 ? "40" : "20") : "2"}
+                    cy={isMobile ? "10" : (idx === 0 ? "35" : "5")}
+                    r="4"
+                    fill="#38bdf8"
+                    style={{ filter: "drop-shadow(0 0 6px #38bdf8)" }}
+                  />
+                </svg>
               </div>
             ))}
           </div>

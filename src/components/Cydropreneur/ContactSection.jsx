@@ -186,7 +186,7 @@ const ContactSection = () => {
         <div
           style={{
             position: "absolute",
-            top: isMobile ? "-25px" : "10px",
+            top: isMobile ? "15px" : "10px",
             left: "-10%",
             width: "120%",
             height: "46px",
@@ -215,7 +215,7 @@ const ContactSection = () => {
         <div
           style={{
             position: "absolute",
-            top: isMobile ? "5px" : "40px",
+            top: isMobile ? "45px" : "40px",
             left: "-10%",
             width: "120%",
             height: "46px",
@@ -323,19 +323,19 @@ const ContactSection = () => {
             </div>
           )}
 
-          <img 
-            src="/img/footer--.png" 
-            alt="Cydropreneur Footer Banner" 
-            style={{ 
-              width: "100%", 
-              maxWidth: isMobile ? "340px" : "480px", 
-              height: "auto", 
+          <img
+            src="/img/footer--.png"
+            alt="Cydropreneur Footer Banner"
+            style={{
+              width: "100%",
+              maxWidth: isMobile ? "340px" : "480px",
+              height: "auto",
               objectFit: "contain",
               display: "block",
               position: "relative",
               zIndex: 2,
               flexShrink: 0
-            }} 
+            }}
           />
 
           {/* Right Speech Bubble (PC Only) */}
@@ -433,13 +433,13 @@ const ContactSection = () => {
 
               <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "0px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px" }}>
-                  <img src="/img/IEM_2.png" alt="IEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
+                  <img src="/img/IEM.png" alt="IEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
                   <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>
                     Institute of Engineering and Management, Newtown
                   </span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px", marginTop: "10px" }}>
-                  <img src="/img/UEM_2.png" alt="UEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
+                  <img src="/img/UEM.png" alt="UEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
                   <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>
                     University of Engineering and Management, Kolkata
                   </span>
@@ -519,7 +519,7 @@ const ContactSection = () => {
                 fontWeight: 600,
               }}>
                 <li style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#ffffff" }}>▪</span> Android Dev & Google AI Studio Guide
+                  <span style={{ color: "#ffffff" }}>▪</span> Android Dev & AI Agents Guide
                 </li>
                 <li style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span style={{ color: "#ffffff" }}>▪</span> Startup Pitching & MVP Toolkit
@@ -624,15 +624,42 @@ const ContactSection = () => {
             gap: "8px",
             textAlign: "center",
           }}>
-            {/* Designed By without name (as explicitly requested) */}
+            {/* Designed By name */}
             <div style={{
               fontFamily: "'Rajdhani', sans-serif",
               fontSize: "0.95rem",
               color: "#ffffff",
               fontWeight: 600,
               letterSpacing: "0.05em",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              lineHeight: 1.4
             }}>
-              Designed By :
+              <span>Designed & Developed By :</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
+                <a href="https://www.linkedin.com/in/tridibesh-sen/" target="_blank" rel="noopener noreferrer" style={{ 
+                  textDecoration: "none", 
+                  fontWeight: 800,
+                  background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>
+                  Tridibesh Sen
+                </a>
+                <span style={{ color: "#cbd5e1" }}>•</span>
+                <a href="https://www.linkedin.com/in/diptodeep-biswas/" target="_blank" rel="noopener noreferrer" style={{ 
+                  textDecoration: "none", 
+                  fontWeight: 800,
+                  background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>
+                  Diptodeep Biswas
+                </a>
+              </div>
             </div>
 
             {/* Copyright Notice */}
@@ -643,7 +670,9 @@ const ContactSection = () => {
               fontWeight: 600,
               letterSpacing: "0.05em",
             }}>
-              © 2026 Google Gemini Student Community. All rights reserved.
+              © 2026 Google Gemini Student Community.
+              {isMobile ? <br /> : " "}
+              All rights reserved.
             </div>
           </div>
         </div>

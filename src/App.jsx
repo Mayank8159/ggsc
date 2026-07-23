@@ -18,7 +18,6 @@ import VintageMemory from "./components/VintageMemory";
 import Footer from "./components/Footer";
 import DiscussionBoard from "./components/DiscussionBoard";
 import NotFound from "./components/NotFound";
-import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import Cydropreneur from "./components/Cydropreneur";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -445,7 +444,6 @@ function App() {
       {isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
       <GoogleGradientBG />
       <BGMButton />
-      <PWAInstallPrompt />
 
       <div style={{ position: "relative", zIndex: 2 }}>
         {!isCydropreneur && <NavBar />}

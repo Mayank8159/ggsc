@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 import { Menu, X } from "lucide-react";
 
-export function NavBar({ items, activeTab, onSelect, className }) {
+export function NavBar({ items, activeTab, onSelect, className, actionButton }) {
   const [currentTab, setCurrentTab] = useState(activeTab || items[0]?.name);
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -94,6 +94,11 @@ export function NavBar({ items, activeTab, onSelect, className }) {
               </motion.button>
             );
           })}
+          {actionButton && (
+            <div className="ml-1 pl-3 border-l border-purple-500/30 flex items-center">
+              {actionButton}
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -137,6 +142,11 @@ export function NavBar({ items, activeTab, onSelect, className }) {
                 </button>
               );
             })}
+            {actionButton && (
+              <div className="mt-1 pt-3 w-full flex justify-start px-2 border-t border-purple-500/30">
+                {actionButton}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

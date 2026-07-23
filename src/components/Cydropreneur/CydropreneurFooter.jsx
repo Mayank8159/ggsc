@@ -1,4 +1,15 @@
+import { useState, useEffect } from "react";
+
 const CydropreneurFooter = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 992);
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <footer
       style={{
@@ -16,8 +27,10 @@ const CydropreneurFooter = () => {
         <p style={{ fontWeight: 600, color: "#d8b4fe", marginBottom: "8px" }}>
           CYDROPRENEUR © 2026 — Google Student Club (GGSC)
         </p>
-        <p style={{ fontSize: "12px", opacity: 0.7 }}>
-          Build AI-powered Android applications with Google AI Studio. All rights reserved.
+        <p style={{ fontSize: "12px", opacity: 0.7, lineHeight: 1.5 }}>
+          Build AI-powered Android applications with AI Agents.
+          {isMobile ? <br /> : " "}
+          All rights reserved.
         </p>
       </div>
     </footer>
