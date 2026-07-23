@@ -51,14 +51,27 @@ export function NavBar({ items, activeTab, onSelect, className }) {
     >
       {/* Desktop Navbar */}
       {!isMobile && (
-        <div className="flex items-center gap-2 bg-black/60 border border-purple-500/30 backdrop-blur-xl py-1.5 px-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center gap-2 bg-black/60 border border-purple-500/30 backdrop-blur-xl py-1.5 px-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+        >
           {items.map((item) => {
             const isActive = currentTab === item.name;
 
             return (
-              <button
+              <motion.button
                 key={item.name}
+                layoutId={`nav-item-${item.name}`}
                 onClick={() => handleTabClick(item)}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 18,
+                  mass: 0.8
+                }}
                 className={cn(
                   "relative cursor-pointer text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-300 uppercase tracking-widest",
                   "text-purple-200/70 hover:text-white",
@@ -78,10 +91,10 @@ export function NavBar({ items, activeTab, onSelect, className }) {
                     }}
                   />
                 )}
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       )}
 
       {/* Mobile Hamburger Button */}
