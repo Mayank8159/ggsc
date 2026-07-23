@@ -16,7 +16,7 @@ const Cydropreneur = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize, { passive: true });
-    
+
     window.scrollTo(0, 0);
 
     const handleScroll = () => {
@@ -77,7 +77,7 @@ const Cydropreneur = () => {
       <WhyToAttendSection />
       <SpeakersSection />
       <ContactSection />
-      
+
       {/* Back to Top Button */}
       <button
         onClick={scrollToTop}
