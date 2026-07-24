@@ -23,17 +23,6 @@ const T = {
 };
 
 /* ─── DATA ─── */
-const FEATURED_EVENT = {
-  id: 1,
-  title: "Build with AI",
-  date: "July 12–13, 2026",
-  venue: "Main Auditorium • UEM Kolkata",
-  desc: "A next-generation AI workshop powered by Gemini APIs where developers, designers, and creators collaborate to build immersive products.",
-  img: "/img/hackathon.jpeg",
-  tag: "Workshop",
-  color: T.blue,
-};
-
 const UPCOMING_EVENTS = [
   {
     id: 100,
@@ -151,6 +140,7 @@ function SectionLabel({ label, title }) {
             textTransform: "uppercase",
             color: T.muted,
             fontFamily: "'DM Mono', monospace",
+            fontWeight: 700,
           }}
         >
           {label}
@@ -728,147 +718,16 @@ const Events = () => {
           </div>
 
           {/* ══════════════════════════════
-              FEATURED WORKSHOP
-          ══════════════════════════════ */}
-          <div className="fade-up" style={{ marginBottom: 80 }}>
-            <SectionLabel label="Featured" title="Flagship Event" />
-
-            <div className="featured-card-grid"
-              style={{
-                borderRadius: 28,
-                overflow: "hidden",
-                background: T.surface,
-                border: `1px solid ${T.border}`,
-                boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
-                minHeight: 420,
-              }}
-            >
-              {/* Left – content */}
-              <div className="featured-content"
-                style={{
-                  padding: "48px 48px",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <Pill color={T.blue}>Workshop</Pill>
-
-                  <h2
-                    style={{
-                      fontFamily: "'zentry', sans-serif",
-                      fontSize: "clamp(2.4rem, 4vw, 3.8rem)",
-                      lineHeight: 0.95,
-                      margin: "20px 0 18px",
-                      textTransform: "uppercase",
-                      color: T.text,
-                    }}
-                  >
-                    {FEATURED_EVENT.title}
-                  </h2>
-
-                  <p
-                    style={{
-                      color: T.muted,
-                      fontSize: 15,
-                      lineHeight: 1.75,
-                      maxWidth: 460,
-                    }}
-                  >
-                    {FEATURED_EVENT.desc}
-                  </p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      marginTop: 24,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {[
-                      {
-                        icon: <FiCalendar size={13} />,
-                        text: FEATURED_EVENT.date,
-                      },
-                      {
-                        icon: <FiMapPin size={13} />,
-                        text: FEATURED_EVENT.venue,
-                      },
-                    ].map(({ icon, text }) => (
-                      <div
-                        key={text}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 7,
-                          padding: "9px 16px",
-                          borderRadius: 12,
-                          background: "#f0f4ff",
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: T.text,
-                        }}
-                      >
-                        <span style={{ color: T.blue }}>{icon}</span>
-                        {text}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 36 }}>
-                  <Button
-                    title="Register Now"
-                    leftIcon={<TiLocationArrow />}
-                    containerClass=""
-                    onClick={() => window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank")}
-                  />
-                </div>
-              </div>
-
-              {/* Right – image */}
-              <div
-                style={{
-                  position: "relative",
-                  overflow: "hidden",
-                  minHeight: 380,
-                }}
-              >
-                <img
-                  src={FEATURED_EVENT.img}
-                  alt=""
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    display: "block",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(to right, rgba(255,255,255,0.12), transparent)",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ══════════════════════════════
               UPCOMING EVENTS
           ══════════════════════════════ */}
           <div className="fade-up" style={{ marginBottom: 80 }}>
-            <SectionLabel label="On the horizon" title="Upcoming." />
+            <SectionLabel label="Featured" title="Upcoming Event" />
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
               {UPCOMING_EVENTS.map((event) => (
                 <div
                   key={event.id}
-                  className="upcoming-card"
+                  className="featured-card-grid"
                   onClick={() => {
                     if (event.route) {
                       navigate(event.route);
@@ -876,107 +735,145 @@ const Events = () => {
                       setSelected(event);
                     }
                   }}
+                  style={{
+                    borderRadius: 28,
+                    overflow: "hidden",
+                    background: T.surface,
+                    border: `1px solid ${T.border}`,
+                    boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
+                    minHeight: 420,
+                    cursor: "pointer",
+                    transition: "transform 0.4s cubic-bezier(0.19,1,0.22,1), box-shadow 0.4s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,0.10)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 8px 40px rgba(0,0,0,0.06)";
+                  }}
                 >
-                  {/* Image */}
+                  {/* Left – content */}
+                  <div
+                    className="featured-content"
+                    style={{
+                      padding: "48px 48px",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <Pill color={event.color}>{event.tag}</Pill>
+
+                      <h2
+                        style={{
+                          fontFamily: "'zentry', sans-serif",
+                          fontSize: "clamp(2.4rem, 4vw, 3.8rem)",
+                          lineHeight: 0.95,
+                          margin: "20px 0 18px",
+                          textTransform: "uppercase",
+                          color: T.text,
+                        }}
+                      >
+                        {event.title}
+                      </h2>
+
+                      <p
+                        style={{
+                          color: T.muted,
+                          fontSize: 15,
+                          lineHeight: 1.75,
+                          maxWidth: 460,
+                        }}
+                      >
+                        {event.desc}
+                      </p>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 10,
+                          marginTop: 24,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {[
+                          {
+                            icon: <FiCalendar size={13} />,
+                            text: event.date,
+                          },
+                          {
+                            icon: <FiMapPin size={13} />,
+                            text: event.venue,
+                          },
+                        ].map(({ icon, text }) => (
+                          <div
+                            key={text}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 7,
+                              padding: "9px 16px",
+                              borderRadius: 12,
+                              background: "#f8f5ff",
+                              fontSize: 13,
+                              fontWeight: 600,
+                              color: T.text,
+                            }}
+                          >
+                            <span style={{ color: event.color }}>{icon}</span>
+                            {text}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 36 }}>
+                      <Button
+                        title="View Details"
+                        leftIcon={<TiLocationArrow />}
+                        containerClass=""
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (event.route) {
+                            navigate(event.route);
+                          } else {
+                            setSelected(event);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Right – image */}
                   <div
                     style={{
-                      overflow: "hidden",
-                      minHeight: 220,
                       position: "relative",
+                      overflow: "hidden",
+                      minHeight: 380,
                     }}
                   >
                     <img
-                      className="uc-img"
                       src={event.img}
                       alt={event.title}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                        transition: "transform 0.7s ease",
+                      }}
                     />
                     <div
                       style={{
                         position: "absolute",
-                        top: 14,
-                        left: 14,
+                        inset: 0,
+                        background:
+                          "linear-gradient(to right, rgba(255,255,255,0.12), transparent)",
                       }}
-                    >
-                      <Pill color={event.color}>{event.tag}</Pill>
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div
-                    style={{
-                      padding: "32px 36px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 16,
-                        marginBottom: 16,
-                        color: T.muted,
-                        fontSize: 12.5,
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                        }}
-                      >
-                        <FiCalendar size={12} /> {event.date}
-                      </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 5,
-                        }}
-                      >
-                        <FiMapPin size={12} /> {event.venue}
-                      </span>
-                    </div>
-
-                    <h3
-                      style={{
-                        fontSize: "clamp(1.6rem, 2.5vw, 2.2rem)",
-                        fontWeight: 800,
-                        color: T.text,
-                        marginBottom: 14,
-                        lineHeight: 1.15,
-                        fontFamily: "'zentry', sans-serif",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {event.title}
-                    </h3>
-
-                    <p
-                      style={{
-                        color: T.muted,
-                        lineHeight: 1.7,
-                        fontSize: 14,
-                        maxWidth: 480,
-                        marginBottom: 24,
-                      }}
-                    >
-                      {event.desc}
-                    </p>
-
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: event.color,
-                      }}
-                    >
-                      View Details <FiArrowUpRight size={14} />
-                    </div>
+                    />
                   </div>
                 </div>
               ))}

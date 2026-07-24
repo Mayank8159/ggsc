@@ -77,7 +77,10 @@ body {
 @layer base {
   @font-face {
     font-family: "Ethnocentric";
-    src: url("/fonts/Ethnocentric-Regular.otf") format("opentype");
+    src: url("/fonts/Ethnocentric-Regular.otf") format("opentype"),
+         url("/fonts/Ethnocentric-Regular.otf");
+    font-weight: 100 900;
+    font-style: normal;
     font-display: swap;
   }
 

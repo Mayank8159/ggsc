@@ -123,7 +123,7 @@ const SpeakersSection = () => {
           <h2
             style={{
               fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
-              fontSize: "clamp(2.2rem, 4.5vw, 4rem)",
+              fontSize: "clamp(1.8rem, 4.5vw, 4rem)",
               fontWeight: 900,
               color: "#ffffff",
               textTransform: "uppercase",
@@ -131,7 +131,7 @@ const SpeakersSection = () => {
               textShadow: "0 0 25px rgba(168, 85, 247, 0.4)",
             }}
           >
-            SPEAKERS
+            OUR SPEAKERS
           </h2>
           <p
             style={{
