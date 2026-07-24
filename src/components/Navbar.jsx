@@ -29,14 +29,74 @@ const NavBar = () => {
   const { isAuthenticated, user, logout } = useAuth();
 
   const toggleAudioIndicator = () => {
-    setIsAudioPlaying((prev) => !prev);
-    setIsIndicatorActive((prev) => !prev);
+    const audio = audioElementRef.current;
+    if (!audio) return;
+
+    if (isAudioPlaying) {
+      audio.pause();
+      setIsAudioPlaying(false);
+      setIsIndicatorActive(false);
+    } else {
+      audio.volume = 1.0;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsAudioPlaying(true);
+            setIsIndicatorActive(true);
+          })
+          .catch((err) => {
+            console.error("Audio playback failed:", err);
+          });
+      }
+    }
   };
 
+  // Default Auto-Play for every user on load & first user interaction
   useEffect(() => {
-    if (isAudioPlaying) audioElementRef.current.play();
-    else audioElementRef.current.pause();
-  }, [isAudioPlaying]);
+    const audio = audioElementRef.current;
+    if (!audio) return;
+
+    audio.volume = 1.0;
+
+    const playAudio = () => {
+      const promise = audio.play();
+      if (promise !== undefined) {
+        promise
+          .then(() => {
+            setIsAudioPlaying(true);
+            setIsIndicatorActive(true);
+          })
+          .catch(() => {
+            // Autoplay policy muted until first user interaction
+          });
+      }
+    };
+
+    // 1. Attempt immediate play on mount
+    playAudio();
+
+    // 2. Fallback: play on first user interaction anywhere on page
+    const handleFirstGesture = () => {
+      playAudio();
+      window.removeEventListener("click", handleFirstGesture);
+      window.removeEventListener("touchstart", handleFirstGesture);
+      window.removeEventListener("scroll", handleFirstGesture);
+      window.removeEventListener("keydown", handleFirstGesture);
+    };
+
+    window.addEventListener("click", handleFirstGesture, { once: true });
+    window.addEventListener("touchstart", handleFirstGesture, { once: true });
+    window.addEventListener("scroll", handleFirstGesture, { once: true });
+    window.addEventListener("keydown", handleFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener("click", handleFirstGesture);
+      window.removeEventListener("touchstart", handleFirstGesture);
+      window.removeEventListener("scroll", handleFirstGesture);
+      window.removeEventListener("keydown", handleFirstGesture);
+    };
+  }, []);
 
   useEffect(() => {
     if (currentScrollY === 0) {
@@ -153,13 +213,52 @@ const NavBar = () => {
               )}
             </div>
 
-            <button onClick={toggleAudioIndicator} className="flex items-center ml-2 sm:ml-4 space-x-0.5">
-              <audio ref={audioElementRef} className="hidden" src="/audio/loop.mp3" loop />
+            {/* Global Background Audio Element */}
+            <audio
+              ref={audioElementRef}
+              autoPlay
+              loop
+              preload="auto"
+              style={{ display: "none" }}
+            >
+              <source src="/music/bgm.mp3" type="audio/mpeg" />
+              <source src="/music/WhatsApp%20Audio%202026-07-24%20at%208.07.53%20PM.mpeg" type="audio/mpeg" />
+            </audio>
+
+            {/* Desktop Audio Button */}
+            <button
+              onClick={toggleAudioIndicator}
+              className="hidden sm:flex items-center ml-4 space-x-0.5"
+              title={isAudioPlaying ? "Mute Background Music" : "Unmute Background Music"}
+            >
               {[1, 2, 3, 4].map((bar) => (
                 <div key={bar}
                   className={clsx("indicator-line", { active: isIndicatorActive })}
                   style={{ animationDelay: `${bar * 0.1}s` }} />
               ))}
+            </button>
+
+            {/* Mobile Bottom-Right Floating BGM Button (Aligned with Back-to-Top button) */}
+            <button
+              onClick={toggleAudioIndicator}
+              className="flex sm:hidden fixed items-center justify-center rounded-full bg-purple-950/80 border border-purple-400/50 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] active:scale-95 transition-all duration-300"
+              style={{
+                position: "fixed",
+                bottom: "30px",
+                right: "90px",
+                width: "44px",
+                height: "44px",
+                zIndex: 9999,
+              }}
+              title={isAudioPlaying ? "Mute Background Music" : "Unmute Background Music"}
+            >
+              <div className="flex items-center space-x-0.5">
+                {[1, 2, 3, 4].map((bar) => (
+                  <div key={bar}
+                    className={clsx("indicator-line", { active: isIndicatorActive })}
+                    style={{ animationDelay: `${bar * 0.1}s`, backgroundColor: "#ffffff" }} />
+                ))}
+              </div>
             </button>
 
             {/* Hamburger */}

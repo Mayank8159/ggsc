@@ -2,6 +2,115 @@ import { useState, useEffect } from "react";
 import { FiArrowRight } from "react-icons/fi";
 import gsap from "gsap";
 
+const TypewriterTagline = () => {
+  const line1Full = "YOUR NEXT LINE OF CODE";
+  const line2Full = "COULD BE A COMPANY";
+
+  const [line1, setLine1] = useState("");
+  const [line2, setLine2] = useState("");
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    let index1 = 0;
+    let index2 = 0;
+    let timer2;
+
+    setLine1("");
+    setLine2("");
+    setIsComplete(false);
+
+    // Start typing immediately at t=0
+    const timer1 = setInterval(() => {
+      if (index1 < line1Full.length) {
+        setLine1(line1Full.slice(0, index1 + 1));
+        index1++;
+      } else {
+        clearInterval(timer1);
+        setTimeout(() => {
+          timer2 = setInterval(() => {
+            if (index2 < line2Full.length) {
+              setLine2(line2Full.slice(0, index2 + 1));
+              index2++;
+            } else {
+              clearInterval(timer2);
+              setIsComplete(true);
+            }
+          }, 70);
+        }, 180);
+      }
+    }, 70);
+
+    return () => {
+      clearInterval(timer1);
+      if (timer2) clearInterval(timer2);
+    };
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "12%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "92%",
+        maxWidth: "600px",
+        zIndex: 10,
+        pointerEvents: "none",
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "4px",
+        fontFamily: "'Ethnocentric', 'Orbitron', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "clamp(12px, 3.6vw, 18px)",
+          fontWeight: 900,
+          color: "#000000",
+          WebkitTextStroke: "1.2px #ffffff",
+          letterSpacing: "0.04em",
+          lineHeight: 1.3,
+          filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.6))",
+          minHeight: "1.4em",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span>{line1}</span>
+        {line1.length < line1Full.length && (
+          <span style={{ color: "#c084fc", marginLeft: "2px", fontWeight: 400 }} className="animate-pulse">|</span>
+        )}
+      </div>
+
+      <div
+        style={{
+          fontSize: "clamp(12px, 3.6vw, 18px)",
+          fontWeight: 900,
+          color: "#000000",
+          WebkitTextStroke: "1.2px #ffffff",
+          letterSpacing: "0.04em",
+          lineHeight: 1.3,
+          filter: "drop-shadow(0 2px 8px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 12px rgba(168, 85, 247, 0.6))",
+          minHeight: "1.4em",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <span>{line2}</span>
+        {line1.length === line1Full.length && !isComplete && (
+          <span style={{ color: "#c084fc", marginLeft: "2px", fontWeight: 400 }} className="animate-pulse">|</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /*
   HomeSection renders the contained aspect-ratio background (mobile image / desktop video)
   and the Register Now button relative to it.
@@ -18,23 +127,23 @@ const HomeSection = () => {
     if (screenSize.width >= 768) return;
 
     // Reset styles just in case
-    gsap.set(".welcome-text", { strokeDashoffset: 1000, fill: "transparent" });
+    gsap.set(".welcome-text", { strokeDashoffset: 1400, fill: "transparent" });
 
     const tl = gsap.timeline();
 
-    // 1. Draw text outlines
+    // 1. Draw text outlines with slower duration
     tl.to(".welcome-text", {
       strokeDashoffset: 0,
-      duration: 1.8,
+      duration: 4.5,
       ease: "power2.inOut",
     });
 
-    // 2. Fill text color
+    // 2. Fill text color with black
     tl.to(".welcome-text", {
       fill: "#000000",
-      duration: 0.6,
+      duration: 1.5,
       ease: "power1.out",
-    }, "-=0.5");
+    }, "-=0.8");
   }, [screenSize.width]);
 
   useEffect(() => {
@@ -52,8 +161,32 @@ const HomeSection = () => {
   const scrollToRegister = () =>
     window.open("https://forms.gle/qYHwXw7TmNuzv2iF8", "_blank");
 
-  // Make video fill the screen on PC (border is handled by Cydropreneur index.jsx)
-  let videoViewport = { width: "100%", height: "100%", top: 0, left: 0 };
+  // Calculate 16:9 contained viewport bounds for PC view to prevent video & button distortion across screen sizes
+  const targetAspect = 16 / 9;
+  const currW = screenSize.width || 1920;
+  const currH = screenSize.height || 1080;
+  const currentAspect = currW / currH;
+
+  let frameW, frameH;
+  if (currentAspect > targetAspect) {
+    frameH = currH;
+    frameW = currH * targetAspect;
+  } else {
+    frameW = currW;
+    frameH = currW / targetAspect;
+  }
+
+  const videoViewport = {
+    width: `${frameW}px`,
+    height: `${frameH}px`,
+    top: `${(currH - frameH) / 2}px`,
+    left: `${(currW - frameW) / 2}px`,
+  };
+
+  const buttonW = frameW * 0.165;
+  const buttonH = frameH * 0.125;
+  const buttonFontSize = Math.max(14, Math.round(frameW * 0.0135));
+  const arrowSize = Math.max(14, Math.round(frameW * 0.0135));
 
   return (
     <section
@@ -215,15 +348,20 @@ const HomeSection = () => {
             </svg>
           </div>
 
+          {/* Typewriter Tagline Title */}
+          <TypewriterTagline />
+
           {/* Mobile Button wrapper */}
           <div
             style={{
               position: "absolute",
               bottom: "6%",
-              right: "50%",
-              transform: "translateX(50%)",
-              width: "auto",
-              height: "auto",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "max-content",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               zIndex: 10,
               pointerEvents: "auto",
             }}
@@ -235,64 +373,84 @@ const HomeSection = () => {
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "10px 20px",
+                padding: "12px 24px",
                 borderRadius: "999px",
                 background: "linear-gradient(135deg,#7e22ce 0%,#a855f7 50%,#c084fc 100%)",
                 color: "#ffffff",
-                fontSize: "10px",
+                fontSize: "11px",
                 fontWeight: 800,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
                 border: "1px solid rgba(255,255,255,0.4)",
                 cursor: "pointer",
-                boxShadow: "0 6px 24px rgba(168,85,247,0.6),inset 0 1px 0 rgba(255,255,255,0.4)",
+                boxShadow: "0 6px 28px rgba(168,85,247,0.7),inset 0 1px 0 rgba(255,255,255,0.4)",
                 transition: "all 0.3s ease",
                 whiteSpace: "nowrap",
               }}
               className="hover:scale-105"
             >
-              REGISTER NOW <FiArrowRight size={13} style={{ marginLeft: "8px" }} />
+              REGISTER NOW <FiArrowRight size={14} style={{ marginLeft: "8px" }} />
             </button>
           </div>
         </>
       ) : (
-        // Desktop View: Perfectly contained 16:9 aspect-ratio frame
-        <div
-          style={{
-            position: "absolute",
-            width: videoViewport.width,
-            height: videoViewport.height,
-            top: videoViewport.top,
-            left: videoViewport.left,
-            zIndex: 1,
-            overflow: "hidden",
-            backgroundColor: "#000000",
-          }}
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            src="/videos/hero-frame embedded.mp4"
+        // Desktop View: hero bg.png as full-screen absolute background + 16:9 video frame
+        <>
+          {/* Absolute full-screen background image for PC view */}
+          <img
+            src="/img/hero bg.png"
+            alt="Hero Background PC"
             style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              objectPosition: "center 20%",
+              objectPosition: "center",
               display: "block",
-              margin: 0,
+              zIndex: 0,
             }}
           />
 
-          {/* Desktop Button - positioned relative to video frame boundaries */}
           <div
             style={{
               position: "absolute",
-              bottom: "2%",
-              right: "4.8%",
-              width: "268px",
-              height: "110px",
+              width: videoViewport.width,
+              height: videoViewport.height,
+              top: videoViewport.top,
+              left: videoViewport.left,
+              zIndex: 1,
+              overflow: "hidden",
+              backgroundColor: "transparent",
+            }}
+          >
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              src="/videos/hero-frame embedded.mp4"
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                display: "block",
+                margin: 0,
+                zIndex: 1,
+              }}
+            />
+
+          {/* Hardcoded Desktop CTA Button */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "4.6%",
+              right: "5.5%",
+              width: "250px",
+              height: "105px",
               zIndex: 10,
               pointerEvents: "auto",
             }}
@@ -307,12 +465,12 @@ const HomeSection = () => {
                 alignItems: "center",
                 justifyContent: "flex-start",
                 padding: "0",
-                paddingLeft: "42px",
+                paddingLeft: "39px",
                 background: "url('/img/CTA Button.png') no-repeat center",
                 backgroundSize: "contain",
                 backgroundColor: "transparent",
                 color: "#eceff1",
-                fontSize: "22px",
+                fontSize: "20px",
                 fontWeight: 800,
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
@@ -328,7 +486,7 @@ const HomeSection = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "flex-start",
-                  gap: "10px",
+                  gap: "8px",
                   lineHeight: "1",
                   filter: "drop-shadow(0 0 4px rgba(244, 114, 182, 0.65))",
                 }}
@@ -346,7 +504,7 @@ const HomeSection = () => {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "7px",
                   }}
                 >
                   <span
@@ -358,13 +516,14 @@ const HomeSection = () => {
                   >
                     NOW
                   </span>
-                  <FiArrowRight size={22} style={{ color: "#cbd5e1" }} />
+                  <FiArrowRight size={20} style={{ color: "#cbd5e1" }} />
                 </span>
               </div>
             </button>
           </div>
         </div>
-      )}
+      </>
+    )}
     </section>
   );
 };

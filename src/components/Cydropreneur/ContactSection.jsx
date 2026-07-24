@@ -18,6 +18,37 @@ const GoogleText = () => {
   );
 };
 
+const FollowSocialButton = ({ icon, href }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="interactive"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        width: "56px",
+        height: "56px",
+        borderRadius: "14px",
+        background: hover ? "rgba(255, 255, 255, 0.18)" : "rgba(255, 255, 255, 0.08)",
+        border: hover ? "1px solid rgba(255, 255, 255, 0.45)" : "1px solid rgba(255, 255, 255, 0.2)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#ffffff",
+        transform: hover ? "translateY(-4px) scale(1.08)" : "none",
+        boxShadow: hover ? "0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)" : "none",
+        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        textDecoration: "none",
+      }}
+    >
+      {icon}
+    </a>
+  );
+};
+
 const ClassySocialRow = ({ href, icon, platform, handle }) => {
   const [hover, setHover] = useState(false);
   return (
@@ -550,33 +581,12 @@ const ContactSection = () => {
               {/* Social Icons Row */}
               <div style={{ display: "flex", gap: "24px" }}>
                 {[
-                  { icon: <FaWhatsapp size={26} />, href: "https://chat.whatsapp.com/ImdIqwRXTdcHxy0LirVSQQ" },
-                  { icon: <FaInstagram size={26} />, href: "https://www.instagram.com/ggsc_uemk" },
-                  { icon: <FaLinkedin size={26} />, href: "https://www.linkedin.com/in/ggsc-uemk" },
-                  { icon: <FaFacebook size={26} />, href: "https://www.facebook.com/share/1Cd7Y97m99/" },
+                  { icon: <FaWhatsapp size={26} />, href: "https://chat.whatsapp.com/ImdIqwRXTdcHxy0LirVSQQ", brandHex: "#25D366", brandRgb: "37, 211, 102" },
+                  { icon: <FaInstagram size={26} />, href: "https://www.instagram.com/ggsc_uemk", brandHex: "#E1306C", brandRgb: "225, 48, 108" },
+                  { icon: <FaLinkedin size={26} />, href: "https://www.linkedin.com/in/ggsc-uemk", brandHex: "#0A66C2", brandRgb: "10, 102, 194" },
+                  { icon: <FaFacebook size={26} />, href: "https://www.facebook.com/share/1Cd7Y97m99/", brandHex: "#1877F2", brandRgb: "24, 119, 242" },
                 ].map((s, idx) => (
-                  <a
-                    key={idx}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="interactive"
-                    style={{
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "12px",
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#ffffff",
-                      transition: "all 0.2s ease",
-                      textDecoration: "none",
-                    }}
-                  >
-                    {s.icon}
-                  </a>
+                  <FollowSocialButton key={idx} {...s} />
                 ))}
               </div>
 
@@ -601,7 +611,7 @@ const ContactSection = () => {
               }}>
                 <iframe
                   title="UEM Kolkata Venue Map"
-                  src="https://maps.google.com/maps?q=University%20of%20Engineering%20%26%20Management%20(UEM)%20Newtown%20Kolkata&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                  src="https://maps.google.com/maps?q=University%20of%20Engineering%20%26%20Management%20(UEM)%20New%20Town%20Kolkata&t=&z=15&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
