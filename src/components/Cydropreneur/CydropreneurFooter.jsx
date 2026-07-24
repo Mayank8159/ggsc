@@ -25,7 +25,7 @@ const CydropreneurFooter = () => {
     >
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
         <p style={{ fontWeight: 600, color: "#d8b4fe", marginBottom: "8px" }}>
-          CYDROPRENEUR © 2026 — Google Student Club (GGSC)
+          CYDROPRENEUR © 2026 — Google Gemini Student Community (GGSC)
         </p>
         <p style={{ fontSize: "12px", opacity: 0.7, lineHeight: 1.5 }}>
           Build AI-powered Android applications with AI Agents.

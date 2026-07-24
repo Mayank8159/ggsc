@@ -209,7 +209,7 @@ const AboutSection = () => {
                 }}
               >
                 <MapPin size={15} style={{ color: "#d8b4fe", flexShrink: 0 }} />
-                <span>INSTITUTE OF ENGINEERING AND MANAGEMENT, NEWTOWN</span>
+                <span>INSTITUTE OF ENGINEERING AND MANAGEMENT,<br />NEW TOWN</span>
               </div>
             </div>
 
@@ -302,7 +302,7 @@ const AboutSection = () => {
                 textAlign: "center",
               }}
             >
-              Organized by: Google Student Club (GGSC) UEMK in
+              Organized by: Google Gemini Student Community (GGSC) UEMK in
               collaboration with the Innovation & Entrepreneurship Development
               Cell and The Dept. of CST, CSIT, CSE (CS) & CSE (NW).
             </div>

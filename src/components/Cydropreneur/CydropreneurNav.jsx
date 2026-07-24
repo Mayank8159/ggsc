@@ -131,7 +131,7 @@ const CydropreneurNav = () => {
             className="home-buttons-container"
           >
             {/* Circular Back button (replaces Home) */}
-            <div style={{ position: "absolute", top: "6.5vh", left: "4.5vw", zIndex: 9999 }}>
+            <div style={{ position: "absolute", top: "7.0vh", left: "4.5vw", zIndex: 9999 }}>
               <motion.button
                 layoutId="nav-item-HOME"
                 onClick={() => navigate("/events")}
@@ -144,13 +144,13 @@ const CydropreneurNav = () => {
                 }}
                 style={{
                   ...glass,
-                  width: "56px",
-                  height: "56px",
+                  width: "52px",
+                  height: "52px",
                   borderRadius: "50%",
                 }}
                 className="hover:scale-110 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]"
               >
-                <ArrowLeft size={26} />
+                <ArrowLeft size={24} />
               </motion.button>
             </div>
 
@@ -158,15 +158,17 @@ const CydropreneurNav = () => {
             <div
               style={{
                 position: "absolute",
-                top: "6.0vh",
-                left: "30vw",
-                width: "65vw",
-                height: "50px",
+                top: "7.2vh",
+                left: "31vw",
+                width: "64vw",
+                maxWidth: "860px",
+                height: "48px",
                 zIndex: 9999,
                 display: "flex",
-                gap: "30px",
+                gap: "18px",
                 alignItems: "center",
                 justifyContent: "space-between",
+                whiteSpace: "nowrap",
               }}
             >
               {NAV_ITEMS_HOME.map((item, idx) => (
@@ -184,9 +186,9 @@ const CydropreneurNav = () => {
                     ...glass,
                     flex: 1,
                     height: "100%",
-                    borderRadius: "20px",
-                    fontSize: "12px",
-                    padding: "0 8px",
+                    borderRadius: "18px",
+                    fontSize: "11.5px",
+                    padding: "0 14px",
                   }}
                   className="hover:scale-105 hover:border-purple-400 hover:bg-purple-900/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)]"
                 >

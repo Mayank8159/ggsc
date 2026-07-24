@@ -56,7 +56,7 @@ export function NavBar({ items, activeTab, onSelect, className, actionButton }) 
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-2 bg-black/60 border border-purple-500/30 backdrop-blur-xl py-1.5 px-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+          className="flex items-center gap-3 bg-black/60 border border-purple-500/30 backdrop-blur-xl py-2 px-4 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] whitespace-nowrap max-w-[95vw]"
         >
           {items.map((item) => {
             const isActive = currentTab === item.name;
@@ -73,12 +73,12 @@ export function NavBar({ items, activeTab, onSelect, className, actionButton }) 
                   mass: 0.8
                 }}
                 className={cn(
-                  "relative cursor-pointer text-xs font-bold px-5 py-2.5 rounded-full transition-all duration-300 uppercase tracking-widest",
+                  "relative cursor-pointer text-xs font-bold px-4 py-2.5 rounded-full transition-all duration-300 uppercase tracking-widest whitespace-nowrap flex-shrink-0",
                   "text-purple-200/70 hover:text-white",
                   isActive && "text-white font-extrabold"
                 )}
               >
-                <span className="inline" style={{ fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "10px" }}>{item.name}</span>
+                <span className="inline whitespace-nowrap" style={{ fontFamily: "'Ethnocentric', 'Orbitron', sans-serif", fontSize: "10px", whiteSpace: "nowrap" }}>{item.name}</span>
                 {isActive && (
                   <motion.div
                     layoutId="lamp"
@@ -95,7 +95,7 @@ export function NavBar({ items, activeTab, onSelect, className, actionButton }) 
             );
           })}
           {actionButton && (
-            <div className="ml-1 pl-3 border-l border-purple-500/30 flex items-center">
+            <div className="ml-1 pl-3 border-l border-purple-500/30 flex items-center flex-shrink-0">
               {actionButton}
             </div>
           )}
@@ -143,7 +143,7 @@ export function NavBar({ items, activeTab, onSelect, className, actionButton }) 
               );
             })}
             {actionButton && (
-              <div className="mt-1 pt-3 w-full flex justify-start px-2 border-t border-purple-500/30">
+              <div className="mt-1 pt-3 w-full flex justify-center items-center border-t border-purple-500/30">
                 {actionButton}
               </div>
             )}
