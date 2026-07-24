@@ -41,7 +41,7 @@ const UPCOMING_EVENTS = [
     date: "08th August 2026",
     venue: "FICCI Auditorium",
     desc: "Build Android applications in an immersive, hands-on workshop",
-    img: "/img/static.png",
+    img: "/img/event-banner.png",
     tag: "AI & Android",
     color: T.purple,
     route: "/events/Cydropreneur",

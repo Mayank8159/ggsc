@@ -106,7 +106,7 @@ export function NavBar({ items, activeTab, onSelect, className, actionButton }) 
       {isMobile && (
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-3 rounded-full bg-black/80 border border-purple-500/50 text-white backdrop-blur-xl shadow-[0_10px_30px_rgba(168,85,247,0.3)] transition-all outline-none"
+          className="flex items-center justify-center w-12 h-12 rounded-full bg-black/80 border border-purple-500/50 text-white backdrop-blur-xl shadow-[0_10px_30px_rgba(168,85,247,0.3)] transition-all outline-none"
         >
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>

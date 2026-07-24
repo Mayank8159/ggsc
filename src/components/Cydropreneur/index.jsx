@@ -10,6 +10,13 @@ import { FaArrowUp } from "react-icons/fa";
 
 const ScrollToTopButton = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,10 +43,10 @@ const ScrollToTopButton = () => {
       className="hover:scale-110 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)]"
       style={{
         position: "fixed",
-        bottom: "30px",
-        right: "30px",
-        width: "50px",
-        height: "50px",
+        bottom: isMobile ? "24px" : "30px",
+        right: isMobile ? "24px" : "30px",
+        width: isMobile ? "48px" : "50px",
+        height: isMobile ? "48px" : "50px",
         borderRadius: "50%",
         background: "linear-gradient(135deg, rgba(147, 51, 234, 0.4), rgba(88, 28, 135, 0.7))",
         backdropFilter: "blur(12px)",

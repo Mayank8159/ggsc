@@ -271,59 +271,94 @@ const GoogleGradientBG = () => {
 const BGMButton = () => {
   const [playing, setPlaying] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
   const audioRef = useRef(null);
   const location = useLocation();
   const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
 
   useEffect(() => {
-    audioRef.current = new Audio("/audio/loop.mp3");
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Initialize the audio object once
+  useEffect(() => {
+    audioRef.current = new Audio();
     audioRef.current.loop = true;
-    audioRef.current.volume = 0.25;
+    audioRef.current.volume = 1.0;
     setTimeout(() => setVisible(true), 1500);
     return () => {
       audioRef.current.pause();
     };
   }, []);
 
+  // Handle route changes and set default states
   useEffect(() => {
-    if (isCydropreneur) {
-      if (audioRef.current && !audioRef.current.paused) {
-        audioRef.current.pause();
+    if (!audioRef.current) return;
+
+    // Use loop.mp3 for Cydropreneur, bgm.mp3 for main website
+    const targetSrc = isCydropreneur ? "/audio/loop.mp3" : "/music/bgm.mp3";
+
+    const attemptPlayWithFallback = () => {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setPlaying(true);
+        }).catch(() => {
+          // Autoplay blocked by browser policy on refresh
+          setPlaying(false);
+
+          // Setup one-time interaction listeners to bypass autoplay restriction
+          const handleFirstInteraction = () => {
+            if (isCydropreneur && audioRef.current && audioRef.current.paused) {
+              audioRef.current.play().then(() => setPlaying(true)).catch(() => { });
+            }
+            window.removeEventListener("click", handleFirstInteraction);
+            window.removeEventListener("touchstart", handleFirstInteraction);
+            window.removeEventListener("scroll", handleFirstInteraction);
+            window.removeEventListener("keydown", handleFirstInteraction);
+          };
+
+          window.addEventListener("click", handleFirstInteraction, { once: true });
+          window.addEventListener("touchstart", handleFirstInteraction, { once: true });
+          window.addEventListener("scroll", handleFirstInteraction, { once: true });
+          window.addEventListener("keydown", handleFirstInteraction, { once: true });
+        });
       }
-      const cydroVideo = document.querySelector("#home video");
-      if (cydroVideo) {
-        setPlaying(!cydroVideo.muted && !cydroVideo.paused);
+    };
+
+    // Only update source if it has changed to prevent resetting audio continuously
+    if (!audioRef.current.src.endsWith(targetSrc)) {
+      audioRef.current.src = targetSrc;
+      audioRef.current.load(); // ensure new source is loaded
+
+      if (isCydropreneur) {
+        // Cydropreneur is default ON
+        attemptPlayWithFallback();
       } else {
+        // Main website is default OFF
+        audioRef.current.pause();
         setPlaying(false);
       }
     } else {
-      setPlaying(audioRef.current && !audioRef.current.paused);
+      // If the source is the same, just sync the playing state (just in case)
+      setPlaying(!audioRef.current.paused);
+      if (isCydropreneur && audioRef.current.paused) {
+        attemptPlayWithFallback();
+      }
     }
-  }, [location, isCydropreneur]);
+  }, [location.pathname, isCydropreneur]);
 
   const toggle = () => {
-    if (isCydropreneur) {
-      if (audioRef.current) audioRef.current.pause();
+    if (!audioRef.current) return;
 
-      const cydroVideo = document.querySelector("#home video");
-      if (cydroVideo) {
-        if (cydroVideo.muted || cydroVideo.paused) {
-          cydroVideo.muted = false;
-          cydroVideo.play().catch(() => { });
-          setPlaying(true);
-        } else {
-          cydroVideo.muted = true;
-          setPlaying(false);
-        }
-      }
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
     } else {
-      if (playing) {
-        audioRef.current.pause();
-        setPlaying(false);
-      } else {
-        audioRef.current.play().catch(() => { });
-        setPlaying(true);
-      }
+      audioRef.current.play().catch(() => { });
+      setPlaying(true);
     }
   };
 
@@ -332,11 +367,13 @@ const BGMButton = () => {
       onClick={toggle}
       style={{
         position: "fixed",
-        bottom: "36px",
-        left: isCydropreneur ? "36px" : "auto",
+        bottom: isMobile && isCydropreneur ? "24px" : "36px",
+        left: isCydropreneur ? (isMobile ? "24px" : "36px") : "auto",
         right: isCydropreneur ? "auto" : "32px",
         zIndex: 9998,
-        width: "52px", height: "52px", borderRadius: "50%",
+        width: isMobile && isCydropreneur ? "48px" : "52px",
+        height: isMobile && isCydropreneur ? "48px" : "52px",
+        borderRadius: "50%",
         background: isCydropreneur ? "rgba(18,10,36,0.75)" : "rgba(255,255,255,0.7)",
         backdropFilter: "blur(24px) saturate(200%)",
         WebkitBackdropFilter: "blur(24px) saturate(200%)",
