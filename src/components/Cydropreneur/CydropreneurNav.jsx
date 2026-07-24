@@ -8,7 +8,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 const NAV_ITEMS_HOME = [
   { label: "ABOUT", target: "about" },
   { label: "WHY TO ATTEND", target: "why-to-attend" },
-  { label: "SPEAKERS", target: "speakers" },
+  { label: "OUR SPEAKERS", target: "speakers" },
   { label: "CONTACT US", target: "contact-us" },
 ];
 
@@ -24,7 +24,7 @@ const CydropreneurNav = () => {
     { name: "HOME", url: "#home", icon: Home },
     { name: "ABOUT", url: "#about", icon: Info },
     { name: "WHY TO ATTEND", url: "#why-to-attend", icon: Sparkles },
-    { name: "SPEAKERS", url: "#speakers", icon: Users },
+    { name: "OUR SPEAKERS", url: "#speakers", icon: Users },
     { name: "CONTACT US", url: "#contact-us", icon: Mail },
   ];
 
