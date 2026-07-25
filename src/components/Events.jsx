@@ -754,10 +754,11 @@ const Events = () => {
                     e.currentTarget.style.boxShadow = "0 8px 40px rgba(0,0,0,0.06)";
                   }}
                 >
-                  {/* Left – content */}
+                  {/* Right – content (via order) */}
                   <div
                     className="featured-content"
                     style={{
+                      order: 2,
                       padding: "48px 48px",
                       display: "flex",
                       flexDirection: "column",
@@ -847,9 +848,10 @@ const Events = () => {
                     </div>
                   </div>
 
-                  {/* Right – image */}
+                  {/* Left – image (via order) */}
                   <div
                     style={{
+                      order: 1,
                       position: "relative",
                       overflow: "hidden",
                       minHeight: 380,
@@ -871,7 +873,7 @@ const Events = () => {
                         position: "absolute",
                         inset: 0,
                         background:
-                          "linear-gradient(to right, rgba(255,255,255,0.12), transparent)",
+                          "linear-gradient(to left, rgba(255,255,255,0.12), transparent)",
                       }}
                     />
                   </div>

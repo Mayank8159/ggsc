@@ -439,13 +439,13 @@ const ContactSection = () => {
           {/* 4 Columns Grid */}
           <div style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
+            gridTemplateColumns: isMobile ? "1fr" : "1.2fr 1.4fr 1.1fr 0.9fr",
             gap: isMobile ? "36px" : "32px",
             alignItems: "start",
             marginBottom: "40px",
           }}>
             {/* Column 1: Branding & Organized By */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0px", marginTop: "-40px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0px", marginTop: "-40px", position: "relative", left: isMobile ? "0" : "-20px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <img src="/img/cydro-logo-footer.png" alt="CYDROPRENEUR Logo" style={{ height: "140px", objectFit: "contain" }} />
               </div>
@@ -493,21 +493,21 @@ const ContactSection = () => {
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontFamily: "'Rajdhani', sans-serif", fontSize: "0.95rem", color: "#ffffff", fontWeight: 600 }}>
-                <div>
+                <div style={{ whiteSpace: "nowrap" }}>
                   <span style={{ color: "#ffffff" }}>Pallabi Roy : </span>
-                  <a href="tel:8340525962" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
-                    +91 83405 25962
+                  <a href="mailto:pallabiroy2006@gmail.com" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
+                    pallabiroy2006@gmail.com
                   </a>
                 </div>
 
-                <div>
+                <div style={{ whiteSpace: "nowrap" }}>
                   <span style={{ color: "#ffffff" }}>Swastik Manna : </span>
-                  <a href="tel:9163067541" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
-                    +91 91630 67541
+                  <a href="mailto:swastikmanna2006@gmail.com" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
+                    swastikmanna2006@gmail.com
                   </a>
                 </div>
 
-                <div>
+                <div style={{ whiteSpace: "nowrap" }}>
                   <span style={{ color: "#ffffff" }}>Email : </span>
                   <a href="mailto:ggscuemk@gmail.com" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
                     ggscuemk@gmail.com
@@ -650,8 +650,8 @@ const ContactSection = () => {
             }}>
               <span>Designed & Developed By :</span>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "center" }}>
-                <a href="https://www.linkedin.com/in/tridibesh-sen/" target="_blank" rel="noopener noreferrer" style={{ 
-                  textDecoration: "none", 
+                <a href="https://www.linkedin.com/in/tridibesh-sen/" target="_blank" rel="noopener noreferrer" style={{
+                  textDecoration: "none",
                   fontWeight: 800,
                   background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
                   WebkitBackgroundClip: "text",
@@ -660,8 +660,8 @@ const ContactSection = () => {
                   Tridibesh Sen
                 </a>
                 <span style={{ color: "#cbd5e1" }}>•</span>
-                <a href="https://www.linkedin.com/in/diptodeep-biswas/" target="_blank" rel="noopener noreferrer" style={{ 
-                  textDecoration: "none", 
+                <a href="https://www.linkedin.com/in/diptodeep-biswas/" target="_blank" rel="noopener noreferrer" style={{
+                  textDecoration: "none",
                   fontWeight: 800,
                   background: "linear-gradient(180deg, #ffffff 0%, #cbd5e1 50%, #8a99ad 100%)",
                   WebkitBackgroundClip: "text",
