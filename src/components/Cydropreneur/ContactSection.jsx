@@ -466,7 +466,7 @@ const ContactSection = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px" }}>
                   <img src="/img/IEM.png" alt="IEM Logo" style={{ height: "85px", objectFit: "contain", marginTop: "-15px", marginBottom: "-15px" }} />
                   <span style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: "0.85rem", color: "#ffffff", fontWeight: 600 }}>
-                    Institute of Engineering and Management, Newtown
+                    Institute of Engineering and Management, New Town
                   </span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", height: "50px", marginTop: "10px" }}>
@@ -508,7 +508,7 @@ const ContactSection = () => {
                 </div>
 
                 <div style={{ whiteSpace: "nowrap" }}>
-                  <span style={{ color: "#ffffff" }}>Email : </span>
+                  <span style={{ color: "#ffffff" }}>Official Email : </span>
                   <a href="mailto:ggscuemk@gmail.com" className="interactive" style={{ color: "#ffffff", textDecoration: "none", fontWeight: 700 }}>
                     ggscuemk@gmail.com
                   </a>
