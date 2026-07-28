@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { apiClient } from '../../lib/apiClient';
 import TicketGeneratorPortal from './TicketGeneratorPortal';
 import AttendancePortal from './AttendancePortal';
 import BiometricEnrollment from './BiometricEnrollment';
@@ -38,24 +38,19 @@ export default function AdminDashboard() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const jwtToken = apiClient.getToken();
+      if (!jwtToken) {
         navigate('/admin/login');
         return;
       }
 
       try {
-        const { data: prof, error } = await supabase
-          .from('profiles')
-          .select('display_name, role, email')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) throw error;
+        const data = await apiClient.get('/api/me');
+        const prof = data.profile;
 
         if (!prof || (prof.role !== 'admin' && prof.role !== 'oops' && prof.role !== 'member' && prof.role !== 'volunteer')) {
           // If not permitted role
-          await supabase.auth.signOut();
+          apiClient.setToken(null);
           navigate('/admin/login');
           return;
         }
@@ -70,6 +65,7 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error('Error verifying admin profile:', err);
+        apiClient.setToken(null);
         navigate('/admin/login');
       } finally {
         setLoading(false);
@@ -82,7 +78,7 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     localStorage.removeItem('ggsc_mock_role');
     localStorage.removeItem('ggsc_mock_email');
-    await supabase.auth.signOut();
+    apiClient.setToken(null);
     navigate('/admin/login');
   };
 

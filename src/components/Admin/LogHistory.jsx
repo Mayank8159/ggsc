@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { apiClient } from '../../lib/apiClient';
 import { FiList, FiTrash2, FiRefreshCw, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
 
 export default function LogHistory() {
@@ -21,15 +21,8 @@ export default function LogHistory() {
       }
 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .maybeSingle();
-          if (prof) setUserRole(prof.role);
-        }
+        const data = await apiClient.get('/api/me');
+        if (data?.profile) setUserRole(data.profile.role);
       } catch (err) {
         console.warn('Error reading active session role:', err);
       }
@@ -44,21 +37,14 @@ export default function LogHistory() {
     setError('');
     try {
       // 1. Fetch audit logs from login_history
-      const { data: logsData, error: fetchErr } = await supabase
-        .from('login_history')
-        .select('*')
-        .order('logged_at', { ascending: false });
-
-      if (fetchErr) throw fetchErr;
+      const logsData = await apiClient.get('/api/login-history');
 
       // 2. Fetch profiles mapping for Display Names
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('email, display_name');
+      const profilesData = await apiClient.get('/api/profiles').catch(() => ({ profiles: [] }));
 
       const nameMap = {};
-      if (profilesData) {
-        profilesData.forEach(p => {
+      if (profilesData?.profiles) {
+        profilesData.profiles.forEach(p => {
           if (p.email) {
             nameMap[p.email.toLowerCase()] = p.display_name;
           }
@@ -66,12 +52,12 @@ export default function LogHistory() {
       }
 
       setProfileNames(nameMap);
-      setLogs(logsData || []);
+      setLogs(logsData.logs || []);
     } catch (err) {
       console.warn('Database logs error:', err);
       
-      // Fallback for local testing mode if Supabase tables don't exist yet
-      if (err.message?.includes('relation "public.login_history" does not exist') || !supabase.auth) {
+      // Fallback for local testing mode
+      if (!apiClient.getToken()) {
         const mockLogs = [
           { id: '1', email: 'admin@ggsc.org', role: 'admin', status: 'success', logged_at: new Date().toISOString() },
           { id: '2', email: 'oops@ggsc.org', role: 'oops', status: 'success', logged_at: new Date(Date.now() - 60000).toISOString() },
@@ -103,13 +89,7 @@ export default function LogHistory() {
     setError('');
     setSuccess('');
     try {
-      const { error: deleteErr } = await supabase
-        .from('login_history')
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
-
-      if (deleteErr) throw deleteErr;
-
+      await apiClient.delete('/api/login-history');
       setSuccess('Login history cleared successfully.');
       setLogs([]);
     } catch (err) {
@@ -122,13 +102,7 @@ export default function LogHistory() {
     if (userRole !== 'oops') return;
 
     try {
-      const { error: deleteErr } = await supabase
-        .from('login_history')
-        .delete()
-        .eq('id', id);
-
-      if (deleteErr) throw deleteErr;
-
+      await apiClient.delete(`/api/login-history/${id}`);
       setLogs(logs.filter(log => log.id !== id));
       setSuccess('Audit log entry deleted.');
     } catch (err) {

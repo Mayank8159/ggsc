@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { apiClient } from '../../lib/apiClient';
 import { registerBiometric } from '../../services/webauthn';
 import { FiTrash2, FiPlus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { Fingerprint } from 'lucide-react';
@@ -58,49 +58,36 @@ export default function BiometricEnrollment() {
     }
 
     // Live session setup
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (data?.user) {
-        const liveUser = data.user;
+    apiClient.get('/api/me').then(async (data) => {
+      if (data?.profile) {
+        const liveUser = data.profile;
         setCurrentUser(liveUser);
-        
-        // Fetch role from profiles
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', liveUser.id)
-          .maybeSingle();
-
-        const role = prof?.role || 'volunteer';
-        setCurrentUserRole(role);
+        setCurrentUserRole(liveUser.role);
 
         // Fetch all members list if admin/oops
-        if (role === 'admin' || role === 'oops') {
-          const { data: profs } = await supabase
-            .from('profiles')
-            .select('id, email, display_name, role')
-            .order('display_name', { ascending: true });
-          
-          if (profs) setProfiles(profs);
+        if (liveUser.role === 'admin' || liveUser.role === 'oops') {
+          const profilesData = await apiClient.get('/api/profiles');
+          if (profilesData?.profiles) setProfiles(profilesData.profiles);
         } else {
           // If member or volunteer, they can only manage their own credentials
           setProfiles([{
             id: liveUser.id,
             email: liveUser.email,
-            display_name: liveUser.user_metadata?.display_name || liveUser.email.split('@')[0],
-            role: role
+            display_name: liveUser.display_name,
+            role: liveUser.role
           }]);
         }
 
         setSelectedMemberId(liveUser.id);
         loadCredentialsForUser(liveUser.id, false);
       }
-    });
+    }).catch(err => console.error("Error setting up biometric session:", err));
   }, []);
 
   // Fetch credentials dynamically when selected member changes
   const handleMemberChange = (memberId) => {
     setSelectedMemberId(memberId);
-    const isMock = localStorage.getItem('ggsc_mock_role') || !import.meta.env.VITE_SUPABASE_URL;
+    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
     loadCredentialsForUser(memberId, isMock);
   };
 
@@ -116,14 +103,8 @@ export default function BiometricEnrollment() {
     }
 
     try {
-      const { data, error: fetchErr } = await supabase
-        .from('webauthn_credentials')
-        .select('id, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (fetchErr) throw fetchErr;
-      setCredentials(data || []);
+      const data = await apiClient.get(`/api/webauthn?userId=${userId}`);
+      setCredentials(data.credentials || []);
     } catch (err) {
       console.error('Error fetching credentials:', err);
     }
@@ -133,7 +114,7 @@ export default function BiometricEnrollment() {
     return profiles.find(p => p.id === selectedMemberId) || {
       id: selectedMemberId,
       email: currentUser?.email || '',
-      display_name: currentUser?.user_metadata?.display_name || ''
+      display_name: currentUser?.display_name || ''
     };
   };
 
@@ -153,7 +134,7 @@ export default function BiometricEnrollment() {
     setError('');
     setSuccess('');
 
-    const isMock = localStorage.getItem('ggsc_mock_role') || !import.meta.env.VITE_SUPABASE_URL;
+    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
     const targetMember = getSelectedMemberObject();
 
     if (isMock) {
@@ -189,14 +170,11 @@ export default function BiometricEnrollment() {
 
     try {
       // Re-authenticate the active admin user session
-      const { error: reauthErr } = await supabase.auth.signInWithPassword({
+      await apiClient.post('/api/login', {
         email: currentUser.email,
-        password
+        password,
+        role: currentUserRole
       });
-
-      if (reauthErr) {
-        throw new Error('Re-authentication failed. Please check your admin password.');
-      }
 
       setIsVerifying(false);
       setPassword(''); // clear password
@@ -205,21 +183,11 @@ export default function BiometricEnrollment() {
       const enrolledCred = await registerBiometric(targetMember.email, targetMember.id);
 
       // Write credential to table linked to target user id
-      const { error: dbErr } = await supabase
-        .from('webauthn_credentials')
-        .insert({
-          id: enrolledCred.id,
-          user_id: targetMember.id,
-          public_key: enrolledCred.publicKeyPem,
-          counter: 0
-        });
-
-      if (dbErr) {
-        if (dbErr.code === '23505') {
-          throw new Error('This biometric device is already registered to this member\'s account.');
-        }
-        throw dbErr;
-      }
+      await apiClient.post('/api/webauthn', {
+        id: enrolledCred.id,
+        user_id: targetMember.id,
+        public_key: enrolledCred.publicKeyPem
+      });
 
       setSuccess(`Fingerprint registered successfully for ${targetMember.display_name}!`);
       loadCredentialsForUser(targetMember.id, false);
@@ -238,7 +206,7 @@ export default function BiometricEnrollment() {
     setError('');
     setSuccess('');
     const targetMember = getSelectedMemberObject();
-    const isMock = localStorage.getItem('ggsc_mock_role') || !import.meta.env.VITE_SUPABASE_URL;
+    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
 
     if (isMock) {
       const savedCreds = localStorage.getItem('ggsc_mock_biometric_creds');
@@ -252,13 +220,7 @@ export default function BiometricEnrollment() {
     }
 
     try {
-      const { error: deleteErr } = await supabase
-        .from('webauthn_credentials')
-        .delete()
-        .eq('id', credId);
-
-      if (deleteErr) throw deleteErr;
-
+      await apiClient.delete(`/api/webauthn/${credId}`);
       setSuccess('Biometric key removed successfully.');
       loadCredentialsForUser(targetMember.id, false);
     } catch (err) {

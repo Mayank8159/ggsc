@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 import QRCode from 'qrcode';
-import { supabase } from '../../lib/supabaseClient';
 import { UPCOMING_EVENTS } from '../../data/eventsData';
 import { FiUpload, FiSettings, FiSliders, FiPlay, FiList, FiCheckCircle, FiAlertCircle, FiCloud, FiMail, FiBookmark, FiTrash, FiRefreshCw } from 'react-icons/fi';
 

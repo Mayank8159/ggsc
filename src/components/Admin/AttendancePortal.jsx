@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { apiClient } from '../../lib/apiClient';
 import { Html5Qrcode } from 'html5-qrcode';
 import * as XLSX from 'xlsx';
 import { FiCamera, FiRefreshCw, FiCheck, FiX, FiAlertCircle, FiDownload, FiUserCheck } from 'react-icons/fi';
@@ -17,9 +17,9 @@ export default function AttendancePortal() {
 
   useEffect(() => {
     // Get logged-in user details
-    supabase.auth.getUser().then(({ data }) => {
-      if (data?.user) setVolunteerUser(data.user);
-    });
+    apiClient.get('/api/me').then((data) => {
+      if (data?.profile) setVolunteerUser(data.profile);
+    }).catch(err => console.error("Error fetching me in AttendancePortal:", err));
 
     fetchRecentLogs();
 
@@ -31,7 +31,7 @@ export default function AttendancePortal() {
 
   // Fetch recent check-ins
   const fetchRecentLogs = async () => {
-    const isMock = localStorage.getItem('ggsc_mock_role') || !import.meta.env.VITE_SUPABASE_URL;
+    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
     if (isMock) {
       try {
         const saved = localStorage.getItem('ggsc_mock_attendance');
@@ -44,13 +44,8 @@ export default function AttendancePortal() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .order('scanned_at', { ascending: false });
-
-      if (error) throw error;
-      setRecentLogs(data || []);
+      const data = await apiClient.get('/api/attendance');
+      setRecentLogs(data.records || []);
     } catch (err) {
       console.error('Error fetching logs:', err);
       // Fallback to local storage
@@ -210,9 +205,8 @@ export default function AttendancePortal() {
       }
 
       // 3. Attempt insert into centralized database
-      const { error: insertErr } = await supabase
-        .from('attendance_records')
-        .insert({
+      try {
+        await apiClient.post('/api/attendance', {
           email: email.toString().trim().toLowerCase(),
           name,
           year,
@@ -224,28 +218,18 @@ export default function AttendancePortal() {
           scanned_by: volunteerUser?.id || null
         });
 
-      if (insertErr) {
-        // Unique index check: email violates unique key
-        if (insertErr.code === '23505') {
-          // Fetch scanning timestamp of the existing record
-          const { data: existingRecord } = await supabase
-            .from('attendance_records')
-            .select('scanned_at')
-            .eq('email', email.trim().toLowerCase())
-            .single();
-
+        // Success check-in!
+        setScanStatus('success');
+        setScanMessage('Attendance successfully verified!');
+        fetchRecentLogs();
+      } catch (err) {
+        if (err.message.includes('Duplicate scan') || err.message.includes('already been checked-in')) {
           setScanStatus('duplicate');
-          const checkInTime = new Date(existingRecord?.scanned_at).toLocaleTimeString();
-          setScanMessage(`Already checked in today at ${checkInTime}.`);
+          setScanMessage('Already checked in today.');
           return;
         }
-        throw insertErr;
+        throw err;
       }
-
-      // Success check-in!
-      setScanStatus('success');
-      setScanMessage('Attendance successfully verified!');
-      fetchRecentLogs();
     } catch (err) {
       console.error(err);
       setScanStatus('error');
