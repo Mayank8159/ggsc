@@ -134,7 +134,15 @@ const NavBar = () => {
 
 
             {/* Mobile Join Community (compact) */}
-            <div className="flex md:hidden items-center">
+            <div className="flex md:hidden items-center gap-1.5">
+              {/* Admin Lock Button */}
+              <button onClick={() => navigate('/admin/login')}
+                className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 hover:opacity-60 flex-shrink-0"
+                style={{ color: "rgba(0,0,0,0.5)", background: "rgba(0,0,0,0.04)" }}
+                title="Admin Portal">
+                <FiLock size={14} />
+              </button>
+
               {isAuthenticated ? (
                 <button onClick={logout}
                   className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200"
