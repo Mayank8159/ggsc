@@ -11,16 +11,23 @@
   },
   "dependencies": {
     "@gsap/react": "^2.1.1",
+    "@supabase/supabase-js": "^2.110.9",
+    "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
     "gsap": "^3.12.5",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.25.0",
+    "nodemailer": "^9.0.3",
+    "papaparse": "^5.5.4",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-router-dom": "^7.18.0",
     "react-use": "^17.5.1",
-    "three": "^0.185.1"
+    "three": "^0.185.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

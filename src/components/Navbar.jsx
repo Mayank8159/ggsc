@@ -4,7 +4,7 @@ import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TiLocationArrow } from "react-icons/ti";
-import { FiLogOut, FiMenu, FiX } from "react-icons/fi";
+import { FiLogOut, FiMenu, FiX, FiLock } from "react-icons/fi";
 import Button from "./Button";
 import { useAuth } from "../context/AuthContext";
 
@@ -92,7 +92,15 @@ const NavBar = () => {
             </Link>
 
             {/* Join Community / User Avatar (desktop) */}
-            <div className="hidden md:flex items-center ml-2 flex-nowrap">
+            <div className="hidden md:flex items-center ml-2 flex-nowrap gap-2">
+              {/* Admin Lock Button */}
+              <button onClick={() => navigate('/admin/login')}
+                className="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 hover:opacity-60 flex-shrink-0"
+                style={{ color: "rgba(0,0,0,0.5)", background: "rgba(0,0,0,0.04)" }}
+                title="Admin Portal">
+                <FiLock size={14} />
+              </button>
+
               {isAuthenticated ? (
                 <div className="flex items-center gap-1.5 flex-nowrap">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold select-none flex-shrink-0"
@@ -123,6 +131,7 @@ const NavBar = () => {
                   style={location.pathname === item.to ? { color: "#0a0a0a" } : undefined}>{item.label}</Link>
               ))}
             </div>
+
 
             {/* Mobile Join Community (compact) */}
             <div className="flex md:hidden items-center">
