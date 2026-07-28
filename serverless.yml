@@ -1,0 +1,36 @@
+service: ggsc-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1  # Mumbai
+  stage: dev
+  environment:
+    JWT_SECRET: ${env:JWT_SECRET}
+    PROFILES_TABLE: ggsc-profiles
+    ATTENDANCE_TABLE: ggsc-attendance
+    WEBAUTHN_TABLE: ggsc-webauthn
+    LOGIN_HISTORY_TABLE: ggsc-login-history
+    CLOUDINARY_CLOUD_NAME: ${env:VITE_CLOUDINARY_CLOUD_NAME}
+    CLOUDINARY_API_KEY: ${env:CLOUDINARY_API_KEY}
+    CLOUDINARY_API_SECRET: ${env:CLOUDINARY_API_SECRET}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/ggsc-*"
+
+functions:
+  api:
+    handler: api/lambda.handler
+    events:
+      - httpApi: '*'

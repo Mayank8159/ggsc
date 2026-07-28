@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { apiClient } from '../../lib/apiClient';
 import { authenticateBiometric } from '../../services/webauthn';
 import { FiLock, FiMail, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { Fingerprint } from 'lucide-react';
@@ -39,20 +39,11 @@ export default function AdminLogin() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          password,
-          role // 'admin' | 'member' | 'volunteer' | 'oops'
-        })
+      const data = await apiClient.post('/api/login', {
+        email: email.trim().toLowerCase(),
+        password,
+        role // 'admin' | 'member' | 'volunteer' | 'oops'
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Server login failed');
-      }
 
       if (data.isMock) {
         localStorage.setItem('ggsc_mock_role', role);
@@ -65,11 +56,7 @@ export default function AdminLogin() {
       // Establish the session locally if tokens exist
       const { session } = data;
       if (session?.access_token && !data.isMock) {
-        const { error: sessionErr } = await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
-        if (sessionErr) throw sessionErr;
+        apiClient.setToken(session.access_token);
       }
 
       setSuccess('Login successful! Redirecting to dashboard...');
@@ -96,16 +83,9 @@ export default function AdminLogin() {
 
     try {
       // 1. Fetch challenge and registered credentials from our serverless API
-      const response = await fetch('/api/get-biometric-challenge', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      const resData = await apiClient.post('/api/get-biometric-challenge', { 
+        email: email.trim().toLowerCase() 
       });
-
-      const resData = await response.json();
-      if (!response.ok) {
-        throw new Error(resData.error || 'Failed to retrieve biometric credentials.');
-      }
 
       const { challenge, challengeToken, credentialIds } = resData;
 
@@ -115,22 +95,13 @@ export default function AdminLogin() {
       const assertionPayload = await authenticateBiometric(credentialId, challenge);
 
       // 3. Send signature verification request to serverless verify endpoint
-      const verifyResponse = await fetch('/api/verify-biometric', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          challengeToken,
-          assertion: assertionPayload,
-        }),
+      const verifyData = await apiClient.post('/api/verify-biometric', {
+        email: email.trim().toLowerCase(),
+        challengeToken,
+        assertion: assertionPayload,
       });
 
-      const verifyData = await verifyResponse.json();
-      if (!verifyResponse.ok) {
-        throw new Error(verifyData.error || 'Biometric signature validation failed.');
-      }
-
-      // 4. Authenticate the client Supabase session dynamically using returned session tokens
+      // 4. Authenticate the client session dynamically using returned session tokens
       const { session, isMock } = verifyData;
 
       if (isMock) {
@@ -144,13 +115,7 @@ export default function AdminLogin() {
       } else {
         localStorage.removeItem('ggsc_mock_role');
         localStorage.removeItem('ggsc_mock_email');
-
-        const { error: sessionErr } = await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
-        });
-
-        if (sessionErr) throw sessionErr;
+        apiClient.setToken(session.access_token);
       }
 
       setSuccess('Biometrics verified! Redirecting to dashboard...');
@@ -164,6 +129,7 @@ export default function AdminLogin() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 relative z-10">
