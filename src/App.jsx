@@ -19,6 +19,8 @@ import Footer from "./components/Footer";
 import DiscussionBoard from "./components/DiscussionBoard";
 import NotFound from "./components/NotFound";
 import Cydropreneur from "./components/Cydropreneur";
+import AdminLogin from "./components/Admin/AdminLogin";
+import AdminDashboard from "./components/Admin/AdminDashboard";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -450,6 +452,7 @@ function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
+  const isAdminPage = location.pathname.toLowerCase().startsWith("/admin");
   const barRef = useRef(null);
 
   useEffect(() => {
@@ -483,7 +486,7 @@ function App() {
       <BGMButton />
 
       <div style={{ position: "relative", zIndex: 2 }}>
-        {!isCydropreneur && <NavBar />}
+        {!isCydropreneur && !isAdminPage && <NavBar />}
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/discussion" element={<DiscussionBoard />} />
@@ -491,9 +494,11 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/events/Cydropreneur" element={<Cydropreneur />} />
           <Route path="/teams" element={<Team />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        {!isCydropreneur && <Footer />}
+        {!isCydropreneur && !isAdminPage && <Footer />}
       </div>
     </main>
   );

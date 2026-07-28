@@ -6,6 +6,7 @@ import { TiLocationArrow } from "react-icons/ti";
 import { IoClose } from "react-icons/io5";
 import { FiArrowUpRight, FiCalendar, FiMapPin } from "react-icons/fi";
 import Button from "./Button";
+import { UPCOMING_EVENTS } from "../data/eventsData";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,19 +24,7 @@ const T = {
 };
 
 /* ─── DATA ─── */
-const UPCOMING_EVENTS = [
-  {
-    id: 100,
-    title: "Cydropreneur",
-    date: "08th August 2026",
-    venue: "FICCI Auditorium",
-    desc: "Build Android applications in an immersive, hands-on workshop",
-    img: "/img/event-banner.png",
-    tag: "AI & Android",
-    color: T.purple,
-    route: "/events/Cydropreneur",
-  },
-];
+
 
 const PAST_EVENTS = [
 
