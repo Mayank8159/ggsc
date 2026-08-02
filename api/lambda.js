@@ -439,7 +439,7 @@ app.post('/api/verify-biometric', async (req, res) => {
 
 // 4. Cloudinary Image Upload
 app.post('/api/upload-ticket-cloudinary', async (req, res) => {
-  const { ticketImage, eventName, cloudinaryConfig } = req.body;
+  const { ticketImage, eventName, recipientName, cloudinaryConfig } = req.body;
   if (!ticketImage || !eventName) {
     return res.status(400).json({ error: 'Missing required parameters: ticketImage or eventName' });
   }
@@ -467,10 +467,14 @@ app.post('/api/upload-ticket-cloudinary', async (req, res) => {
     });
 
     const sanitizedFolder = `ggsc-events/${eventName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    const sanitizedPublicId = recipientName ? recipientName.trim().replace(/[^a-zA-Z0-9_\-]/g, '_') : `ticket_${Date.now()}`;
+    
     const uploadRes = await cloudinary.uploader.upload(ticketImage, {
       folder: sanitizedFolder,
+      public_id: sanitizedPublicId,
       resource_type: 'image',
-      overwrite: true
+      overwrite: true,
+      unique_filename: false
     });
 
     return res.status(200).json({
@@ -537,6 +541,44 @@ app.post('/api/send-ticket', async (req, res) => {
         content: ticketImageBuffer,
         contentType: 'image/png'
       }]
+    };
+
+    await transporter.verify();
+    const info = await transporter.sendMail(mailOptions);
+    return res.status(200).json({ success: true, messageId: info.messageId });
+  } catch (err) {
+    console.error('Email sending error:', err);
+    return res.status(500).json({ error: `Failed to deliver email: ${err.message}` });
+  }
+});
+
+// 5b. NodeMailer Generic Email Dispatch
+app.post('/api/send-email', async (req, res) => {
+  const { recipientEmail, subject, htmlBody, smtpConfig } = req.body;
+  if (!recipientEmail || !subject || !htmlBody || !smtpConfig) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  const { host, port, secure, user, pass, fromName } = smtpConfig;
+  if (!host || !port || !user || !pass) {
+    return res.status(400).json({ error: 'Missing SMTP configuration details' });
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port: parseInt(port, 10),
+      secure: secure === true || secure === 'true',
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false }
+    });
+
+    const displaySender = fromName || 'GGSC Organizing Team';
+    const mailOptions = {
+      from: `"${displaySender}" <${user}>`,
+      to: recipientEmail,
+      subject: subject,
+      html: htmlBody
     };
 
     await transporter.verify();

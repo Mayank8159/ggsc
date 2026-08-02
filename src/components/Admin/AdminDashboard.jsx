@@ -4,9 +4,10 @@ import { apiClient } from '../../lib/apiClient';
 import TicketGeneratorPortal from './TicketGeneratorPortal';
 import AttendancePortal from './AttendancePortal';
 import BiometricEnrollment from './BiometricEnrollment';
-import { FiSliders, FiUserCheck, FiLogOut, FiMenu, FiX, FiUser, FiList } from 'react-icons/fi';
+import { FiSliders, FiUserCheck, FiLogOut, FiMenu, FiX, FiUser, FiList, FiMail } from 'react-icons/fi';
 import { Fingerprint } from 'lucide-react';
 import LogHistory from './LogHistory';
+import BulkEmailer from './BulkEmailer';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('generator'); // 'generator' | 'scanner' | 'biometrics'
@@ -98,6 +99,7 @@ export default function AdminDashboard() {
     if (role === 'admin' || role === 'oops') {
       return [
         { id: 'generator', label: 'Ticket Generator', icon: FiSliders },
+        { id: 'emailer', label: 'Bulk Emailer', icon: FiMail },
         { id: 'scanner', label: 'Attendance Scanner', icon: FiUserCheck },
         { id: 'biometrics', label: 'Biometric Settings', icon: Fingerprint },
         { id: 'logs', label: 'Log History', icon: FiList },
@@ -105,6 +107,7 @@ export default function AdminDashboard() {
     } else if (role === 'member') {
       return [
         { id: 'generator', label: 'Ticket Generator', icon: FiSliders },
+        { id: 'emailer', label: 'Bulk Emailer', icon: FiMail },
         { id: 'scanner', label: 'Attendance Scanner', icon: FiUserCheck },
       ];
     } else if (role === 'volunteer') {
@@ -197,6 +200,7 @@ export default function AdminDashboard() {
       <main className="flex-1 p-6 lg:p-10 lg:h-screen lg:overflow-y-auto mt-16 lg:mt-0">
         <div className="max-w-6xl mx-auto">
           {activeTab === 'generator' && <TicketGeneratorPortal />}
+          {activeTab === 'emailer' && <BulkEmailer />}
           {activeTab === 'scanner' && <AttendancePortal />}
           {activeTab === 'biometrics' && <BiometricEnrollment />}
           {activeTab === 'logs' && <LogHistory />}

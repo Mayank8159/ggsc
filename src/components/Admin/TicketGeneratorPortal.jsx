@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import QRCode from 'qrcode';
 import { UPCOMING_EVENTS } from '../../data/eventsData';
 import { FiUpload, FiSettings, FiSliders, FiPlay, FiList, FiCheckCircle, FiAlertCircle, FiCloud, FiMail, FiBookmark, FiTrash, FiRefreshCw } from 'react-icons/fi';
+import { apiClient } from '../../lib/apiClient';
 
 const DEFAULT_TEXT_TEMPLATE = `Hello {name},
 
@@ -75,6 +76,24 @@ export default function TicketGeneratorPortal() {
   const [progress, setProgress] = useState(0);
 
   const canvasRef = useRef(null);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const getRole = async () => {
+      const mockRole = localStorage.getItem('ggsc_mock_role');
+      if (mockRole) {
+        setUserRole(mockRole);
+      } else {
+        try {
+          const data = await apiClient.get('/api/me');
+          if (data?.profile) setUserRole(data.profile.role);
+        } catch (err) {
+          console.warn('Error reading active session role:', err);
+        }
+      }
+    };
+    getRole();
+  }, []);
 
   // Save Settings to localStorage on change
   useEffect(() => {
@@ -245,7 +264,8 @@ export default function TicketGeneratorPortal() {
 
     Papa.parse(file, {
       header: true,
-      skipEmptyLines: true,
+      skipEmptyLines: 'greedy',
+      transformHeader: (h) => h ? h.trim() : '',
       complete: (results) => {
         const rawRows = results.data;
         if (rawRows.length === 0) {
@@ -253,17 +273,22 @@ export default function TicketGeneratorPortal() {
           return;
         }
 
-        const headers = results.meta.fields || [];
+        const headers = (results.meta.fields || [])
+          .map(h => h ? h.trim() : '')
+          .filter(h => h !== '');
         setCsvHeaders(headers);
         setCsvRawData(rawRows);
 
-        // Auto-detect columns
-        const findHeader = (patterns) => {
-          return headers.find(h => patterns.some(p => h.toLowerCase().includes(p.toLowerCase())));
-        };
+        // Auto-detect columns dynamically
+        const detectedEmail = headers.find(h => {
+          const lower = String(h).toLowerCase();
+          return lower.includes('email') || lower.includes('e-mail') || lower.includes('mail');
+        }) || headers[1] || headers[0] || '';
 
-        const detectedName = findHeader(['full name', 'fullname', 'name']) || headers[0] || '';
-        const detectedEmail = findHeader(['email address', 'emailaddress', 'email']) || headers[1] || headers[0] || '';
+        const detectedName = headers.find(h => {
+          const lower = String(h).toLowerCase();
+          return lower.includes('name') && h !== detectedEmail;
+        }) || headers.find(h => h !== detectedEmail) || headers[0] || '';
 
         setNameColumn(detectedName);
         setEmailColumn(detectedEmail);
@@ -333,9 +358,9 @@ export default function TicketGeneratorPortal() {
     };
 
     const cloudinaryConfig = {
-      cloudName: cldCloudName,
-      apiKey: cldApiKey,
-      apiSecret: cldApiSecret
+      cloudName: userRole === 'oops' ? cldCloudName : 'e2qvanrx',
+      apiKey: userRole === 'oops' ? cldApiKey : '453893951347733',
+      apiSecret: userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'
     };
 
     let updatedLogs = [...logs];
@@ -394,20 +419,17 @@ export default function TicketGeneratorPortal() {
           updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Uploading to Cloudinary...' };
           setLogs([...updatedLogs]);
 
-          const cldRes = await fetch('/api/upload-ticket-cloudinary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+          try {
+            const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
               ticketImage: finalTicketDataUrl,
               eventName: selectedEvent,
+              recipientName: studentName,
               cloudinaryConfig
-            })
-          });
-
-          const cldData = await cldRes.json();
-          if (cldRes.ok) {
+            });
             cldPublicUrl = cldData.secure_url;
             updatedLogs[i] = { ...updatedLogs[i], cldUrl: cldPublicUrl };
+          } catch (cldErr) {
+            console.warn('Cloudinary upload error:', cldErr);
           }
         }
 
@@ -415,22 +437,13 @@ export default function TicketGeneratorPortal() {
         updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Connecting to SMTP...' };
         setLogs([...updatedLogs]);
 
-        const response = await fetch('/api/send-ticket', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipientEmail: studentEmail,
-            recipientName: studentName,
-            ticketImage: finalTicketDataUrl,
-            smtpConfig,
-            mailTemplate
-          })
+        await apiClient.post('/api/send-ticket', {
+          recipientEmail: studentEmail,
+          recipientName: studentName,
+          ticketImage: finalTicketDataUrl,
+          smtpConfig,
+          mailTemplate
         });
-
-        const resData = await response.json();
-        if (!response.ok) {
-          throw new Error(resData.error || 'Server rejected email dispatch.');
-        }
 
         updatedLogs[i] = { ...updatedLogs[i], status: 'sent', message: 'Email sent successfully on retry!' };
       } catch (err) {
@@ -490,9 +503,9 @@ export default function TicketGeneratorPortal() {
     };
 
     const cloudinaryConfig = {
-      cloudName: cldCloudName,
-      apiKey: cldApiKey,
-      apiSecret: cldApiSecret
+      cloudName: userRole === 'oops' ? cldCloudName : 'e2qvanrx',
+      apiKey: userRole === 'oops' ? cldApiKey : '453893951347733',
+      apiSecret: userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'
     };
 
     // Reset logs tracker to match active processed items
@@ -556,22 +569,17 @@ export default function TicketGeneratorPortal() {
           updatedLogs[i] = { ...updatedLogs[i], message: `Uploading ticket to Cloudinary (${selectedEvent})...` };
           setLogs([...updatedLogs]);
 
-          const cldRes = await fetch('/api/upload-ticket-cloudinary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+          try {
+            const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
               ticketImage: finalTicketDataUrl,
               eventName: selectedEvent,
+              recipientName: studentName,
               cloudinaryConfig
-            })
-          });
-
-          const cldData = await cldRes.json();
-          if (cldRes.ok) {
+            });
             cldPublicUrl = cldData.secure_url;
             updatedLogs[i] = { ...updatedLogs[i], cldUrl: cldPublicUrl };
-          } else {
-            console.warn('Cloudinary upload error:', cldData.error);
+          } catch (cldErr) {
+            console.warn('Cloudinary upload error:', cldErr);
           }
         }
 
@@ -579,22 +587,13 @@ export default function TicketGeneratorPortal() {
         updatedLogs[i] = { ...updatedLogs[i], message: 'Connecting to SMTP & sending email...' };
         setLogs([...updatedLogs]);
 
-        const response = await fetch('/api/send-ticket', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipientEmail: studentEmail,
-            recipientName: studentName,
-            ticketImage: finalTicketDataUrl,
-            smtpConfig,
-            mailTemplate
-          })
+        await apiClient.post('/api/send-ticket', {
+          recipientEmail: studentEmail,
+          recipientName: studentName,
+          ticketImage: finalTicketDataUrl,
+          smtpConfig,
+          mailTemplate
         });
-
-        const resData = await response.json();
-        if (!response.ok) {
-          throw new Error(resData.error || 'Server rejected email dispatch.');
-        }
 
         updatedLogs[i] = { ...updatedLogs[i], status: 'sent', message: 'Email sent successfully!' };
       } catch (err) {
@@ -937,11 +936,11 @@ export default function TicketGeneratorPortal() {
                 <label className="block text-[10px] font-bold text-neutral-500 mb-1">Cloud Name</label>
                 <input
                   type="text"
-                  value={cldCloudName}
+                  value={userRole === 'oops' ? cldCloudName : 'e2qvanrx'}
                   onChange={(e) => setCldCloudName(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || userRole !== 'oops'}
                   placeholder="e.g. ggsc-cloud"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -949,11 +948,11 @@ export default function TicketGeneratorPortal() {
                 <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Key</label>
                 <input
                   type="text"
-                  value={cldApiKey}
+                  value={userRole === 'oops' ? cldApiKey : '453893951347733'}
                   onChange={(e) => setCldApiKey(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || userRole !== 'oops'}
                   placeholder="Cloudinary API Key"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -961,11 +960,11 @@ export default function TicketGeneratorPortal() {
                 <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Secret</label>
                 <input
                   type="password"
-                  value={cldApiSecret}
+                  value={userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'}
                   onChange={(e) => setCldApiSecret(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isProcessing || userRole !== 'oops'}
                   placeholder="••••••••••••••••"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
