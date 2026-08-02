@@ -157,7 +157,8 @@ app.post('/api/login', async (req, res) => {
         TableName: 'ggsc-login-history',
         IndexName: 'IpAddressIndex',
         KeyConditionExpression: 'ip_address = :ip',
-        FilterExpression: 'status = :s AND logged_at > :t',
+        FilterExpression: '#status = :s AND logged_at > :t',
+        ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
       }));
       failedAttempts = qRes.Count || 0;
@@ -313,7 +314,8 @@ app.post('/api/verify-biometric', async (req, res) => {
         TableName: 'ggsc-login-history',
         IndexName: 'IpAddressIndex',
         KeyConditionExpression: 'ip_address = :ip',
-        FilterExpression: 'status = :s AND logged_at > :t',
+        FilterExpression: '#status = :s AND logged_at > :t',
+        ExpressionAttributeNames: { '#status': 'status' },
         ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
       }));
       failedAttempts = qRes.Count || 0;
