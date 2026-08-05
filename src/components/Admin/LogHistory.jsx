@@ -167,15 +167,15 @@ export default function LogHistory() {
             No login attempts recorded in the audit trail.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[500px]">
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <table className="w-full text-left border-collapse min-w-full">
               <thead>
-                <tr className="border-b border-neutral-200/60 text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                  <th className="pb-3 pl-2">Name</th>
+                <tr className="border-b border-neutral-200/60 text-[11px] sm:text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                  <th className="pb-3 pl-2 sm:pl-3">Name</th>
                   <th className="pb-3 hidden md:table-cell">Email ID</th>
                   <th className="pb-3">Timestamp</th>
-                  <th className="pb-3">Success</th>
-                  {userRole === 'operations team' && <th className="pb-3 pr-2 text-right">Actions</th>}
+                  <th className="pb-3 text-center">Status</th>
+                  {(userRole === 'operations team' || userRole === 'admin') && <th className="pb-3 pr-2 sm:pr-3 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="text-xs divide-y divide-neutral-100">
@@ -183,31 +183,34 @@ export default function LogHistory() {
                   const emailLower = log.email ? log.email.toLowerCase() : '';
                   const displayName = profileNames[emailLower] || (log.email ? log.email.split('@')[0] : 'Unknown');
                   const logDate = new Date(log.logged_at).toLocaleDateString();
-                  const logTime = new Date(log.logged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                  const logTime = new Date(log.logged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                   
                   return (
                     <tr key={log.id} className="hover:bg-neutral-50/50 transition-all">
-                      <td className="py-3.5 pl-2 font-bold text-neutral-800 capitalize">{displayName}</td>
-                      <td className="py-3.5 text-neutral-600 font-mono hidden md:table-cell">{log.email}</td>
-                      <td className="py-3.5 text-neutral-500 font-mono">
-                        {logDate} <span className="hidden sm:inline text-neutral-400">•</span> <br className="sm:hidden" />
-                        <span className="text-[10px] sm:text-xs text-neutral-400 sm:text-neutral-500">{logTime}</span>
+                      <td className="py-3 pl-2 sm:pl-3 font-bold text-neutral-800 capitalize max-w-[90px] xs:max-w-[120px] sm:max-w-none truncate">
+                        {displayName}
                       </td>
-                      <td className="py-3.5">
+                      <td className="py-3 text-neutral-600 font-mono hidden md:table-cell">{log.email}</td>
+                      <td className="py-3 text-neutral-500 font-mono text-[10px] sm:text-xs whitespace-nowrap">
+                        {logDate} <br className="sm:hidden" />
+                        <span className="text-[10px] text-neutral-400 sm:text-neutral-500">{logTime}</span>
+                      </td>
+                      <td className="py-3 text-center">
                         {log.status === 'success' ? (
                           <span className="w-3.5 h-3.5 rounded-full bg-green-500 inline-block border-2 border-white shadow-sm" title="Success" />
                         ) : (
                           <span className="w-3.5 h-3.5 rounded-full bg-red-500 inline-block border-2 border-white shadow-sm" title="Failed" />
                         )}
                       </td>
-                      {userRole === 'operations team' && (
-                        <td className="py-3.5 pr-2 text-right">
+                      {(userRole === 'operations team' || userRole === 'admin') && (
+                        <td className="py-3 pr-2 sm:pr-3 text-right">
                           <button
                             onClick={() => handleDeleteRow(log.id)}
-                            className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                            title="Delete entry"
+                            className="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-all inline-flex items-center justify-center shadow-xs"
+                            title="Delete log entry"
+                            aria-label="Delete entry"
                           >
-                            <FiTrash2 size={14} />
+                            <FiTrash2 size={15} />
                           </button>
                         </td>
                       )}

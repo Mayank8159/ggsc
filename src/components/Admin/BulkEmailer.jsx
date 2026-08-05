@@ -27,8 +27,8 @@ export default function BulkEmailer({ userRole, userEmail }) {
   const [smtpHost, setSmtpHost] = useState(localStorage.getItem('ggsc_smtp_host') || 'smtp.gmail.com');
   const [smtpPort, setSmtpPort] = useState(localStorage.getItem('ggsc_smtp_port') || '587');
   const [smtpSecure, setSmtpSecure] = useState(localStorage.getItem('ggsc_smtp_secure') === 'true');
-  const [smtpUser, setSmtpUser] = useState(localStorage.getItem('ggsc_smtp_user') || '');
-  const [smtpPass, setSmtpPass] = useState(localStorage.getItem('ggsc_smtp_pass') || '');
+  const [smtpUser, setSmtpUser] = useState(localStorage.getItem('ggsc_smtp_user') || 'ggscuemk@gmail.com');
+  const [smtpPass, setSmtpPass] = useState(localStorage.getItem('ggsc_smtp_pass') || 'nfeqxxzhrswejoxh');
   const [smtpFromName, setSmtpFromName] = useState(localStorage.getItem('ggsc_smtp_from_name') || 'GGSC Organizing Team');
 
   // Email Config
@@ -225,12 +225,12 @@ export default function BulkEmailer({ userRole, userEmail }) {
     setIsProcessing(true);
 
     const smtpConfig = {
-      host: role === 'operations team' ? smtpHost : 'smtp.gmail.com',
-      port: role === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
+      host: smtpHost || 'smtp.gmail.com',
+      port: smtpPort || (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: role === 'operations team' ? smtpUser : activeEmail,
-      pass: smtpPass,
-      fromName: role === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
+      user: (smtpUser || activeEmail).trim(),
+      pass: (smtpPass || '').replace(/\s+/g, ''),
+      fromName: smtpFromName || 'GGSC Organizing Team'
     };
 
     const updated = [...recipients];
