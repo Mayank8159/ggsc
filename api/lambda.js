@@ -686,7 +686,6 @@ app.post('/api/send-ticket', async (req, res) => {
       }]
     };
 
-    await transporter.verify();
     const info = await transporter.sendMail(mailOptions);
     return res.status(200).json({ success: true, messageId: info.messageId });
   } catch (err) {
@@ -728,7 +727,6 @@ app.post('/api/send-email', async (req, res) => {
       html: htmlBody
     };
 
-    await transporter.verify();
     const info = await transporter.sendMail(mailOptions);
     return res.status(200).json({ success: true, messageId: info.messageId });
   } catch (err) {
