@@ -7,6 +7,7 @@ import { IoClose } from "react-icons/io5";
 import { FiArrowUpRight, FiCalendar, FiMapPin } from "react-icons/fi";
 import Button from "./Button";
 import { UPCOMING_EVENTS } from "../data/eventsData";
+import { apiClient } from "../lib/apiClient";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -476,6 +477,44 @@ const Events = () => {
   const [selected, setSelected] = useState(null);
   const navigate = useNavigate();
 
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
+      if (isMock) {
+        const mockEvts = localStorage.getItem('ggsc_mock_events');
+        if (mockEvts) {
+          const parsed = JSON.parse(mockEvts);
+          setUpcomingEvents(parsed.filter(e => e.status === 'upcoming'));
+          setPastEvents(parsed.filter(e => e.status === 'archived'));
+        } else {
+          setUpcomingEvents(UPCOMING_EVENTS);
+          setPastEvents(PAST_EVENTS);
+        }
+        return;
+      }
+
+      try {
+        const data = await apiClient.get('/api/events');
+        if (data?.events) {
+          setUpcomingEvents(data.events.filter(e => e.status === 'upcoming'));
+          setPastEvents(data.events.filter(e => e.status === 'archived'));
+        } else {
+          setUpcomingEvents(UPCOMING_EVENTS);
+          setPastEvents(PAST_EVENTS);
+        }
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setUpcomingEvents(UPCOMING_EVENTS);
+        setPastEvents(PAST_EVENTS);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.utils.toArray(".fade-up").forEach((el, i) => {
@@ -713,7 +752,7 @@ const Events = () => {
             <SectionLabel label="Featured" title="Upcoming Event" />
 
             <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-              {UPCOMING_EVENTS.map((event) => (
+              {upcomingEvents.map((event) => (
                 <div
                   key={event.id}
                   className="featured-card-grid"
@@ -878,7 +917,7 @@ const Events = () => {
             <SectionLabel label="Archive" title="Past Moments." />
 
             <div className="past-grid">
-              {PAST_EVENTS.map((event) => (
+              {pastEvents.map((event) => (
                 <PastCard
                   key={event.id}
                   event={event}

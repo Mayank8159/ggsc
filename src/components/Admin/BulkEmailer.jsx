@@ -15,7 +15,10 @@ Please keep an eye out for further updates.
 Best regards,
 GGSC Organizing Committee`;
 
-export default function BulkEmailer() {
+export default function BulkEmailer({ userRole, userEmail }) {
+  const role = userRole || localStorage.getItem('ggsc_mock_role') || 'admin';
+  const activeEmail = userEmail || localStorage.getItem('ggsc_mock_email') || 'admin@ggsc.org';
+
   const [csvRawData, setCsvRawData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [parseMeta, setParseMeta] = useState(null);
@@ -222,12 +225,12 @@ export default function BulkEmailer() {
     setIsProcessing(true);
 
     const smtpConfig = {
-      host: smtpHost,
-      port: smtpPort,
+      host: role === 'oops' ? smtpHost : 'smtp.gmail.com',
+      port: role === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: smtpUser,
+      user: role === 'oops' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: smtpFromName
+      fromName: role === 'oops' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const updated = [...recipients];
@@ -268,7 +271,327 @@ export default function BulkEmailer() {
     setIsProcessing(false);
   };
 
+  const renderLargeGridLayout = () => {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        {/* Header */}
+        <div>
+          <h2 className="text-3xl font-extrabold text-neutral-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            Registration Portal: Bulk Emailer
+          </h2>
+          <p className="text-neutral-500 mt-1">Upload CSV, map mailing details, select custom variable tags, and dispatch bulk templates.</p>
+        </div>
+
+        {/* Top Section: Upload Source Assets */}
+        <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2 mb-3">
+              <FiUpload className="text-blue-500" /> Source Assets & Column Mapping
+            </h3>
+            <label className="block text-xs font-bold text-neutral-500 mb-1.5 uppercase">Participants CSV / Sheet</label>
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleCsvUpload}
+              disabled={isProcessing}
+              className="block w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
+            />
+            {csvRawData.length > 0 && (
+              <p className="text-xs text-green-600 font-bold mt-1.5 flex items-center gap-1">
+                <FiCheckCircle /> Loaded {csvRawData.length} records
+              </p>
+            )}
+            {parseMeta && (
+              <div className="text-[10px] text-neutral-400 bg-neutral-50/50 p-2.5 rounded-xl border border-neutral-200/40 font-mono space-y-1 mt-2">
+                <div>Detected Delimiter: "{parseMeta.delimiter || 'unknown'}"</div>
+                {parseMeta.errors && parseMeta.errors.length > 0 && (
+                  <div className="text-red-500 font-bold">Parse Errors: {parseMeta.errors.map(e => e.message).join(', ')}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Auto-Matched columns */}
+          {csvHeaders.length > 0 && (
+            <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200/50 flex flex-col justify-center">
+              <h4 className="text-[10px] font-extrabold text-neutral-500 uppercase tracking-wider mb-2">Auto-Matched Columns</h4>
+              <div className="grid grid-cols-2 gap-4 text-xs text-neutral-700">
+                <div className="py-1 border-b border-neutral-200/40">
+                  <span className="text-neutral-400 font-medium block">Name Column:</span>
+                  <span className="font-bold text-neutral-800">{nameColumn || 'Not Found'}</span>
+                </div>
+                <div className="py-1 border-b border-neutral-200/40">
+                  <span className="text-neutral-400 font-medium block">Email Column:</span>
+                  <span className="font-bold text-neutral-800">{emailColumn || 'Not Found'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Middle Section: Side-by-Side large columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Left Column: Spacious Template Editor (Rewriteable) */}
+          <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+              <FiMail className="text-blue-500" /> Dispatch Subject & Body Template
+            </h3>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-1.5 uppercase">Email Subject</label>
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  disabled={isProcessing}
+                  placeholder="e.g. Welcome to GGSC, {FULL NAME}!"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-xs font-bold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 mb-1.5 uppercase">Email Body (Plain Text)</label>
+                <textarea
+                  value={mailTemplate}
+                  onChange={(e) => setMailTemplate(e.target.value)}
+                  disabled={isProcessing}
+                  rows={14}
+                  className="block w-full rounded-xl border border-neutral-200 bg-white p-4 font-sans text-xs text-neutral-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMailTemplate(DEFAULT_EMAIL_TEMPLATE)}
+                  className="text-[10px] text-neutral-500 hover:text-neutral-800 underline mt-1 block"
+                >
+                  Reset to default template
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Discovered Variables (Detailed grid) & Restricted SMTP Settings */}
+          <div className="space-y-6">
+            
+            {/* Discovered Variables (Large grid display) */}
+            {csvHeaders.length > 0 && (
+              <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-3">
+                <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                  <FiBookmark className="text-amber-500" /> Discovered Variables
+                </h3>
+                <p className="text-[10px] text-neutral-400">Click a variable button to copy it. Paste it anywhere in your subject or body template to replace dynamically per person.</p>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 max-h-[160px] overflow-y-auto pr-1">
+                  {csvHeaders.map(header => (
+                    <button
+                      key={header}
+                      onClick={() => copyToken(header)}
+                      className="px-2.5 py-2 text-[10px] font-bold rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100 hover:border-neutral-300 transition-all flex items-center justify-between gap-1"
+                      title={`Click to copy {${header}}`}
+                    >
+                      <span className="truncate">{`{${header}}`}</span>
+                      <FiCopy size={10} className="flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+
+                {copyNotification && (
+                  <p className="text-[10px] text-green-600 font-bold mt-2 animate-pulse">
+                    Copied {copyNotification} to clipboard!
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Restricted SMTP Config Card */}
+            <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                <FiSend className="text-purple-500" /> SMTP Emailer Config
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="text-[11px] text-neutral-500 bg-neutral-100/50 p-3 rounded-2xl border border-neutral-200/20">
+                  Gmail credentials will be used automatically. Login email: <span className="font-bold text-neutral-800">{activeEmail}</span>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Gmail App Password</label>
+                  <input
+                    type="password"
+                    value={smtpPass}
+                    onChange={(e) => setSmtpPass(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="Enter 16-character Gmail App Password"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-900 focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-neutral-500">Security Connection Mode:</span>
+                  <label className="flex items-center gap-1.5 text-xs text-neutral-700 font-bold cursor-pointer bg-neutral-50 hover:bg-neutral-100 px-3 py-1.5 rounded-xl border border-neutral-200/50 transition-all select-none">
+                    <input
+                      type="checkbox"
+                      checked={smtpSecure}
+                      onChange={(e) => {
+                        setSmtpSecure(e.target.checked);
+                        setSmtpPort(e.target.checked ? '465' : '587');
+                      }}
+                      disabled={isProcessing}
+                      className="rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>{smtpSecure ? 'Secure SSL/TLS (Port 465)' : 'Unsecure STARTTLS (Port 587)'}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Section: Full Width Recipients Queue */}
+        {recipients.length > 0 && (
+          <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                  <FiList className="text-blue-500" /> Recipients Queue ({recipients.length} entries)
+                </h3>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Filter out rows, refresh variables, or start dispatch.</p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleRefresh}
+                  disabled={isProcessing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-neutral-600 bg-neutral-100 hover:bg-neutral-200 transition-all border border-neutral-200"
+                  title="Reset statuses and reload variables from CSV memory"
+                >
+                  <FiRefreshCw className={isProcessing ? 'animate-spin' : ''} size={12} /> Refresh
+                </button>
+
+                <button
+                  onClick={handleClearAll}
+                  disabled={isProcessing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-all border border-red-200"
+                >
+                  <FiTrash size={12} /> Clear All
+                </button>
+
+                {hasFailedLogs && (
+                  <button
+                    onClick={() => startBulkEmail(true)}
+                    disabled={isProcessing}
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-sm"
+                  >
+                    <FiPlay size={12} /> Resend Failed
+                  </button>
+                )}
+
+                <button
+                  onClick={() => startBulkEmail(false)}
+                  disabled={isProcessing}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm"
+                >
+                  <FiPlay size={12} /> Start Bulk Emailing
+                </button>
+              </div>
+            </div>
+
+            {/* Progress Indicator */}
+            {isProcessing && (
+              <div className="space-y-1.5 p-3.5 bg-blue-50/50 rounded-2xl border border-blue-100">
+                <div className="flex justify-between items-center text-xs font-bold text-blue-700">
+                  <span>Processing Email Dispatches...</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="w-full bg-blue-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Grid Scroll container */}
+            <div className="overflow-x-auto border border-neutral-200/50 rounded-2xl bg-white/70">
+              <table className="min-w-full text-xs">
+                <thead className="bg-neutral-50/80 border-b border-neutral-200/60 text-neutral-500 font-extrabold uppercase text-[10px]">
+                  <tr>
+                    <th className="px-4 py-3 text-left">#</th>
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-left">Email</th>
+                    <th className="px-4 py-3 text-left">Variables Preview</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 text-neutral-700">
+                  {recipients.map((recipient, i) => (
+                    <tr key={recipient.id} className="hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-4 py-2.5 font-bold text-neutral-400">{i + 1}</td>
+                      <td className="px-4 py-2.5 font-bold text-neutral-800">{recipient.name}</td>
+                      <td className="px-4 py-2.5 font-medium">{recipient.email}</td>
+                      <td className="px-4 py-2.5 text-neutral-500 max-w-[200px] truncate" title={recipient.rawData ? JSON.stringify(recipient.rawData) : ''}>
+                        {recipient.rawData ? Object.entries(recipient.rawData)
+                          .filter(([k]) => k && k !== nameColumn && k !== emailColumn)
+                          .map(([k, v]) => `${k}:${v}`)
+                          .join(' | ') : ''}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        {recipient.status === 'ready' && (
+                          <span className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 font-bold text-[9px] uppercase tracking-wider">
+                            Ready
+                          </span>
+                        )}
+                        {recipient.status === 'sending' && (
+                          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold text-[9px] uppercase tracking-wider flex items-center gap-1.5 w-max">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-ping" />
+                            Sending
+                          </span>
+                        )}
+                        {recipient.status === 'success' && (
+                          <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-bold text-[9px] uppercase tracking-wider flex items-center gap-1 w-max border border-green-200">
+                            <FiCheckCircle size={10} /> Success
+                          </span>
+                        )}
+                        {recipient.status === 'failed' && (
+                          <div className="flex flex-col gap-1 mt-1">
+                            <span
+                              className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-bold text-[9px] uppercase tracking-wider flex items-center gap-1 w-max border border-red-200 cursor-help"
+                              title={recipient.message}
+                            >
+                              <FiAlertCircle size={10} /> Failed
+                            </span>
+                            <span className="text-[9px] text-red-500 font-bold max-w-[150px] leading-tight block truncate" title={recipient.message}>
+                              {recipient.message}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        <button
+                          onClick={() => handleDeleteRow(recipient.id)}
+                          disabled={isProcessing}
+                          className="p-1 text-neutral-400 hover:text-red-500 rounded-lg hover:bg-neutral-100 transition-all inline-flex items-center justify-center"
+                          title="Exclude this recipient"
+                        >
+                          <FiTrash size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const hasFailedLogs = recipients.some(r => r.status === 'failed');
+
+  if (role !== 'oops') {
+    return renderLargeGridLayout();
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">

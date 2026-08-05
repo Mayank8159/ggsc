@@ -9,6 +9,34 @@ import { DynamoDBDocumentClient, PutCommand, GetCommand, QueryCommand, ScanComma
 import { v2 as cloudinary } from 'cloudinary';
 import nodemailer from 'nodemailer';
 
+import fs from 'fs';
+import path from 'path';
+
+// Load environment variables from .env file manually if not already present
+try {
+  const envPath = path.resolve(process.cwd(), ".env");
+  if (fs.existsSync(envPath)) {
+    const envLines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+    for (const line of envLines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const index = trimmed.indexOf("=");
+      if (index !== -1) {
+        const key = trimmed.substring(0, index).trim();
+        let val = trimmed.substring(index + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.substring(1, val.length - 1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+} catch (err) {
+  console.warn("Unable to load .env file manually:", err.message);
+}
+
 // Initialization
 const app = express();
 app.use(cors({
@@ -31,45 +59,134 @@ let client = null;
 let docClient = null;
 
 if (isAwsConfigured) {
-  client = new DynamoDBClient({ region });
+  client = new DynamoDBClient({
+    region,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
+    }
+  });
   docClient = DynamoDBDocumentClient.from(client);
 } else {
   console.warn("[DynamoDB Warning] AWS credentials or Lambda context not detected. Running in memory mock backup mode.");
 }
 
-// Memory Mock Store in case AWS environment variables are not loaded locally
-const MEMORY_DB = {
-  profiles: [
-    { id: '11111111-1111-4111-a111-111111111111', email: 'admin@ggsc.org', password_hash: bcrypt.hashSync('Admin@GGSC2026', 10), display_name: 'Super Admin', role: 'admin', created_at: new Date().toISOString() },
-    { id: '22222222-2222-4222-a222-222222222222', email: 'oops@ggsc.org', password_hash: bcrypt.hashSync('Oops@GGSC2026', 10), display_name: 'Oops Lead', role: 'oops', created_at: new Date().toISOString() },
-    { id: '33333333-3333-4333-a333-333333333333', email: 'member@ggsc.org', password_hash: bcrypt.hashSync('Member@GGSC2026', 10), display_name: 'Core Member', role: 'member', created_at: new Date().toISOString() },
-    { id: '44444444-4444-4444-a444-444444444444', email: 'volunteer@ggsc.org', password_hash: bcrypt.hashSync('Volunteer@GGSC2026', 10), display_name: 'Volunteer Scanner', role: 'volunteer', created_at: new Date().toISOString() }
-  ],
-  attendance: [],
-  webauthn: [],
-  loginHistory: []
-};
+
+
+// Helper to parse CSV lines manually in the backend
+function parseCSV(content) {
+  const lines = content.split(/\r?\n/);
+  const result = [];
+  if (lines.length === 0) return result;
+  
+  // Parse headers
+  const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    // Split on commas not inside double quotes
+    const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
+    const values = matches.map(v => v.replace(/^["']|["']$/g, '').trim());
+    
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h] = values[idx] || '';
+    });
+    result.push(obj);
+  }
+  return result;
+}
 
 // Help helper to seed default users if Profiles table is empty
 async function checkAndSeedUsers() {
-  if (!docClient) return;
   try {
-    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-profiles', Limit: 1 }));
-    if (!scanRes.Items || scanRes.Items.length === 0) {
-      console.log("[Auto-Seed] Profiles table is empty. Initializing default role users...");
-      const defaultUsers = [
-        { id: '11111111-1111-4111-a111-111111111111', email: 'admin@ggsc.org', password_hash: bcrypt.hashSync('Admin@GGSC2026', 10), display_name: 'Super Admin', role: 'admin', created_at: new Date().toISOString() },
-        { id: '22222222-2222-4222-a222-222222222222', email: 'oops@ggsc.org', password_hash: bcrypt.hashSync('Oops@GGSC2026', 10), display_name: 'Oops Lead', role: 'oops', created_at: new Date().toISOString() },
-        { id: '33333333-3333-4333-a333-333333333333', email: 'member@ggsc.org', password_hash: bcrypt.hashSync('Member@GGSC2026', 10), display_name: 'Core Member', role: 'member', created_at: new Date().toISOString() },
-        { id: '44444444-4444-4444-a444-444444444444', email: 'volunteer@ggsc.org', password_hash: bcrypt.hashSync('Volunteer@GGSC2026', 10), display_name: 'Volunteer Scanner', role: 'volunteer', created_at: new Date().toISOString() }
-      ];
-      for (const u of defaultUsers) {
-        await docClient.send(new PutCommand({ TableName: 'ggsc-profiles', Item: u }));
+    const csvPath = path.join(process.cwd(), 'src/components/Admin/ggsc-adminportal-member-list.csv');
+    if (!fs.existsSync(csvPath)) {
+      console.warn(`[Auto-Seed Warning] CSV file not found at ${csvPath}`);
+      return;
+    }
+
+    const csvContent = fs.readFileSync(csvPath, 'utf8');
+    const parsed = parseCSV(csvContent);
+
+    const commonPasswords = {
+      admin: 'Admin@GGSC2026',
+      oops: 'Oops@GGSC2026',
+      member: 'Member@GGSC2026',
+      volunteer: 'Volunteer@GGSC2026'
+    };
+
+    const getStableId = (email) => {
+      const hash = crypto.createHash('md5').update(email).digest('hex');
+      return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(12, 15)}-a${hash.slice(15, 18)}-${hash.slice(18, 30)}`;
+    };
+
+    for (const member of parsed) {
+      const email = String(member.email).trim().toLowerCase();
+      const role = String(member.role).trim().toLowerCase();
+      const name = String(member.name || member.display_name || email.split('@')[0]).trim();
+      const position = String(member.position || '').trim();
+
+      if (!email || !role) continue;
+
+      const commonPass = commonPasswords[role] || 'Member@GGSC2026';
+      const password_hash = bcrypt.hashSync(commonPass, 10);
+      const id = getStableId(email);
+
+      // Check if user already exists
+      const qRes = await docClient.send(new QueryCommand({
+        TableName: 'ggsc-profiles',
+        IndexName: 'EmailIndex',
+        KeyConditionExpression: 'email = :email',
+        ExpressionAttributeValues: { ':email': email }
+      }));
+
+      if (!qRes.Items || qRes.Items.length === 0) {
+        const newProfile = {
+          id,
+          email,
+          password_hash,
+          display_name: name,
+          role,
+          position,
+          created_at: new Date().toISOString()
+        };
+        await docClient.send(new PutCommand({ TableName: 'ggsc-profiles', Item: newProfile }));
+        console.log(`[Auto-Seed] Successfully loaded default profile for ${name} (${email}) from CSV`);
       }
-      console.log("[Auto-Seed] Successfully loaded default admin, oops, member, and volunteer.");
     }
   } catch (err) {
-    console.error("[Auto-Seed Error] Could not query/seed profiles:", err.message);
+    console.error("[Auto-Seed Error] Could not query/seed profiles from CSV:", err.message);
+  }
+}
+
+// Help helper to seed default events if Events table is empty
+async function checkAndSeedEvents() {
+  
+  try {
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-events', Limit: 1 }));
+    if (!scanRes.Items || scanRes.Items.length === 0) {
+      console.log("[Auto-Seed] Events table is empty. Initializing Cydropreneur...");
+      const defaultEvent = {
+        id: "cydropreneur-2026",
+        title: "Cydropreneur",
+        date: "08th August 2026",
+        venue: "FICCI Auditorium",
+        desc: "Build Android applications in an immersive, hands-on workshop",
+        img: "/img/event-banner.png",
+        tag: "AI & Android",
+        route: "/events/Cydropreneur",
+        folder: "cydropreneur-2026",
+        status: "upcoming",
+        created_at: new Date().toISOString()
+      };
+      await docClient.send(new PutCommand({ TableName: 'ggsc-events', Item: defaultEvent }));
+      console.log("[Auto-Seed] Successfully loaded default event.");
+    }
+  } catch (err) {
+    console.error("[Auto-Seed Error] Could not query/seed events:", err.message);
   }
 }
 
@@ -92,30 +209,36 @@ const getClientIp = (req) => {
   return rawIp.split(',')[0].trim();
 };
 
-const writeLoginLog = async (email, role, status, req) => {
+const writeLoginLog = async (email, role, status, req, displayName = '', position = '') => {
   const ipAddress = getClientIp(req);
   const userAgent = req.headers['user-agent'] || 'unknown';
   const id = crypto.randomUUID();
   const loggedAt = new Date().toISOString();
   
-  if (docClient) {
-    try {
-      await docClient.send(new PutCommand({
-        TableName: 'ggsc-login-history',
-        Item: { id, email, role, status, ip_address: ipAddress, user_agent: userAgent, logged_at: loggedAt }
-      }));
-      // Prune logs older than 15 days
-      const pruneDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
-      const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
-      const oldLogs = (scanRes.Items || []).filter(log => log.logged_at < pruneDate);
-      for (const log of oldLogs) {
-        await docClient.send(new DeleteCommand({ TableName: 'ggsc-login-history', Key: { id: log.id } }));
+  try {
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-login-history',
+      Item: { 
+        id, 
+        email, 
+        role, 
+        status, 
+        ip_address: ipAddress, 
+        user_agent: userAgent, 
+        logged_at: loggedAt,
+        display_name: displayName || email.split('@')[0],
+        position: position || 'Unknown'
       }
-    } catch (err) {
-      console.error("Failed to insert login history in DB:", err);
+    }));
+    // Prune logs older than 15 days
+    const pruneDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
+    const oldLogs = (scanRes.Items || []).filter(log => log.logged_at < pruneDate);
+    for (const log of oldLogs) {
+      await docClient.send(new DeleteCommand({ TableName: 'ggsc-login-history', Key: { id: log.id } }));
     }
-  } else {
-    MEMORY_DB.loginHistory.push({ id, email, role, status, ip_address: ipAddress, user_agent: userAgent, logged_at: loggedAt });
+  } catch (err) {
+    console.error("Failed to insert login history in DB:", err);
   }
 };
 
@@ -130,7 +253,7 @@ function base64urlToBuffer(base64url) {
 
 // Base Health Check
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'healthy', database: docClient ? 'DynamoDB' : 'InMemoryMock' });
+  res.status(200).json({ status: 'healthy', database: 'DynamoDB' });
 });
 
 // 1. Password Login
@@ -152,21 +275,15 @@ app.post('/api/login', async (req, res) => {
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     let failedAttempts = 0;
 
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-login-history',
-        IndexName: 'IpAddressIndex',
-        KeyConditionExpression: 'ip_address = :ip',
-        FilterExpression: '#status = :s AND logged_at > :t',
-        ExpressionAttributeNames: { '#status': 'status' },
-        ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
-      }));
-      failedAttempts = qRes.Count || 0;
-    } else {
-      failedAttempts = MEMORY_DB.loginHistory.filter(
-        l => l.ip_address === ipAddress && l.status === 'failed' && l.logged_at > fifteenMinsAgo
-      ).length;
-    }
+    const historyRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-login-history',
+      IndexName: 'IpAddressIndex',
+      KeyConditionExpression: 'ip_address = :ip',
+      FilterExpression: '#status = :s AND logged_at > :t',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
+    }));
+    failedAttempts = historyRes.Count || 0;
 
     if (failedAttempts >= 3) {
       return res.status(429).json({ 
@@ -175,38 +292,33 @@ app.post('/api/login', async (req, res) => {
     }
 
     // 2. Fetch User Profile
-    let profile = null;
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-profiles',
-        IndexName: 'EmailIndex',
-        KeyConditionExpression: 'email = :email',
-        ExpressionAttributeValues: { ':email': normEmail }
-      }));
-      profile = qRes.Items?.[0];
-    } else {
-      profile = MEMORY_DB.profiles.find(p => p.email === normEmail);
-    }
+    const profileRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-profiles',
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: { ':email': normEmail }
+    }));
+    const profile = profileRes.Items?.[0];
 
     if (!profile) {
-      await writeLoginLog(normEmail, requestedRole, 'failed', req);
-      return res.status(403).json({ error: 'Email is not registered or authorized to access this system.' });
+      await writeLoginLog(normEmail, requestedRole, 'failed', req, 'Unknown', 'Unknown');
+      return res.status(403).json({ error: 'Invalid email, password, or role combination.' });
     }
 
     if (profile.role !== requestedRole) {
-      await writeLoginLog(normEmail, requestedRole, 'failed', req);
-      return res.status(403).json({ error: `Email is registered under role "${profile.role}", which does not match selected role "${requestedRole}".` });
+      await writeLoginLog(normEmail, requestedRole, 'failed', req, profile.display_name, profile.position);
+      return res.status(403).json({ error: 'Invalid email, password, or role combination.' });
     }
 
     // 3. Verify Password Hash
     const passwordMatch = await bcrypt.compare(password, profile.password_hash);
     if (!passwordMatch) {
-      await writeLoginLog(normEmail, requestedRole, 'failed', req);
-      return res.status(401).json({ error: 'Incorrect password credentials.' });
+      await writeLoginLog(normEmail, requestedRole, 'failed', req, profile.display_name, profile.position);
+      return res.status(401).json({ error: 'Invalid email, password, or role combination.' });
     }
 
     // 4. Log success and generate JWT session
-    await writeLoginLog(normEmail, requestedRole, 'success', req);
+    await writeLoginLog(normEmail, requestedRole, 'success', req, profile.display_name, profile.position);
 
     const token = jwt.sign({
       id: profile.id,
@@ -242,37 +354,24 @@ app.post('/api/get-biometric-challenge', async (req, res) => {
   const normEmail = email.trim().toLowerCase();
 
   try {
-    let profile = null;
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-profiles',
-        IndexName: 'EmailIndex',
-        KeyConditionExpression: 'email = :email',
-        ExpressionAttributeValues: { ':email': normEmail }
-      }));
-      profile = qRes.Items?.[0];
-    } else {
-      profile = MEMORY_DB.profiles.find(p => p.email === normEmail);
-    }
+    const profileRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-profiles',
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: { ':email': normEmail }
+    }));
+    const profile = profileRes.Items?.[0];
 
-    if (!profile) return res.status(404).json({ error: 'User profile not found' });
-    if (profile.role !== 'admin' && profile.role !== 'oops') {
-      return res.status(403).json({ error: 'Biometric authentication is restricted to Admin and Oops team accounts only.' });
-    }
+    if (!profile) return res.status(400).json({ error: 'Biometric authentication request failed.' });
 
     // Get WebAuthn Credentials
-    let credentials = [];
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-webauthn',
-        IndexName: 'UserIdIndex',
-        KeyConditionExpression: 'user_id = :user_id',
-        ExpressionAttributeValues: { ':user_id': profile.id }
-      }));
-      credentials = qRes.Items || [];
-    } else {
-      credentials = MEMORY_DB.webauthn.filter(c => c.user_id === profile.id);
-    }
+    const credRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-webauthn',
+      IndexName: 'UserIdIndex',
+      KeyConditionExpression: 'user_id = :user_id',
+      ExpressionAttributeValues: { ':user_id': profile.id }
+    }));
+    const credentials = credRes.Items || [];
 
     if (credentials.length === 0) {
       return res.status(400).json({ error: 'No biometric credentials registered. Please log in with your password first to register a fingerprint.' });
@@ -309,21 +408,15 @@ app.post('/api/verify-biometric', async (req, res) => {
     // 1. Rate Limiting
     const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     let failedAttempts = 0;
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-login-history',
-        IndexName: 'IpAddressIndex',
-        KeyConditionExpression: 'ip_address = :ip',
-        FilterExpression: '#status = :s AND logged_at > :t',
-        ExpressionAttributeNames: { '#status': 'status' },
-        ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
-      }));
-      failedAttempts = qRes.Count || 0;
-    } else {
-      failedAttempts = MEMORY_DB.loginHistory.filter(
-        l => l.ip_address === ipAddress && l.status === 'failed' && l.logged_at > fifteenMinsAgo
-      ).length;
-    }
+    const historyRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-login-history',
+      IndexName: 'IpAddressIndex',
+      KeyConditionExpression: 'ip_address = :ip',
+      FilterExpression: '#status = :s AND logged_at > :t',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: { ':ip': ipAddress, ':s': 'failed', ':t': fifteenMinsAgo }
+    }));
+    failedAttempts = historyRes.Count || 0;
 
     if (failedAttempts >= 3) {
       return res.status(429).json({ error: 'Device blocked: 3 consecutive failed biometric attempts detected.' });
@@ -344,43 +437,32 @@ app.post('/api/verify-biometric', async (req, res) => {
     if (computedSig !== tokenSig) return res.status(401).json({ error: 'Challenge signature is invalid' });
 
     // Fetch Profile
-    let profile = null;
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-profiles',
-        IndexName: 'EmailIndex',
-        KeyConditionExpression: 'email = :email',
-        ExpressionAttributeValues: { ':email': normEmail }
-      }));
-      profile = qRes.Items?.[0];
-    } else {
-      profile = MEMORY_DB.profiles.find(p => p.email === normEmail);
-    }
+    const profileRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-profiles',
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: { ':email': normEmail }
+    }));
+    const profile = profileRes.Items?.[0];
 
-    if (!profile) return res.status(404).json({ error: 'User profile not found' });
-    if (profile.role !== 'admin' && profile.role !== 'oops') {
-      await writeLoginLog(normEmail, profile.role, 'failed', req);
-      return res.status(403).json({ error: 'Biometric authentication is restricted to Admin and Oops team accounts only.' });
+    if (!profile) {
+      await writeLoginLog(normEmail, 'Unknown', 'failed', req, 'Unknown', 'Unknown');
+      return res.status(400).json({ error: 'Biometric verification failed.' });
     }
 
     if (!assertion) return res.status(400).json({ error: 'Missing biometric assertion payload' });
     const { credentialId, clientDataJSON, authenticatorData, signature } = assertion;
 
     // Fetch Registered Credential
-    let credInfo = null;
-    if (docClient) {
-      const getRes = await docClient.send(new GetCommand({
-        TableName: 'ggsc-webauthn',
-        Key: { id: credentialId }
-      }));
-      credInfo = getRes.Item;
-    } else {
-      credInfo = MEMORY_DB.webauthn.find(c => c.id === credentialId);
-    }
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-webauthn',
+      Key: { id: credentialId }
+    }));
+    const credInfo = getRes.Item;
 
     if (!credInfo || credInfo.user_id !== profile.id) {
-      await writeLoginLog(normEmail, profile.role, 'failed', req);
-      return res.status(401).json({ error: 'No registered biometric credential matches the browser key.' });
+      await writeLoginLog(normEmail, profile.role, 'failed', req, profile.display_name, profile.position);
+      return res.status(401).json({ error: 'Biometric verification failed.' });
     }
 
     // Verify clientDataJSON challenge content
@@ -392,8 +474,8 @@ app.post('/api/verify-biometric', async (req, res) => {
     const expectedChallenge = rawChallenge.replace(/-/g, '+').replace(/_/g, '/').replace(/=/g, '');
 
     if (receivedChallenge !== expectedChallenge) {
-      await writeLoginLog(normEmail, profile.role, 'failed', req);
-      return res.status(401).json({ error: 'Cryptographic challenge verification failed.' });
+      await writeLoginLog(normEmail, profile.role, 'failed', req, profile.display_name, profile.position);
+      return res.status(401).json({ error: 'Biometric verification failed.' });
     }
 
     // Verify Cryptographic Signature
@@ -404,12 +486,12 @@ app.post('/api/verify-biometric', async (req, res) => {
 
     const verified = crypto.verify('sha256', signedData, credInfo.public_key, signatureBuffer);
     if (!verified) {
-      await writeLoginLog(normEmail, profile.role, 'failed', req);
-      return res.status(401).json({ error: 'Cryptographic signature verification failed (device rejection).' });
+      await writeLoginLog(normEmail, profile.role, 'failed', req, profile.display_name, profile.position);
+      return res.status(401).json({ error: 'Biometric verification failed.' });
     }
 
     // Successful Login Log
-    await writeLoginLog(normEmail, profile.role, 'success', req);
+    await writeLoginLog(normEmail, profile.role, 'success', req, profile.display_name, profile.position);
 
     const token = jwt.sign({
       id: profile.id,
@@ -593,16 +675,11 @@ app.post('/api/send-email', async (req, res) => {
 // 6. Auth session profiles helper: GET /api/me
 app.get('/api/me', authenticateToken, async (req, res) => {
   try {
-    let profile = null;
-    if (docClient) {
-      const getRes = await docClient.send(new GetCommand({
-        TableName: 'ggsc-profiles',
-        Key: { id: req.user.id }
-      }));
-      profile = getRes.Item;
-    } else {
-      profile = MEMORY_DB.profiles.find(p => p.id === req.user.id);
-    }
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-profiles',
+      Key: { id: req.user.id }
+    }));
+    const profile = getRes.Item;
 
     if (!profile) return res.status(404).json({ error: 'User profile not found' });
     
@@ -621,13 +698,8 @@ app.get('/api/profiles', authenticateToken, async (req, res) => {
   }
 
   try {
-    let items = [];
-    if (docClient) {
-      const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-profiles' }));
-      items = scanRes.Items || [];
-    } else {
-      items = MEMORY_DB.profiles;
-    }
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-profiles' }));
+    const items = scanRes.Items || [];
     
     // Sort profiles alphabetically and remove password hashes
     const sanitized = items.map(({ password_hash, ...rest }) => rest);
@@ -657,18 +729,13 @@ app.post('/api/profiles', authenticateToken, async (req, res) => {
 
   try {
     // Check if email already registered
-    let existingProfile = null;
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-profiles',
-        IndexName: 'EmailIndex',
-        KeyConditionExpression: 'email = :email',
-        ExpressionAttributeValues: { ':email': normEmail }
-      }));
-      existingProfile = qRes.Items?.[0];
-    } else {
-      existingProfile = MEMORY_DB.profiles.find(p => p.email === normEmail);
-    }
+    const qRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-profiles',
+      IndexName: 'EmailIndex',
+      KeyConditionExpression: 'email = :email',
+      ExpressionAttributeValues: { ':email': normEmail }
+    }));
+    const existingProfile = qRes.Items?.[0];
 
     if (existingProfile) return res.status(409).json({ error: 'Email already registered.' });
 
@@ -681,14 +748,10 @@ app.post('/api/profiles', authenticateToken, async (req, res) => {
       created_at
     };
 
-    if (docClient) {
-      await docClient.send(new PutCommand({
-        TableName: 'ggsc-profiles',
-        Item: newProfile
-      }));
-    } else {
-      MEMORY_DB.profiles.push(newProfile);
-    }
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-profiles',
+      Item: newProfile
+    }));
 
     const { password_hash: _, ...safeProfile } = newProfile;
     return res.status(201).json({ success: true, profile: safeProfile });
@@ -701,13 +764,8 @@ app.post('/api/profiles', authenticateToken, async (req, res) => {
 // 9. Scanner Attendance records: GET /api/attendance
 app.get('/api/attendance', authenticateToken, async (req, res) => {
   try {
-    let items = [];
-    if (docClient) {
-      const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-attendance' }));
-      items = scanRes.Items || [];
-    } else {
-      items = MEMORY_DB.attendance;
-    }
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-attendance' }));
+    const items = scanRes.Items || [];
     
     // Sort scanned_at desc
     items.sort((a, b) => new Date(b.scanned_at) - new Date(a.scanned_at));
@@ -742,16 +800,11 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
 
   try {
     // Check if record exists
-    let existing = null;
-    if (docClient) {
-      const getRes = await docClient.send(new GetCommand({
-        TableName: 'ggsc-attendance',
-        Key: { email: normEmail }
-      }));
-      existing = getRes.Item;
-    } else {
-      existing = MEMORY_DB.attendance.find(a => a.email === normEmail);
-    }
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-attendance',
+      Key: { email: normEmail }
+    }));
+    const existing = getRes.Item;
 
     if (existing) {
       return res.status(409).json({ 
@@ -760,18 +813,36 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
       });
     }
 
-    if (docClient) {
-      await docClient.send(new PutCommand({
-        TableName: 'ggsc-attendance',
-        Item: newRecord
-      }));
-    } else {
-      MEMORY_DB.attendance.push(newRecord);
-    }
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-attendance',
+      Item: newRecord
+    }));
 
     return res.status(201).json({ success: true, record: newRecord });
 
   } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 10.5. Scanner Attendance records: DELETE /api/attendance/:email (Oops role restricted)
+app.delete('/api/attendance/:email', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'oops') {
+    return res.status(403).json({ error: 'Access denied: Only Oops team members can delete check-in entries.' });
+  }
+
+  const { email } = req.params;
+  const normEmail = email.trim().toLowerCase();
+
+  try {
+    await docClient.send(new DeleteCommand({
+      TableName: 'ggsc-attendance',
+      Key: { email: normEmail }
+    }));
+
+    return res.status(200).json({ success: true, message: 'Attendance entry deleted successfully.' });
+  } catch (err) {
+    console.error("Delete attendance error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -783,13 +854,8 @@ app.get('/api/login-history', authenticateToken, async (req, res) => {
   }
 
   try {
-    let items = [];
-    if (docClient) {
-      const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
-      items = scanRes.Items || [];
-    } else {
-      items = MEMORY_DB.loginHistory;
-    }
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
+    const items = scanRes.Items || [];
 
     items.sort((a, b) => new Date(b.logged_at) - new Date(a.logged_at));
     return res.status(200).json({ success: true, logs: items });
@@ -805,18 +871,14 @@ app.delete('/api/login-history', authenticateToken, async (req, res) => {
   }
 
   try {
-    if (docClient) {
-      // In DynamoDB, to clear a table, we scan and delete all elements
-      const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
-      const items = scanRes.Items || [];
-      for (const item of items) {
-        await docClient.send(new DeleteCommand({
-          TableName: 'ggsc-login-history',
-          Key: { id: item.id }
-        }));
-      }
-    } else {
-      MEMORY_DB.loginHistory = [];
+    // In DynamoDB, to clear a table, we scan and delete all elements
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-login-history' }));
+    const items = scanRes.Items || [];
+    for (const item of items) {
+      await docClient.send(new DeleteCommand({
+        TableName: 'ggsc-login-history',
+        Key: { id: item.id }
+      }));
     }
 
     return res.status(200).json({ success: true, message: 'Login history cleared successfully.' });
@@ -834,14 +896,10 @@ app.delete('/api/login-history/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    if (docClient) {
-      await docClient.send(new DeleteCommand({
-        TableName: 'ggsc-login-history',
-        Key: { id }
-      }));
-    } else {
-      MEMORY_DB.loginHistory = MEMORY_DB.loginHistory.filter(log => log.id !== id);
-    }
+    await docClient.send(new DeleteCommand({
+      TableName: 'ggsc-login-history',
+      Key: { id }
+    }));
 
     return res.status(200).json({ success: true, message: 'Login history entry deleted successfully.' });
   } catch (err) {
@@ -859,18 +917,13 @@ app.get('/api/webauthn', authenticateToken, async (req, res) => {
   }
 
   try {
-    let credentials = [];
-    if (docClient) {
-      const qRes = await docClient.send(new QueryCommand({
-        TableName: 'ggsc-webauthn',
-        IndexName: 'UserIdIndex',
-        KeyConditionExpression: 'user_id = :user_id',
-        ExpressionAttributeValues: { ':user_id': userId }
-      }));
-      credentials = qRes.Items || [];
-    } else {
-      credentials = MEMORY_DB.webauthn.filter(c => c.user_id === userId);
-    }
+    const qRes = await docClient.send(new QueryCommand({
+      TableName: 'ggsc-webauthn',
+      IndexName: 'UserIdIndex',
+      KeyConditionExpression: 'user_id = :user_id',
+      ExpressionAttributeValues: { ':user_id': userId }
+    }));
+    const credentials = qRes.Items || [];
 
     return res.status(200).json({ success: true, credentials });
   } catch (err) {
@@ -880,30 +933,33 @@ app.get('/api/webauthn', authenticateToken, async (req, res) => {
 
 // 14. WebAuthn: POST /api/webauthn (enroll a key)
 app.post('/api/webauthn', authenticateToken, async (req, res) => {
-  const { id, user_id, public_key } = req.body;
-  if (!id || !user_id || !public_key) {
-    return res.status(400).json({ error: 'Missing required biometric credential attributes.' });
+  const { id, user_id, public_key, setupPassword } = req.body;
+  if (!id || !user_id || !public_key || !setupPassword) {
+    return res.status(400).json({ error: 'Missing required biometric credential attributes or setup password.' });
+  }
+
+  // Backend validation of setup authorization passwords
+  if (req.user.role === 'admin') {
+    if (setupPassword !== 'AdminBioAuth2026') {
+      return res.status(403).json({ error: 'Invalid setup authorization password.' });
+    }
+  } else if (req.user.role === 'oops') {
+    if (setupPassword !== 'OopsBioAuth2026') {
+      return res.status(403).json({ error: 'Invalid setup authorization password.' });
+    }
+  } else {
+    return res.status(403).json({ error: 'Only Admin and Oops roles can enroll biometric credentials.' });
   }
 
   const created_at = new Date().toISOString();
 
-  // Access validation: Admin/Oops can enroll keys for others, others can only enroll their own
-  if (user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Unauthorized credential enrollment.' });
-  }
-
   try {
     // Check if key is already registered to user
-    let existing = null;
-    if (docClient) {
-      const getRes = await docClient.send(new GetCommand({
-        TableName: 'ggsc-webauthn',
-        Key: { id }
-      }));
-      existing = getRes.Item;
-    } else {
-      existing = MEMORY_DB.webauthn.find(c => c.id === id);
-    }
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-webauthn',
+      Key: { id }
+    }));
+    const existing = getRes.Item;
 
     if (existing) {
       return res.status(409).json({ error: 'This biometric device is already registered.' });
@@ -911,14 +967,10 @@ app.post('/api/webauthn', authenticateToken, async (req, res) => {
 
     const newCred = { id, user_id, public_key, counter: 0, created_at };
 
-    if (docClient) {
-      await docClient.send(new PutCommand({
-        TableName: 'ggsc-webauthn',
-        Item: newCred
-      }));
-    } else {
-      MEMORY_DB.webauthn.push(newCred);
-    }
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-webauthn',
+      Item: newCred
+    }));
 
     return res.status(201).json({ success: true, credential: newCred });
   } catch (err) {
@@ -931,16 +983,11 @@ app.delete('/api/webauthn/:id', authenticateToken, async (req, res) => {
   const credId = req.params.id;
 
   try {
-    let credential = null;
-    if (docClient) {
-      const getRes = await docClient.send(new GetCommand({
-        TableName: 'ggsc-webauthn',
-        Key: { id: credId }
-      }));
-      credential = getRes.Item;
-    } else {
-      credential = MEMORY_DB.webauthn.find(c => c.id === credId);
-    }
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-webauthn',
+      Key: { id: credId }
+    }));
+    const credential = getRes.Item;
 
     if (!credential) return res.status(404).json({ error: 'Biometric credential not found.' });
 
@@ -949,17 +996,214 @@ app.delete('/api/webauthn/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied.' });
     }
 
-    if (docClient) {
-      await docClient.send(new DeleteCommand({
-        TableName: 'ggsc-webauthn',
-        Key: { id: credId }
-      }));
-    } else {
-      MEMORY_DB.webauthn = MEMORY_DB.webauthn.filter(c => c.id !== credId);
-    }
+    await docClient.send(new DeleteCommand({
+      TableName: 'ggsc-webauthn',
+      Key: { id: credId }
+    }));
 
     return res.status(200).json({ success: true, message: 'Biometric key removed successfully.' });
   } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 16. POST /api/sync-profiles (Sync CSV roster list of members, admin/oops authorization required)
+app.post('/api/sync-profiles', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'oops') {
+    return res.status(403).json({ error: 'Access denied: Only Admins or Oops team can sync member roster.' });
+  }
+
+  const { members } = req.body;
+  if (!Array.isArray(members)) {
+    return res.status(400).json({ error: 'Missing parameter: members array is required' });
+  }
+
+  const commonPasswords = {
+    admin: 'Admin@GGSC2026',
+    oops: 'Oops@GGSC2026',
+    member: 'Member@GGSC2026',
+    volunteer: 'Volunteer@GGSC2026'
+  };
+
+  try {
+    const results = [];
+    for (const member of members) {
+      const email = String(member.email).trim().toLowerCase();
+      const role = String(member.role).trim().toLowerCase();
+      const display_name = String(member.display_name || member.name || email.split('@')[0]).trim();
+      const position = String(member.position || '').trim();
+
+      if (!email || !role) continue; // skip invalid rows
+
+      const commonPass = commonPasswords[role] || 'Member@GGSC2026';
+      const password_hash = bcrypt.hashSync(commonPass, 10);
+
+      // Check if user already exists
+      const qRes = await docClient.send(new QueryCommand({
+        TableName: 'ggsc-profiles',
+        IndexName: 'EmailIndex',
+        KeyConditionExpression: 'email = :email',
+        ExpressionAttributeValues: { ':email': email }
+      }));
+      const existingProfile = qRes.Items?.[0];
+
+      if (existingProfile) {
+        // Update existing profile (preserves UUID id, keeping biometrics intact)
+        const updatedProfile = {
+          ...existingProfile,
+          display_name,
+          role,
+          position,
+          password_hash
+        };
+
+        await docClient.send(new PutCommand({
+          TableName: 'ggsc-profiles',
+          Item: updatedProfile
+        }));
+        results.push({ email, status: 'updated', id: existingProfile.id });
+      } else {
+        // Insert new profile
+        const id = crypto.randomUUID();
+        const created_at = new Date().toISOString();
+        const newProfile = {
+          id,
+          email,
+          password_hash,
+          display_name,
+          role,
+          position,
+          created_at
+        };
+
+        await docClient.send(new PutCommand({
+          TableName: 'ggsc-profiles',
+          Item: newProfile
+        }));
+        results.push({ email, status: 'inserted', id });
+      }
+    }
+
+    return res.status(200).json({ success: true, count: results.length, details: results });
+  } catch (err) {
+    console.error("Profile sync error:", err);
+    return res.status(500).json({ error: `Sync failed: ${err.message}` });
+  }
+});
+
+// 17. GET /api/events (Public endpoint to list events)
+app.get('/api/events', async (req, res) => {
+  // Auto-seed events if AWS DB is empty
+  await checkAndSeedEvents();
+
+  try {
+    const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-events' }));
+    const items = scanRes.Items || [];
+
+    // Sort events by created_at desc (newest first)
+    items.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    return res.status(200).json({ success: true, events: items });
+  } catch (err) {
+    console.error("Fetch events error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 18. POST /api/events (Create an event, Auth required: admin, oops, member)
+app.post('/api/events', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can launch cards.' });
+  }
+
+  const { title, date, venue, desc, img, tag, route, folder, status } = req.body;
+  if (!title || !date || !venue || !desc) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  const id = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const created_at = new Date().toISOString();
+
+  const newEvent = {
+    id,
+    title,
+    date,
+    venue,
+    desc,
+    img: img || '/img/event-banner.png',
+    tag: tag || 'General',
+    route: route || `/events/${title.replace(/[^a-zA-Z0-9]/g, '')}`,
+    folder: folder || id,
+    status: status || 'upcoming',
+    created_at
+  };
+
+  try {
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-events',
+      Item: newEvent
+    }));
+    return res.status(201).json({ success: true, event: newEvent });
+  } catch (err) {
+    console.error("Create event error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 19. PUT /api/events/:id (Update an event, Auth required: admin, oops, member)
+app.put('/api/events/:id', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can modify cards.' });
+  }
+
+  const { id } = req.params;
+  const updates = req.body;
+
+  try {
+    const getRes = await docClient.send(new GetCommand({
+      TableName: 'ggsc-events',
+      Key: { id }
+    }));
+    const existing = getRes.Item;
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Event card not found.' });
+    }
+
+    const updatedEvent = {
+      ...existing,
+      ...updates,
+      id // preserve original partition key ID
+    };
+
+    await docClient.send(new PutCommand({
+      TableName: 'ggsc-events',
+      Item: updatedEvent
+    }));
+
+    return res.status(200).json({ success: true, event: updatedEvent });
+  } catch (err) {
+    console.error("Update event error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// 20. DELETE /api/events/:id (Delete an event, Auth required: admin, oops, member)
+app.delete('/api/events/:id', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can delete cards.' });
+  }
+
+  const { id } = req.params;
+
+  try {
+    await docClient.send(new DeleteCommand({
+      TableName: 'ggsc-events',
+      Key: { id }
+    }));
+    return res.status(200).json({ success: true, message: 'Event card deleted successfully.' });
+  } catch (err) {
+    console.error("Delete event error:", err);
     return res.status(500).json({ error: err.message });
   }
 });

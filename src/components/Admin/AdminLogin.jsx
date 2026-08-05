@@ -45,17 +45,9 @@ export default function AdminLogin() {
         role // 'admin' | 'member' | 'volunteer' | 'oops'
       });
 
-      if (data.isMock) {
-        localStorage.setItem('ggsc_mock_role', role);
-        localStorage.setItem('ggsc_mock_email', email.trim().toLowerCase());
-      } else {
-        localStorage.removeItem('ggsc_mock_role');
-        localStorage.removeItem('ggsc_mock_email');
-      }
-
       // Establish the session locally if tokens exist
       const { session } = data;
-      if (session?.access_token && !data.isMock) {
+      if (session?.access_token) {
         apiClient.setToken(session.access_token);
       }
 
@@ -90,9 +82,8 @@ export default function AdminLogin() {
       const { challenge, challengeToken, credentialIds } = resData;
 
       // 2. Perform WebAuthn assertion (biometric scanning)
-      // Pick the first registered credential ID (or loop if there are multiple)
-      const credentialId = credentialIds[0];
-      const assertionPayload = await authenticateBiometric(credentialId, challenge);
+      // Pass all registered credential IDs
+      const assertionPayload = await authenticateBiometric(credentialIds, challenge);
 
       // 3. Send signature verification request to serverless verify endpoint
       const verifyData = await apiClient.post('/api/verify-biometric', {
@@ -102,19 +93,8 @@ export default function AdminLogin() {
       });
 
       // 4. Authenticate the client session dynamically using returned session tokens
-      const { session, isMock } = verifyData;
-
-      if (isMock) {
-        let mockRole = 'admin';
-        if (email.includes('oops')) mockRole = 'oops';
-        else if (email.includes('member')) mockRole = 'member';
-        else if (email.includes('volunteer')) mockRole = 'volunteer';
-
-        localStorage.setItem('ggsc_mock_role', mockRole);
-        localStorage.setItem('ggsc_mock_email', email.trim().toLowerCase());
-      } else {
-        localStorage.removeItem('ggsc_mock_role');
-        localStorage.removeItem('ggsc_mock_email');
+      const { session } = verifyData;
+      if (session?.access_token) {
         apiClient.setToken(session.access_token);
       }
 
@@ -190,8 +170,8 @@ export default function AdminLogin() {
               <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">
                 Email Address
               </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px', display: 'flex', alignItems: 'center' }} className="pointer-events-none text-neutral-400">
                   <FiMail size={16} />
                 </div>
                 <input
@@ -211,8 +191,8 @@ export default function AdminLogin() {
               <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">
                 Password
               </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '12px', display: 'flex', alignItems: 'center' }} className="pointer-events-none text-neutral-400">
                   <FiLock size={16} />
                 </div>
                 <input

@@ -21,14 +21,36 @@ Best regards,
 GGSC Organizing Committee
 UEM Kolkata`;
 
-export default function TicketGeneratorPortal() {
+export default function TicketGeneratorPortal({ userRole: propUserRole, userEmail: propUserEmail }) {
+  const userRole = propUserRole || localStorage.getItem('ggsc_mock_role') || 'admin';
+  const activeEmail = propUserEmail || localStorage.getItem('ggsc_mock_email') || 'admin@ggsc.org';
+
   const [csvRawData, setCsvRawData] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [templateImage, setTemplateImage] = useState(null);
   const [imageName, setImageName] = useState('');
   
   // Selected Event from Upcoming Events dropdown
-  const [selectedEvent, setSelectedEvent] = useState(UPCOMING_EVENTS[0]?.title || 'Cydropreneur');
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState('');
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const data = await apiClient.get('/api/events');
+        if (data?.events) {
+          const upcoming = data.events.filter(e => e.status === 'upcoming');
+          setEvents(upcoming);
+          if (upcoming.length > 0) {
+            setSelectedEvent(upcoming[0].title);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching events:', err);
+      }
+    };
+    loadEvents();
+  }, []);
 
   // Slider states for QR Code placement
   const [xPos, setXPos] = useState(100);
@@ -76,24 +98,6 @@ export default function TicketGeneratorPortal() {
   const [progress, setProgress] = useState(0);
 
   const canvasRef = useRef(null);
-  const [userRole, setUserRole] = useState('');
-
-  useEffect(() => {
-    const getRole = async () => {
-      const mockRole = localStorage.getItem('ggsc_mock_role');
-      if (mockRole) {
-        setUserRole(mockRole);
-      } else {
-        try {
-          const data = await apiClient.get('/api/me');
-          if (data?.profile) setUserRole(data.profile.role);
-        } catch (err) {
-          console.warn('Error reading active session role:', err);
-        }
-      }
-    };
-    getRole();
-  }, []);
 
   // Save Settings to localStorage on change
   useEffect(() => {
@@ -349,12 +353,12 @@ export default function TicketGeneratorPortal() {
     setProgress(0);
 
     const smtpConfig = {
-      host: smtpHost,
-      port: smtpPort,
+      host: userRole === 'oops' ? smtpHost : 'smtp.gmail.com',
+      port: userRole === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: smtpUser,
+      user: userRole === 'oops' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: smtpFromName
+      fromName: userRole === 'oops' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const cloudinaryConfig = {
@@ -415,7 +419,7 @@ export default function TicketGeneratorPortal() {
 
         // Upload to Cloudinary
         let cldPublicUrl = '';
-        if (cldCloudName && cldApiKey && cldApiSecret) {
+        if ((userRole === 'oops' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'oops') {
           updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Uploading to Cloudinary...' };
           setLogs([...updatedLogs]);
 
@@ -494,12 +498,12 @@ export default function TicketGeneratorPortal() {
     setProgress(0);
 
     const smtpConfig = {
-      host: smtpHost,
-      port: smtpPort,
+      host: userRole === 'oops' ? smtpHost : 'smtp.gmail.com',
+      port: userRole === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: smtpUser,
+      user: userRole === 'oops' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: smtpFromName
+      fromName: userRole === 'oops' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const cloudinaryConfig = {
@@ -565,7 +569,7 @@ export default function TicketGeneratorPortal() {
 
         // Upload to Cloudinary in event-specific folder via Serverless API
         let cldPublicUrl = '';
-        if (cldCloudName && cldApiKey && cldApiSecret) {
+        if ((userRole === 'oops' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'oops') {
           updatedLogs[i] = { ...updatedLogs[i], message: `Uploading ticket to Cloudinary (${selectedEvent})...` };
           setLogs([...updatedLogs]);
 
@@ -695,7 +699,7 @@ export default function TicketGeneratorPortal() {
                 disabled={isProcessing}
                 className="block w-full rounded-xl border border-neutral-200 bg-white/70 py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                {UPCOMING_EVENTS.map(evt => (
+                {events.map(evt => (
                   <option key={evt.id} value={evt.title}>
                     {evt.title} ({evt.date})
                   </option>
@@ -926,49 +930,51 @@ export default function TicketGeneratorPortal() {
           </div>
 
           {/* Cloudinary API Storage Card */}
-          <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
-              <FiCloud className="text-purple-600" /> Cloudinary Storage API
-            </h3>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">Cloud Name</label>
-                <input
-                  type="text"
-                  value={userRole === 'oops' ? cldCloudName : 'e2qvanrx'}
-                  onChange={(e) => setCldCloudName(e.target.value)}
-                  disabled={isProcessing || userRole !== 'oops'}
-                  placeholder="e.g. ggsc-cloud"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
-                />
-              </div>
+          {userRole === 'oops' && (
+            <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+                <FiCloud className="text-purple-600" /> Cloudinary Storage API
+              </h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Cloud Name</label>
+                  <input
+                    type="text"
+                    value={cldCloudName}
+                    onChange={(e) => setCldCloudName(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="e.g. ggsc-cloud"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Key</label>
-                <input
-                  type="text"
-                  value={userRole === 'oops' ? cldApiKey : '453893951347733'}
-                  onChange={(e) => setCldApiKey(e.target.value)}
-                  disabled={isProcessing || userRole !== 'oops'}
-                  placeholder="Cloudinary API Key"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
-                />
-              </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Key</label>
+                  <input
+                    type="text"
+                    value={cldApiKey}
+                    onChange={(e) => setCldApiKey(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="Cloudinary API Key"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Secret</label>
-                <input
-                  type="password"
-                  value={userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'}
-                  onChange={(e) => setCldApiSecret(e.target.value)}
-                  disabled={isProcessing || userRole !== 'oops'}
-                  placeholder="••••••••••••••••"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900 disabled:opacity-75 disabled:cursor-not-allowed"
-                />
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Secret</label>
+                  <input
+                    type="password"
+                    value={cldApiSecret}
+                    onChange={(e) => setCldApiSecret(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="••••••••••••••••"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* SMTP Credentials Card */}
           <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
@@ -976,80 +982,117 @@ export default function TicketGeneratorPortal() {
               <FiSettings className="text-green-600" /> SMTP Emailer Config
             </h3>
             
-            <div className="space-y-3">
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Host</label>
-                <input
-                  type="text"
-                  value={smtpHost}
-                  onChange={(e) => setSmtpHost(e.target.value)}
-                  disabled={isProcessing}
-                  placeholder="smtp.gmail.com"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
+            {userRole === 'oops' ? (
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Port</label>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Host</label>
                   <input
                     type="text"
-                    value={smtpPort}
-                    onChange={(e) => setSmtpPort(e.target.value)}
+                    value={smtpHost}
+                    onChange={(e) => setSmtpHost(e.target.value)}
                     disabled={isProcessing}
-                    placeholder="587"
+                    placeholder="smtp.gmail.com"
                     className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
                   />
                 </div>
-                <div className="flex items-center mt-4">
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Port</label>
+                    <input
+                      type="text"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(e.target.value)}
+                      disabled={isProcessing}
+                      placeholder="587"
+                      className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                    />
+                  </div>
+                  <div className="flex items-center mt-4">
+                    <input
+                      type="checkbox"
+                      id="secure-toggle"
+                      checked={smtpSecure}
+                      onChange={(e) => setSmtpSecure(e.target.checked)}
+                      disabled={isProcessing}
+                      className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="secure-toggle" className="ml-1.5 text-[10px] font-semibold text-neutral-600">SSL/TLS</label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Email</label>
                   <input
-                    type="checkbox"
-                    id="secure-toggle"
-                    checked={smtpSecure}
-                    onChange={(e) => setSmtpSecure(e.target.checked)}
+                    type="email"
+                    value={smtpUser}
+                    onChange={(e) => setSmtpUser(e.target.value)}
                     disabled={isProcessing}
-                    className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                    placeholder="organizer@gmail.com"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
                   />
-                  <label htmlFor="secure-toggle" className="ml-1.5 text-[10px] font-semibold text-neutral-600">SSL/TLS</label>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Password / App Password</label>
+                  <input
+                    type="password"
+                    value={smtpPass}
+                    onChange={(e) => setSmtpPass(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="••••••••••••"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Name</label>
+                  <input
+                    type="text"
+                    value={smtpFromName}
+                    onChange={(e) => setSmtpFromName(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="GGSC Committee"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
                 </div>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="text-[11px] text-neutral-500 bg-neutral-100/50 p-3 rounded-2xl border border-neutral-200/20">
+                  Gmail credentials will be used automatically. Login email: <span className="font-bold text-neutral-800">{activeEmail}</span>
+                </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Email</label>
-                <input
-                  type="email"
-                  value={smtpUser}
-                  onChange={(e) => setSmtpUser(e.target.value)}
-                  disabled={isProcessing}
-                  placeholder="organizer@gmail.com"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                />
-              </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Gmail App Password</label>
+                  <input
+                    type="password"
+                    value={smtpPass}
+                    onChange={(e) => setSmtpPass(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="Enter 16-character App Password"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">Password / App Password</label>
-                <input
-                  type="password"
-                  value={smtpPass}
-                  onChange={(e) => setSmtpPass(e.target.value)}
-                  disabled={isProcessing}
-                  placeholder="••••••••••••"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-neutral-500">Security Connection Mode:</span>
+                  <label className="flex items-center gap-1.5 text-xs text-neutral-700 font-bold cursor-pointer bg-neutral-50 hover:bg-neutral-100 px-3 py-1.5 rounded-xl border border-neutral-200/50 transition-all select-none">
+                    <input
+                      type="checkbox"
+                      checked={smtpSecure}
+                      onChange={(e) => {
+                        setSmtpSecure(e.target.checked);
+                        setSmtpPort(e.target.checked ? '465' : '587');
+                      }}
+                      disabled={isProcessing}
+                      className="rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>{smtpSecure ? 'Secure SSL/TLS (Port 465)' : 'Unsecure STARTTLS (Port 587)'}</span>
+                  </label>
+                </div>
               </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Name</label>
-                <input
-                  type="text"
-                  value={smtpFromName}
-                  onChange={(e) => setSmtpFromName(e.target.value)}
-                  disabled={isProcessing}
-                  placeholder="GGSC Committee"
-                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                />
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
