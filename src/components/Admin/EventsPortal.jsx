@@ -26,7 +26,7 @@ export default function EventsPortal({ userRole }) {
   const [status, setStatus] = useState('upcoming'); // upcoming | archived
 
   // Access control check
-  const hasAccess = role === 'admin' || role === 'oops' || role === 'member';
+  const hasAccess = role === 'admin' || role === 'operations team' || role === 'member';
 
   useEffect(() => {
     loadEvents();
@@ -150,7 +150,7 @@ export default function EventsPortal({ userRole }) {
         <FiAlertCircle size={20} className="flex-shrink-0" />
         <div>
           <h3 className="font-extrabold text-sm uppercase">Access Denied</h3>
-          <p className="text-xs mt-0.5">Only Admins, Oops, or Core Members are authorized to launch or manage events.</p>
+          <p className="text-xs mt-0.5">Only Admins, Operations Team, or Core Members are authorized to launch or manage events.</p>
         </div>
       </div>
     );

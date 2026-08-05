@@ -42,7 +42,7 @@ export default function AdminLogin() {
       const data = await apiClient.post('/api/login', {
         email: email.trim().toLowerCase(),
         password,
-        role // 'admin' | 'member' | 'volunteer' | 'oops'
+        role // 'admin' | 'member' | 'volunteer' | 'operations team'
       });
 
       // Establish the session locally if tokens exist
@@ -162,7 +162,7 @@ export default function AdminLogin() {
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
                 <option value="volunteer">Volunteer</option>
-                <option value="oops">Oops team</option>
+                <option value="operations team">Operations Team</option>
               </select>
             </div>
 

@@ -60,13 +60,13 @@ export default function LogHistory() {
       if (!apiClient.getToken()) {
         const mockLogs = [
           { id: '1', email: 'admin@ggsc.org', role: 'admin', status: 'success', logged_at: new Date().toISOString() },
-          { id: '2', email: 'oops@ggsc.org', role: 'oops', status: 'success', logged_at: new Date(Date.now() - 60000).toISOString() },
+          { id: '2', email: 'operationsteam@ggsc.org', role: 'operations team', status: 'success', logged_at: new Date(Date.now() - 60000).toISOString() },
           { id: '3', email: 'intruder@gmail.com', role: 'admin', status: 'failed', logged_at: new Date(Date.now() - 120000).toISOString() }
         ];
         setLogs(mockLogs);
         setProfileNames({
           'admin@ggsc.org': 'Super Admin',
-          'oops@ggsc.org': 'Oops Lead'
+          'operationsteam@ggsc.org': 'Operations Team Lead'
         });
       } else {
         setError('Failed to retrieve login history. Verify permissions.');
@@ -77,8 +77,8 @@ export default function LogHistory() {
   };
 
   const handleClearLogs = async () => {
-    if (userRole !== 'oops') {
-      alert('Unauthorized. Only Oops team members are permitted to delete login history.');
+    if (userRole !== 'operations team') {
+      alert('Unauthorized. Only Operations Team members are permitted to delete login history.');
       return;
     }
 
@@ -99,7 +99,7 @@ export default function LogHistory() {
   };
 
   const handleDeleteRow = async (id) => {
-    if (userRole !== 'oops') return;
+    if (userRole !== 'operations team') return;
 
     try {
       await apiClient.delete(`/api/login-history/${id}`);
@@ -114,7 +114,7 @@ export default function LogHistory() {
   return (
     <div className="space-y-6">
       {/* Tab Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-neutral-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Login Audit History
@@ -122,7 +122,7 @@ export default function LogHistory() {
           <p className="text-neutral-500 mt-1">Real-time log of security access attempts inside the admin portal shell.</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
           <button
             onClick={fetchLogs}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-neutral-600 bg-white border border-neutral-200 hover:bg-neutral-50 transition-all shadow-sm"
@@ -130,7 +130,7 @@ export default function LogHistory() {
             <FiRefreshCw /> Refresh Logs
           </button>
 
-          {userRole === 'oops' && logs.length > 0 && (
+          {userRole === 'operations team' && logs.length > 0 && (
             <button
               onClick={handleClearLogs}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-all shadow-sm"
@@ -168,15 +168,14 @@ export default function LogHistory() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="border-b border-neutral-200/60 text-xs font-bold text-neutral-500 uppercase tracking-wider">
                   <th className="pb-3 pl-2">Name</th>
-                  <th className="pb-3">Email ID</th>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Time</th>
+                  <th className="pb-3 hidden md:table-cell">Email ID</th>
+                  <th className="pb-3">Timestamp</th>
                   <th className="pb-3">Success</th>
-                  {userRole === 'oops' && <th className="pb-3 pr-2 text-right">Actions</th>}
+                  {userRole === 'operations team' && <th className="pb-3 pr-2 text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="text-xs divide-y divide-neutral-100">
@@ -189,9 +188,11 @@ export default function LogHistory() {
                   return (
                     <tr key={log.id} className="hover:bg-neutral-50/50 transition-all">
                       <td className="py-3.5 pl-2 font-bold text-neutral-800 capitalize">{displayName}</td>
-                      <td className="py-3.5 text-neutral-600 font-mono">{log.email}</td>
-                      <td className="py-3.5 text-neutral-500 font-mono">{logDate}</td>
-                      <td className="py-3.5 text-neutral-500 font-mono">{logTime}</td>
+                      <td className="py-3.5 text-neutral-600 font-mono hidden md:table-cell">{log.email}</td>
+                      <td className="py-3.5 text-neutral-500 font-mono">
+                        {logDate} <span className="hidden sm:inline text-neutral-400">•</span> <br className="sm:hidden" />
+                        <span className="text-[10px] sm:text-xs text-neutral-400 sm:text-neutral-500">{logTime}</span>
+                      </td>
                       <td className="py-3.5">
                         {log.status === 'success' ? (
                           <span className="w-3.5 h-3.5 rounded-full bg-green-500 inline-block border-2 border-white shadow-sm" title="Success" />
@@ -199,7 +200,7 @@ export default function LogHistory() {
                           <span className="w-3.5 h-3.5 rounded-full bg-red-500 inline-block border-2 border-white shadow-sm" title="Failed" />
                         )}
                       </td>
-                      {userRole === 'oops' && (
+                      {userRole === 'operations team' && (
                         <td className="py-3.5 pr-2 text-right">
                           <button
                             onClick={() => handleDeleteRow(log.id)}

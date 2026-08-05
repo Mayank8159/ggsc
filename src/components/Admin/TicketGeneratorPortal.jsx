@@ -353,18 +353,18 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
     setProgress(0);
 
     const smtpConfig = {
-      host: userRole === 'oops' ? smtpHost : 'smtp.gmail.com',
-      port: userRole === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
+      host: userRole === 'operations team' ? smtpHost : 'smtp.gmail.com',
+      port: userRole === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: userRole === 'oops' ? smtpUser : activeEmail,
+      user: userRole === 'operations team' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: userRole === 'oops' ? smtpFromName : 'GGSC Organizing Team'
+      fromName: userRole === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const cloudinaryConfig = {
-      cloudName: userRole === 'oops' ? cldCloudName : 'e2qvanrx',
-      apiKey: userRole === 'oops' ? cldApiKey : '453893951347733',
-      apiSecret: userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'
+      cloudName: cldCloudName || undefined,
+      apiKey: cldApiKey || undefined,
+      apiSecret: cldApiSecret || undefined
     };
 
     let updatedLogs = [...logs];
@@ -419,7 +419,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
 
         // Upload to Cloudinary
         let cldPublicUrl = '';
-        if ((userRole === 'oops' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'oops') {
+        if ((userRole === 'operations team' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'operations team') {
           updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Uploading to Cloudinary...' };
           setLogs([...updatedLogs]);
 
@@ -498,18 +498,18 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
     setProgress(0);
 
     const smtpConfig = {
-      host: userRole === 'oops' ? smtpHost : 'smtp.gmail.com',
-      port: userRole === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
+      host: userRole === 'operations team' ? smtpHost : 'smtp.gmail.com',
+      port: userRole === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: userRole === 'oops' ? smtpUser : activeEmail,
+      user: userRole === 'operations team' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: userRole === 'oops' ? smtpFromName : 'GGSC Organizing Team'
+      fromName: userRole === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const cloudinaryConfig = {
-      cloudName: userRole === 'oops' ? cldCloudName : 'e2qvanrx',
-      apiKey: userRole === 'oops' ? cldApiKey : '453893951347733',
-      apiSecret: userRole === 'oops' ? cldApiSecret : 'H4U5yHil42FC0Su25JavgKl1eRs'
+      cloudName: cldCloudName || undefined,
+      apiKey: cldApiKey || undefined,
+      apiSecret: cldApiSecret || undefined
     };
 
     // Reset logs tracker to match active processed items
@@ -569,7 +569,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
 
         // Upload to Cloudinary in event-specific folder via Serverless API
         let cldPublicUrl = '';
-        if ((userRole === 'oops' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'oops') {
+        if ((userRole === 'operations team' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'operations team') {
           updatedLogs[i] = { ...updatedLogs[i], message: `Uploading ticket to Cloudinary (${selectedEvent})...` };
           setLogs([...updatedLogs]);
 
@@ -930,7 +930,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
           </div>
 
           {/* Cloudinary API Storage Card */}
-          {userRole === 'oops' && (
+          {userRole === 'operations team' && (
             <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
                 <FiCloud className="text-purple-600" /> Cloudinary Storage API
@@ -982,7 +982,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
               <FiSettings className="text-green-600" /> SMTP Emailer Config
             </h3>
             
-            {userRole === 'oops' ? (
+            {userRole === 'operations team' ? (
               <div className="space-y-3">
                 <div>
                   <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Host</label>

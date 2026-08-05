@@ -225,12 +225,12 @@ export default function BulkEmailer({ userRole, userEmail }) {
     setIsProcessing(true);
 
     const smtpConfig = {
-      host: role === 'oops' ? smtpHost : 'smtp.gmail.com',
-      port: role === 'oops' ? smtpPort : (smtpSecure ? '465' : '587'),
+      host: role === 'operations team' ? smtpHost : 'smtp.gmail.com',
+      port: role === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
       secure: smtpSecure,
-      user: role === 'oops' ? smtpUser : activeEmail,
+      user: role === 'operations team' ? smtpUser : activeEmail,
       pass: smtpPass,
-      fromName: role === 'oops' ? smtpFromName : 'GGSC Organizing Team'
+      fromName: role === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
     };
 
     const updated = [...recipients];
@@ -589,7 +589,7 @@ export default function BulkEmailer({ userRole, userEmail }) {
 
   const hasFailedLogs = recipients.some(r => r.status === 'failed');
 
-  if (role !== 'oops') {
+  if (role !== 'operations team') {
     return renderLargeGridLayout();
   }
 

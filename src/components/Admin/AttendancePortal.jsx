@@ -455,7 +455,7 @@ export default function AttendancePortal() {
               ) : (
                 recentLogs.map((log) => (
                   <div
-                    key={log.id}
+                    key={log.email}
                     className="flex justify-between items-center text-xs p-3.5 rounded-xl bg-white border border-neutral-100 shadow-sm"
                   >
                     <div>
@@ -476,7 +476,7 @@ export default function AttendancePortal() {
                           {new Date(log.scanned_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
-                      {volunteerUser?.role === 'oops' && (
+                      {volunteerUser?.role === 'operations team' && (
                         <button
                           onClick={() => handleDeleteEntry(log.email)}
                           className="p-1.5 hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-all rounded-lg"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -494,6 +494,7 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/events/Cydropreneur" element={<Cydropreneur />} />
           <Route path="/teams" element={<Team />} />
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />

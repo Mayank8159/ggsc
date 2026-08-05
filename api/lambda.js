@@ -38,7 +38,7 @@ try {
 }
 
 // Initialization
-const app = express();
+export const app = express();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -51,7 +51,7 @@ const region = process.env.AWS_REGION || "ap-south-1";
 
 // AWS Client config
 const isAwsConfigured = Boolean(
-  process.env.AWS_ACCESS_KEY_ID && 
+  process.env.AWS_ACCESS_KEY_ID &&
   process.env.AWS_SECRET_ACCESS_KEY
 ) || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
 
@@ -59,16 +59,104 @@ let client = null;
 let docClient = null;
 
 if (isAwsConfigured) {
-  client = new DynamoDBClient({
-    region,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
-    }
-  });
+  if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    // Running inside AWS Lambda environment: use automatic IAM Execution Role
+    client = new DynamoDBClient({ region });
+  } else {
+    // Running locally: use credentials from .env
+    client = new DynamoDBClient({
+      region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
+      }
+    });
+  }
   docClient = DynamoDBDocumentClient.from(client);
 } else {
   console.warn("[DynamoDB Warning] AWS credentials or Lambda context not detected. Running in memory mock backup mode.");
+
+  // Set up persistent mock database attached to globalThis to survive Vite hot-reloads
+  globalThis.__mockDb = globalThis.__mockDb || {
+    'ggsc-profiles': [],
+    'ggsc-attendance': [],
+    'ggsc-webauthn': [],
+    'ggsc-login-history': [],
+    'ggsc-events': []
+  };
+  const mockDb = globalThis.__mockDb;
+
+  docClient = {
+    async send(command) {
+      const { TableName, Item, Key, IndexName, KeyConditionExpression, FilterExpression, ExpressionAttributeValues, ExpressionAttributeNames } = command.input;
+      const table = mockDb[TableName] || [];
+      const cmdType = command.constructor.name;
+
+      if (cmdType === 'ScanCommand') {
+        return { Items: [...table], Count: table.length };
+      }
+
+      if (cmdType === 'PutCommand') {
+        let keyField = 'id';
+        if (TableName === 'ggsc-attendance') keyField = 'email';
+        else if (TableName === 'ggsc-webauthn') keyField = 'id';
+        else if (TableName === 'ggsc-profiles') keyField = 'id';
+        else if (TableName === 'ggsc-events') keyField = 'id';
+        else if (TableName === 'ggsc-login-history') keyField = 'id';
+
+        const existingIdx = table.findIndex(x => x[keyField] === Item[keyField]);
+        if (existingIdx > -1) {
+          table[existingIdx] = Item;
+        } else {
+          table.push(Item);
+        }
+        return { success: true };
+      }
+
+      if (cmdType === 'GetCommand') {
+        const item = table.find(x => {
+          return Object.keys(Key).every(k => x[k] === Key[k]);
+        });
+        return { Item: item };
+      }
+
+      if (cmdType === 'DeleteCommand') {
+        const idx = table.findIndex(x => {
+          return Object.keys(Key).every(k => x[k] === Key[k]);
+        });
+        if (idx > -1) {
+          table.splice(idx, 1);
+        }
+        return { success: true };
+      }
+
+      if (cmdType === 'QueryCommand') {
+        let results = [...table];
+        if (KeyConditionExpression) {
+          // Parse e.g. "email = :email" or "user_id = :user_id" or "ip_address = :ip"
+          const match = KeyConditionExpression.match(/(\w+)\s*=\s*:(\w+)/);
+          if (match) {
+            const field = match[1];
+            const valKey = `:${match[2]}`;
+            const targetVal = ExpressionAttributeValues[valKey];
+            results = results.filter(x => x[field] === targetVal);
+          }
+        }
+
+        if (FilterExpression) {
+          if (FilterExpression.includes('status') && FilterExpression.includes('logged_at')) {
+            const statusVal = ExpressionAttributeValues[':s'];
+            const timeVal = ExpressionAttributeValues[':t'];
+            results = results.filter(x => x.status === statusVal && x.logged_at > timeVal);
+          }
+        }
+
+        return { Items: results, Count: results.length };
+      }
+
+      throw new Error(`Unsupported Mock Command: ${cmdType}`);
+    }
+  };
 }
 
 
@@ -78,18 +166,18 @@ function parseCSV(content) {
   const lines = content.split(/\r?\n/);
   const result = [];
   if (lines.length === 0) return result;
-  
+
   // Parse headers
   const headers = lines[0].split(',').map(h => h.replace(/^["']|["']$/g, '').trim().toLowerCase());
-  
+
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
-    
+
     // Split on commas not inside double quotes
     const matches = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || line.split(',');
     const values = matches.map(v => v.replace(/^["']|["']$/g, '').trim());
-    
+
     const obj = {};
     headers.forEach((h, idx) => {
       obj[h] = values[idx] || '';
@@ -113,7 +201,7 @@ async function checkAndSeedUsers() {
 
     const commonPasswords = {
       admin: 'Admin@GGSC2026',
-      oops: 'Oops@GGSC2026',
+      'operations team': 'Oops@GGSC2026',
       member: 'Member@GGSC2026',
       volunteer: 'Volunteer@GGSC2026'
     };
@@ -149,12 +237,19 @@ async function checkAndSeedUsers() {
           email,
           password_hash,
           display_name: name,
-          role,
+          role: role === 'oops' ? 'operations team' : role,
           position,
           created_at: new Date().toISOString()
         };
         await docClient.send(new PutCommand({ TableName: 'ggsc-profiles', Item: newProfile }));
         console.log(`[Auto-Seed] Successfully loaded default profile for ${name} (${email}) from CSV`);
+      } else {
+        const existingProf = qRes.Items[0];
+        if (existingProf.role === 'oops') {
+          existingProf.role = 'operations team';
+          await docClient.send(new PutCommand({ TableName: 'ggsc-profiles', Item: existingProf }));
+          console.log(`[Auto-Seed] Migrated role for ${email} from 'oops' to 'operations team' in DynamoDB`);
+        }
       }
     }
   } catch (err) {
@@ -164,7 +259,7 @@ async function checkAndSeedUsers() {
 
 // Help helper to seed default events if Events table is empty
 async function checkAndSeedEvents() {
-  
+
   try {
     const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-events', Limit: 1 }));
     if (!scanRes.Items || scanRes.Items.length === 0) {
@@ -194,7 +289,7 @@ async function checkAndSeedEvents() {
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
+
   if (!token) return res.status(401).json({ error: 'Access token missing' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
@@ -214,17 +309,17 @@ const writeLoginLog = async (email, role, status, req, displayName = '', positio
   const userAgent = req.headers['user-agent'] || 'unknown';
   const id = crypto.randomUUID();
   const loggedAt = new Date().toISOString();
-  
+
   try {
     await docClient.send(new PutCommand({
       TableName: 'ggsc-login-history',
-      Item: { 
-        id, 
-        email, 
-        role, 
-        status, 
-        ip_address: ipAddress, 
-        user_agent: userAgent, 
+      Item: {
+        id,
+        email,
+        role,
+        status,
+        ip_address: ipAddress,
+        user_agent: userAgent,
         logged_at: loggedAt,
         display_name: displayName || email.split('@')[0],
         position: position || 'Unknown'
@@ -286,8 +381,8 @@ app.post('/api/login', async (req, res) => {
     failedAttempts = historyRes.Count || 0;
 
     if (failedAttempts >= 3) {
-      return res.status(429).json({ 
-        error: 'Device blocked: 3 consecutive failed login attempts detected. Access from this device is locked for 15 minutes.' 
+      return res.status(429).json({
+        error: 'Device blocked: 3 consecutive failed login attempts detected. Access from this device is locked for 15 minutes.'
       });
     }
 
@@ -305,9 +400,13 @@ app.post('/api/login', async (req, res) => {
       return res.status(403).json({ error: 'Invalid email, password, or role combination.' });
     }
 
-    if (profile.role !== requestedRole) {
+    const normalizeRole = (r) => (r === 'oops' ? 'operations team' : r);
+    const dbRole = normalizeRole(profile.role);
+    const reqRole = normalizeRole(requestedRole);
+
+    if (dbRole !== reqRole) {
       await writeLoginLog(normEmail, requestedRole, 'failed', req, profile.display_name, profile.position);
-      return res.status(403).json({ error: 'Invalid email, password, or role combination.' });
+      return res.status(403).json({ error: `Email is registered under role "${dbRole}", which does not match selected role "${reqRole}".` });
     }
 
     // 3. Verify Password Hash
@@ -317,13 +416,23 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email, password, or role combination.' });
     }
 
+    // Auto-migrate legacy 'oops' role in DB to 'operations team'
+    if (profile.role === 'oops') {
+      profile.role = 'operations team';
+      try {
+        await docClient.send(new PutCommand({ TableName: 'ggsc-profiles', Item: profile }));
+      } catch (e) {
+        console.warn("Could not auto-migrate profile role in DB:", e.message);
+      }
+    }
+
     // 4. Log success and generate JWT session
-    await writeLoginLog(normEmail, requestedRole, 'success', req, profile.display_name, profile.position);
+    await writeLoginLog(normEmail, 'operations team', 'success', req, profile.display_name, profile.position);
 
     const token = jwt.sign({
       id: profile.id,
       email: profile.email,
-      role: profile.role,
+      role: 'operations team',
       display_name: profile.display_name
     }, JWT_SECRET, { expiresIn: '1d' });
 
@@ -532,7 +641,7 @@ app.post('/api/upload-ticket-cloudinary', async (req, res) => {
 
   if (!cloudName || !apiKey || !apiSecret) {
     console.warn('[Cloudinary Local Backup] API credentials missing. Returning base64 URI.');
-    return res.status(200).json({ 
+    return res.status(200).json({
       success: true,
       isMock: true,
       secure_url: ticketImage,
@@ -550,7 +659,7 @@ app.post('/api/upload-ticket-cloudinary', async (req, res) => {
 
     const sanitizedFolder = `ggsc-events/${eventName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     const sanitizedPublicId = recipientName ? recipientName.trim().replace(/[^a-zA-Z0-9_\-]/g, '_') : `ticket_${Date.now()}`;
-    
+
     const uploadRes = await cloudinary.uploader.upload(ticketImage, {
       folder: sanitizedFolder,
       public_id: sanitizedPublicId,
@@ -674,6 +783,7 @@ app.post('/api/send-email', async (req, res) => {
 
 // 6. Auth session profiles helper: GET /api/me
 app.get('/api/me', authenticateToken, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   try {
     const getRes = await docClient.send(new GetCommand({
       TableName: 'ggsc-profiles',
@@ -682,7 +792,7 @@ app.get('/api/me', authenticateToken, async (req, res) => {
     const profile = getRes.Item;
 
     if (!profile) return res.status(404).json({ error: 'User profile not found' });
-    
+
     // Omit password hash for safety
     const { password_hash, ...profileSafe } = profile;
     return res.status(200).json({ success: true, profile: profileSafe });
@@ -691,16 +801,16 @@ app.get('/api/me', authenticateToken, async (req, res) => {
   }
 });
 
-// 7. GET /api/profiles (Admin/Oops role checking all members)
+// 7. GET /api/profiles (Admin/Operations Team role checking all members)
 app.get('/api/profiles', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Admin authentication required.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Admin or Operations Team authentication required.' });
   }
 
   try {
     const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-profiles' }));
     const items = scanRes.Items || [];
-    
+
     // Sort profiles alphabetically and remove password hashes
     const sanitized = items.map(({ password_hash, ...rest }) => rest);
     sanitized.sort((a, b) => (a.display_name || '').localeCompare(b.display_name || ''));
@@ -763,10 +873,11 @@ app.post('/api/profiles', authenticateToken, async (req, res) => {
 
 // 9. Scanner Attendance records: GET /api/attendance
 app.get('/api/attendance', authenticateToken, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   try {
     const scanRes = await docClient.send(new ScanCommand({ TableName: 'ggsc-attendance' }));
     const items = scanRes.Items || [];
-    
+
     // Sort scanned_at desc
     items.sort((a, b) => new Date(b.scanned_at) - new Date(a.scanned_at));
     return res.status(200).json({ success: true, records: items });
@@ -784,7 +895,7 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
 
   const normEmail = record.email.trim().toLowerCase();
   const scanned_at = new Date().toISOString();
-  
+
   const newRecord = {
     email: normEmail,
     name: record.name,
@@ -807,7 +918,7 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
     const existing = getRes.Item;
 
     if (existing) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         error: 'Duplicate scan: This ticket has already been checked-in.',
         record: existing
       });
@@ -825,10 +936,10 @@ app.post('/api/attendance', authenticateToken, async (req, res) => {
   }
 });
 
-// 10.5. Scanner Attendance records: DELETE /api/attendance/:email (Oops role restricted)
+// 10.5. Scanner Attendance records: DELETE /api/attendance/:email (Operations Team role restricted)
 app.delete('/api/attendance/:email', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Access denied: Only Oops team members can delete check-in entries.' });
+  if (req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Access denied: Only Operations Team members can delete check-in entries.' });
   }
 
   const { email } = req.params;
@@ -847,10 +958,10 @@ app.delete('/api/attendance/:email', authenticateToken, async (req, res) => {
   }
 });
 
-// 11. GET /api/login-history (Admin/Oops audit log view)
+// 11. GET /api/login-history (Admin/Operations Team audit log view)
 app.get('/api/login-history', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Audit view restricted to Admin and Oops.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Audit view restricted to Admin and Operations Team.' });
   }
 
   try {
@@ -864,10 +975,10 @@ app.get('/api/login-history', authenticateToken, async (req, res) => {
   }
 });
 
-// 12. DELETE /api/login-history (Oops capability to clear audit logs)
+// 12. DELETE /api/login-history (Operations Team capability to clear audit logs)
 app.delete('/api/login-history', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Only members of the Oops team can delete login records.' });
+  if (req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Only members of the Operations Team can delete login records.' });
   }
 
   try {
@@ -887,10 +998,10 @@ app.delete('/api/login-history', authenticateToken, async (req, res) => {
   }
 });
 
-// 12b. DELETE /api/login-history/:id (Oops capability to delete single log row)
+// 12b. DELETE /api/login-history/:id (Operations Team capability to delete single log row)
 app.delete('/api/login-history/:id', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Only members of the Oops team can delete login records.' });
+  if (req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Only members of the Operations Team can delete login records.' });
   }
 
   const { id } = req.params;
@@ -911,8 +1022,8 @@ app.delete('/api/login-history/:id', authenticateToken, async (req, res) => {
 app.get('/api/webauthn', authenticateToken, async (req, res) => {
   const userId = req.query.userId || req.user.id;
 
-  // Verification: Users can view their own keys, but Admin/Oops can view anyone's keys
-  if (userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'oops') {
+  // Verification: Users can view their own keys, but Admin/Operations Team can view anyone's keys
+  if (userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'operations team') {
     return res.status(403).json({ error: 'Access denied.' });
   }
 
@@ -943,12 +1054,12 @@ app.post('/api/webauthn', authenticateToken, async (req, res) => {
     if (setupPassword !== 'AdminBioAuth2026') {
       return res.status(403).json({ error: 'Invalid setup authorization password.' });
     }
-  } else if (req.user.role === 'oops') {
+  } else if (req.user.role === 'operations team') {
     if (setupPassword !== 'OopsBioAuth2026') {
       return res.status(403).json({ error: 'Invalid setup authorization password.' });
     }
   } else {
-    return res.status(403).json({ error: 'Only Admin and Oops roles can enroll biometric credentials.' });
+    return res.status(403).json({ error: 'Only Admin and Operations Team roles can enroll biometric credentials.' });
   }
 
   const created_at = new Date().toISOString();
@@ -991,8 +1102,8 @@ app.delete('/api/webauthn/:id', authenticateToken, async (req, res) => {
 
     if (!credential) return res.status(404).json({ error: 'Biometric credential not found.' });
 
-    // Validation: Admin/Oops can delete anyone's key, others can only delete their own keys
-    if (credential.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'oops') {
+    // Validation: Admin/Operations Team can delete anyone's key, others can only delete their own keys
+    if (credential.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'operations team') {
       return res.status(403).json({ error: 'Access denied.' });
     }
 
@@ -1007,10 +1118,10 @@ app.delete('/api/webauthn/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// 16. POST /api/sync-profiles (Sync CSV roster list of members, admin/oops authorization required)
+// 16. POST /api/sync-profiles (Sync CSV roster list of members, admin/operations team authorization required)
 app.post('/api/sync-profiles', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops') {
-    return res.status(403).json({ error: 'Access denied: Only Admins or Oops team can sync member roster.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team') {
+    return res.status(403).json({ error: 'Access denied: Only Admins or Operations Team can sync member roster.' });
   }
 
   const { members } = req.body;
@@ -1020,7 +1131,7 @@ app.post('/api/sync-profiles', authenticateToken, async (req, res) => {
 
   const commonPasswords = {
     admin: 'Admin@GGSC2026',
-    oops: 'Oops@GGSC2026',
+    'operations team': 'Oops@GGSC2026',
     member: 'Member@GGSC2026',
     volunteer: 'Volunteer@GGSC2026'
   };
@@ -1110,10 +1221,10 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-// 18. POST /api/events (Create an event, Auth required: admin, oops, member)
+// 18. POST /api/events (Create an event, Auth required: admin, operations team, member)
 app.post('/api/events', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
-    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can launch cards.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Operations Team, or Core Members can launch cards.' });
   }
 
   const { title, date, venue, desc, img, tag, route, folder, status } = req.body;
@@ -1150,10 +1261,10 @@ app.post('/api/events', authenticateToken, async (req, res) => {
   }
 });
 
-// 19. PUT /api/events/:id (Update an event, Auth required: admin, oops, member)
+// 19. PUT /api/events/:id (Update an event, Auth required: admin, operations team, member)
 app.put('/api/events/:id', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
-    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can modify cards.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Operations Team, or Core Members can modify cards.' });
   }
 
   const { id } = req.params;
@@ -1188,10 +1299,10 @@ app.put('/api/events/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// 20. DELETE /api/events/:id (Delete an event, Auth required: admin, oops, member)
+// 20. DELETE /api/events/:id (Delete an event, Auth required: admin, operations team, member)
 app.delete('/api/events/:id', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'oops' && req.user.role !== 'member') {
-    return res.status(403).json({ error: 'Access denied: Only Admins, Oops, or Core Members can delete cards.' });
+  if (req.user.role !== 'admin' && req.user.role !== 'operations team' && req.user.role !== 'member') {
+    return res.status(403).json({ error: 'Access denied: Only Admins, Operations Team, or Core Members can delete cards.' });
   }
 
   const { id } = req.params;
@@ -1205,6 +1316,56 @@ app.delete('/api/events/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Delete event error:", err);
     return res.status(500).json({ error: err.message });
+  }
+});
+
+// 21. POST /api/upload-ticket-cloudinary (Upload ticket image to Cloudinary securely)
+app.post('/api/upload-ticket-cloudinary', authenticateToken, async (req, res) => {
+  const { ticketImage, eventName, recipientName, cloudName, apiKey, apiSecret } = req.body;
+  if (!ticketImage) {
+    return res.status(400).json({ error: 'Missing required parameter: ticketImage' });
+  }
+
+  // Use environment variables or server defaults to avoid exposing secret keys to client bundle
+  const targetCloudName = cloudName || process.env.CLOUDINARY_CLOUD_NAME || 'e2qvanrx';
+  const targetApiKey = apiKey || process.env.CLOUDINARY_API_KEY || '453893951347733';
+  const targetApiSecret = apiSecret || process.env.CLOUDINARY_API_SECRET || 'H4U5yHil42FC0Su25JavgKl1eRs';
+
+  try {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = `ggsc-tickets/${(eventName || 'general').toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+
+    // Generate SHA-1 signature for Cloudinary upload
+    const stringToSign = `folder=${folder}&timestamp=${timestamp}${targetApiSecret}`;
+    const cryptoModule = await import('crypto');
+    const signature = cryptoModule.createHash('sha1').update(stringToSign).digest('hex');
+
+    const formData = new URLSearchParams();
+    formData.append('file', ticketImage);
+    formData.append('api_key', targetApiKey);
+    formData.append('timestamp', String(timestamp));
+    formData.append('folder', folder);
+    formData.append('signature', signature);
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${targetCloudName}/image/upload`;
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    const cldData = await response.json();
+    if (!response.ok || cldData.error) {
+      throw new Error(cldData.error?.message || 'Cloudinary upload failed');
+    }
+
+    return res.status(200).json({
+      success: true,
+      url: cldData.secure_url || cldData.url,
+      public_id: cldData.public_id
+    });
+  } catch (err) {
+    console.error('Cloudinary upload error:', err);
+    return res.status(500).json({ error: err.message || 'Failed to upload ticket to Cloudinary.' });
   }
 });
 
