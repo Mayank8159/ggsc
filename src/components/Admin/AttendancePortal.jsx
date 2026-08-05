@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../../lib/apiClient';
 import { Html5Qrcode } from 'html5-qrcode';
 import * as XLSX from 'xlsx';
-import { FiCamera, FiRefreshCw, FiCheck, FiX, FiAlertCircle, FiDownload, FiUserCheck } from 'react-icons/fi';
+import { FiCamera, FiRefreshCw, FiCheck, FiX, FiAlertCircle, FiDownload, FiUserCheck, FiTrash2 } from 'react-icons/fi';
 
 export default function AttendancePortal() {
   const [scannerActive, setScannerActive] = useState(false);
@@ -23,34 +23,44 @@ export default function AttendancePortal() {
 
     fetchRecentLogs();
 
+    // 5-second background polling
+    const interval = setInterval(() => {
+      fetchRecentLogs();
+    }, 5000);
+
     // Cleanup scanner on unmount
     return () => {
+      clearInterval(interval);
       stopScanner();
     };
   }, []);
 
-  // Fetch recent check-ins
+  // Fetch recent check-ins from centralised DynamoDB database
   const fetchRecentLogs = async () => {
-    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
-    if (isMock) {
-      try {
-        const saved = localStorage.getItem('ggsc_mock_attendance');
-        const logs = saved ? JSON.parse(saved) : [];
-        setRecentLogs(logs);
-      } catch {
-        setRecentLogs([]);
-      }
-      return;
-    }
-
     try {
       const data = await apiClient.get('/api/attendance');
       setRecentLogs(data.records || []);
     } catch (err) {
       console.error('Error fetching logs:', err);
-      // Fallback to local storage
-      const saved = localStorage.getItem('ggsc_mock_attendance');
-      setRecentLogs(saved ? JSON.parse(saved) : []);
+      setRecentLogs([]);
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchRecentLogs();
+  };
+
+  const handleDeleteEntry = async (email) => {
+    if (!window.confirm(`Are you sure you want to delete check-in entry for ${email}?`)) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/api/attendance/${email}`);
+      fetchRecentLogs();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to delete check-in entry.');
     }
   };
 
@@ -164,45 +174,7 @@ export default function AttendancePortal() {
         position
       });
 
-      const isMock = localStorage.getItem('ggsc_mock_role') || !import.meta.env.VITE_SUPABASE_URL;
 
-      if (isMock) {
-        // Save check-in locally
-        const saved = localStorage.getItem('ggsc_mock_attendance');
-        const currentLogs = saved ? JSON.parse(saved) : [];
-        const emailLower = email.toString().trim().toLowerCase();
-
-        // Check for duplicates in local store
-        const duplicate = currentLogs.find(l => l.email.toLowerCase() === emailLower);
-        if (duplicate) {
-          setScanStatus('duplicate');
-          const checkInTime = new Date(duplicate.scanned_at).toLocaleTimeString();
-          setScanMessage(`Already checked in today at ${checkInTime} (Mock Mode).`);
-          return;
-        }
-
-        const newRecord = {
-          id: Date.now().toString(),
-          email: emailLower,
-          name,
-          year,
-          section,
-          roll_number,
-          enrolment_number,
-          phone_number,
-          position,
-          scanned_at: new Date().toISOString(),
-          scanned_by: 'mock-volunteer-id'
-        };
-
-        const updatedLogs = [newRecord, ...currentLogs];
-        localStorage.setItem('ggsc_mock_attendance', JSON.stringify(updatedLogs));
-
-        setScanStatus('success');
-        setScanMessage('Attendance successfully verified (Mock Mode)!');
-        setRecentLogs(updatedLogs);
-        return;
-      }
 
       // 3. Attempt insert into centralized database
       try {
@@ -468,7 +440,7 @@ export default function AttendancePortal() {
                 <FiUserCheck className="text-blue-500" /> Live Verification feed ({recentLogs.length} Checked-in)
               </h3>
               <button
-                onClick={fetchRecentLogs}
+                onClick={handleRefresh}
                 className="p-2 hover:bg-neutral-100/50 rounded-xl transition-all text-neutral-500"
                 title="Refresh Logs"
               >
@@ -497,11 +469,22 @@ export default function AttendancePortal() {
                         <span>Year: {log.year || 'N/A'}</span>
                       </p>
                     </div>
-                    <div className="text-right">
-                      <span className="text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Verified</span>
-                      <p className="text-[10px] text-neutral-400 mt-1.5 font-semibold font-mono">
-                        {new Date(log.scanned_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                    <div className="text-right flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full font-bold text-[10px]">Verified</span>
+                        <p className="text-[10px] text-neutral-400 mt-1.5 font-semibold font-mono">
+                          {new Date(log.scanned_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      {volunteerUser?.role === 'oops' && (
+                        <button
+                          onClick={() => handleDeleteEntry(log.email)}
+                          className="p-1.5 hover:bg-red-50 text-neutral-400 hover:text-red-600 transition-all rounded-lg"
+                          title="Delete check-in entry"
+                        >
+                          <FiTrash2 size={13} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))

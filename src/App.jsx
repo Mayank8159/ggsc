@@ -467,7 +467,7 @@ function App() {
   }, [isHome]);
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: isCydropreneur ? "auto" : "none", background: "transparent" }}>
+    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: (isCydropreneur || isAdminPage) ? "auto" : "none", background: "transparent" }}>
       <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",
@@ -481,7 +481,7 @@ function App() {
         @keyframes bgm-bar-3 { from { height: 70% } to { height: 90% } }
       `}</style>
 
-      {isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
+      {isAdminPage ? null : isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
       <GoogleGradientBG />
       <BGMButton />
 

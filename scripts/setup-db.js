@@ -1,7 +1,40 @@
 import { DynamoDBClient, CreateTableCommand, DescribeTableCommand } from "@aws-sdk/client-dynamodb";
+import fs from "fs";
+import path from "path";
+
+// Load environment variables from .env file manually if not already present
+try {
+  const envPath = path.resolve(process.cwd(), ".env");
+  if (fs.existsSync(envPath)) {
+    const envLines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+    for (const line of envLines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const index = trimmed.indexOf("=");
+      if (index !== -1) {
+        const key = trimmed.substring(0, index).trim();
+        let val = trimmed.substring(index + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.substring(1, val.length - 1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+} catch (err) {
+  console.warn("Unable to load .env file manually:", err.message);
+}
 
 const region = process.env.AWS_REGION || "ap-south-1";
-const client = new DynamoDBClient({ region });
+const client = new DynamoDBClient({
+  region,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ""
+  }
+});
 
 const tables = [
   {
@@ -57,6 +90,12 @@ const tables = [
         Projection: { ProjectionType: "ALL" }
       }
     ]
+  },
+  {
+    TableName: "ggsc-events",
+    KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
+    AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
+    BillingMode: "PAY_PER_REQUEST"
   }
 ];
 

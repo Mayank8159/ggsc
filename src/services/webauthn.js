@@ -104,23 +104,22 @@ export async function registerBiometric(email, userId) {
  * @param {string} challengeBase64 - 32-byte challenge base64url
  * @returns {Promise<object>} - Assertion payload to send to serverless endpoint
  */
-export async function authenticateBiometric(credentialId, challengeBase64) {
+export async function authenticateBiometric(credentialIds, challengeBase64) {
   if (!navigator.credentials || !navigator.credentials.get) {
     throw new Error('WebAuthn (biometrics) is not supported on this device/browser.');
   }
 
   const challengeBuffer = base64URLToBuffer(challengeBase64);
-  const allowCredentialBuffer = base64URLToBuffer(credentialId);
+  const ids = Array.isArray(credentialIds) ? credentialIds : [credentialIds];
+  const allowCredentials = ids.map(id => ({
+    id: base64URLToBuffer(id),
+    type: 'public-key'
+  }));
 
   const options = {
     publicKey: {
       challenge: challengeBuffer,
-      allowCredentials: [
-        {
-          id: allowCredentialBuffer,
-          type: 'public-key'
-        }
-      ],
+      allowCredentials,
       userVerification: 'required',
       timeout: 60000
     }

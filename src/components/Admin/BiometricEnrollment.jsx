@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/apiClient';
 import { registerBiometric } from '../../services/webauthn';
-import { FiTrash2, FiPlus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiTrash2, FiPlus, FiAlertCircle, FiCheckCircle, FiUpload } from 'react-icons/fi';
 import { Fingerprint } from 'lucide-react';
+import Papa from 'papaparse';
 
 const MOCK_PROFILES = [
-  { id: 'mock-uid-admin', email: 'admin@ggsc.org', display_name: 'Super Admin', role: 'admin' },
-  { id: 'mock-uid-oops', email: 'oops@ggsc.org', display_name: 'Oops Lead', role: 'oops' },
-  { id: 'mock-uid-member', email: 'member@ggsc.org', display_name: 'Core Member', role: 'member' },
-  { id: 'mock-uid-volunteer', email: 'volunteer@ggsc.org', display_name: 'Volunteer Scanner', role: 'volunteer' }
+  { id: '1a111111-1111-4111-a111-111111111111', email: 'debojeetbanerjee06@gmail.com', display_name: 'Debojeet Baneerjee', role: 'admin', position: 'Secretary' },
+  { id: '2b222222-2222-4222-a222-222222222222', email: 'swastikmanna2006@gmail.com', display_name: 'Swastik Manna', role: 'admin', position: 'Vice chairperson' },
+  { id: '3c333333-3333-4333-a333-333333333333', email: 'tridibeshsen2002@gmail.com', display_name: 'Tridibesh Sen', role: 'oops', position: 'Webdev' },
+  { id: '4d444444-4444-4444-a444-444444444444', email: 'diptodeepbofficial@gmail.com', display_name: 'Diptodeep Biswas', role: 'oops', position: 'Webdev' },
+  { id: '5e555555-5555-4555-a555-555555555555', email: 'mayankfhacker@gmail.com', display_name: 'Mayank Kumar Sharma', role: 'oops', position: 'Webdev Lead' }
 ];
 
 export default function BiometricEnrollment() {
@@ -33,29 +35,7 @@ export default function BiometricEnrollment() {
       setIsSupported(false);
     }
     
-    // Check mock mode
-    const mockRole = localStorage.getItem('ggsc_mock_role');
-    const mockEmail = localStorage.getItem('ggsc_mock_email');
 
-    if (mockRole) {
-      const emailVal = mockEmail || `${mockRole}@ggsc.org`;
-      const mockUser = {
-        id: `mock-uid-${mockRole}`,
-        email: emailVal,
-        role: mockRole,
-        user_metadata: { display_name: emailVal.split('@')[0] }
-      };
-      setCurrentUser(mockUser);
-      setCurrentUserRole(mockRole);
-      
-      // Seed default profiles in mock mode
-      setProfiles(MOCK_PROFILES);
-      // Pre-select the current active user by default
-      const defaultId = mockUser.id;
-      setSelectedMemberId(defaultId);
-      loadCredentialsForUser(defaultId, true);
-      return;
-    }
 
     // Live session setup
     apiClient.get('/api/me').then(async (data) => {
@@ -87,20 +67,12 @@ export default function BiometricEnrollment() {
   // Fetch credentials dynamically when selected member changes
   const handleMemberChange = (memberId) => {
     setSelectedMemberId(memberId);
-    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
-    loadCredentialsForUser(memberId, isMock);
+    loadCredentialsForUser(memberId);
   };
 
-  const loadCredentialsForUser = async (userId, isMock) => {
+  const loadCredentialsForUser = async (userId) => {
     setError('');
     setSuccess('');
-    if (isMock) {
-      const savedCreds = localStorage.getItem('ggsc_mock_biometric_creds');
-      const allCreds = savedCreds ? JSON.parse(savedCreds) : [];
-      // Filter credentials registered for this specific user
-      setCredentials(allCreds.filter(c => c.user_id === userId));
-      return;
-    }
 
     try {
       const data = await apiClient.get(`/api/webauthn?userId=${userId}`);
@@ -109,6 +81,8 @@ export default function BiometricEnrollment() {
       console.error('Error fetching credentials:', err);
     }
   };
+
+
 
   const getSelectedMemberObject = () => {
     return profiles.find(p => p.id === selectedMemberId) || {
@@ -134,48 +108,16 @@ export default function BiometricEnrollment() {
     setError('');
     setSuccess('');
 
-    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
-    const targetMember = getSelectedMemberObject();
-
-    if (isMock) {
-      setIsVerifying(false);
-      setPassword('');
+    const expectedPassword = currentUserRole === 'admin' ? 'AdminBioAuth2026' : 'OopsBioAuth2026';
+    if (password !== expectedPassword) {
+      setError('Invalid biometric setup authorization password.');
       setLoading(false);
-
-      try {
-        // Trigger browser WebAuthn biometric prompt (registers for selected member)
-        const enrolledCred = await registerBiometric(targetMember.email, targetMember.id);
-
-        const savedCreds = localStorage.getItem('ggsc_mock_biometric_creds');
-        const currentCreds = savedCreds ? JSON.parse(savedCreds) : [];
-
-        const newCred = {
-          id: enrolledCred.id,
-          user_id: targetMember.id,
-          created_at: new Date().toISOString()
-        };
-
-        const updatedCreds = [newCred, ...currentCreds];
-        localStorage.setItem('ggsc_mock_biometric_creds', JSON.stringify(updatedCreds));
-        
-        // Refresh logs view for this user
-        setCredentials(updatedCreds.filter(c => c.user_id === targetMember.id));
-        setSuccess(`Biometrics registered successfully for ${targetMember.display_name}!`);
-      } catch (err) {
-        console.error(err);
-        setError(err.message || 'Biometric enrollment failed.');
-      }
       return;
     }
 
-    try {
-      // Re-authenticate the active admin user session
-      await apiClient.post('/api/login', {
-        email: currentUser.email,
-        password,
-        role: currentUserRole
-      });
+    const targetMember = getSelectedMemberObject();
 
+    try {
       setIsVerifying(false);
       setPassword(''); // clear password
 
@@ -186,11 +128,12 @@ export default function BiometricEnrollment() {
       await apiClient.post('/api/webauthn', {
         id: enrolledCred.id,
         user_id: targetMember.id,
-        public_key: enrolledCred.publicKeyPem
+        public_key: enrolledCred.publicKeyPem,
+        setupPassword: expectedPassword
       });
 
       setSuccess(`Fingerprint registered successfully for ${targetMember.display_name}!`);
-      loadCredentialsForUser(targetMember.id, false);
+      loadCredentialsForUser(targetMember.id);
     } catch (err) {
       console.error(err);
       setError(err.message || 'Biometric enrollment failed.');
@@ -206,23 +149,11 @@ export default function BiometricEnrollment() {
     setError('');
     setSuccess('');
     const targetMember = getSelectedMemberObject();
-    const isMock = localStorage.getItem('ggsc_mock_role') || !apiClient.getToken();
-
-    if (isMock) {
-      const savedCreds = localStorage.getItem('ggsc_mock_biometric_creds');
-      const currentCreds = savedCreds ? JSON.parse(savedCreds) : [];
-      const updatedCreds = currentCreds.filter(c => c.id !== credId);
-      
-      localStorage.setItem('ggsc_mock_biometric_creds', JSON.stringify(updatedCreds));
-      setCredentials(updatedCreds.filter(c => c.user_id === targetMember.id));
-      setSuccess('Biometric key removed successfully.');
-      return;
-    }
 
     try {
       await apiClient.delete(`/api/webauthn/${credId}`);
       setSuccess('Biometric key removed successfully.');
-      loadCredentialsForUser(targetMember.id, false);
+      loadCredentialsForUser(targetMember.id);
     } catch (err) {
       setError(err.message || 'Failed to remove credentials.');
     }
@@ -261,11 +192,11 @@ export default function BiometricEnrollment() {
             <select
               value={selectedMemberId}
               onChange={(e) => handleMemberChange(e.target.value)}
-              className="block w-full max-w-md rounded-xl border border-neutral-200 bg-white py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="block w-full rounded-xl border border-neutral-200 bg-white py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {profiles.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.display_name} ({p.email}) - {p.role.toUpperCase()}
+                  {p.display_name} ({p.email}) - {p.position || 'No Position'} ({p.role.toUpperCase()})
                 </option>
               ))}
             </select>
