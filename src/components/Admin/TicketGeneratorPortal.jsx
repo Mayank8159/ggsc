@@ -441,7 +441,10 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
         const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
           ticketImage: finalTicketDataUrl,
           eventName: selectedEvent,
-          recipientName: studentName
+          recipientName: studentName,
+          cloudName: cldCloudName,
+          apiKey: cldApiKey,
+          apiSecret: cldApiSecret
         });
 
         updatedCldLogs[idx] = {
@@ -591,8 +594,6 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
     await runEmailDispatches(false);
   };
 
-  const hasFailedLogs = logs.some(l => l.status === 'failed');
-
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Configuration Header */}
@@ -681,7 +682,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     type="text"
                     value={smtpHost}
                     onChange={(e) => setSmtpHost(e.target.value)}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     placeholder="smtp.gmail.com"
                     className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
@@ -692,7 +693,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     type="text"
                     value={smtpPort}
                     onChange={(e) => setSmtpPort(e.target.value)}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     placeholder="587"
                     className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
@@ -705,7 +706,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                   type="email"
                   value={smtpUser}
                   onChange={(e) => setSmtpUser(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isCldProcessing || isEmailProcessing}
                   placeholder="your-email@gmail.com"
                   className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
@@ -717,7 +718,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                   type="password"
                   value={smtpPass}
                   onChange={(e) => setSmtpPass(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isCldProcessing || isEmailProcessing}
                   placeholder="•••• •••• •••• ••••"
                   className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
@@ -729,10 +730,27 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                   type="text"
                   value={smtpFromName}
                   onChange={(e) => setSmtpFromName(e.target.value)}
-                  disabled={isProcessing}
+                  disabled={isCldProcessing || isEmailProcessing}
                   placeholder="GGSC Organizing Team"
                   className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+
+              <div className="flex items-center mt-2">
+                <input
+                  type="checkbox"
+                  id="secure-toggle-left"
+                  checked={smtpSecure}
+                  onChange={(e) => {
+                    setSmtpSecure(e.target.checked);
+                    setSmtpPort(e.target.checked ? '465' : '587');
+                  }}
+                  disabled={isCldProcessing || isEmailProcessing}
+                  className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="secure-toggle-left" className="ml-1.5 text-[10px] font-bold text-neutral-500 uppercase cursor-pointer select-none">
+                  Secure Connection (SSL/TLS - Port {smtpSecure ? '465' : '587'})
+                </label>
               </div>
             </div>
           </div>
@@ -749,7 +767,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
               <select
                 value={selectedEvent}
                 onChange={(e) => setSelectedEvent(e.target.value)}
-                disabled={isProcessing}
+                disabled={isCldProcessing || isEmailProcessing}
                 className="block w-full rounded-xl border border-neutral-200 bg-white/70 py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 {events.map(evt => (
@@ -767,7 +785,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                 type="file"
                 accept=".csv"
                 onChange={handleCsvUpload}
-                disabled={isProcessing}
+                disabled={isCldProcessing || isEmailProcessing}
                 className="block w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
               />
               {csvRawData.length > 0 && (
@@ -834,7 +852,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     min="0"
                     value={skipFirst}
                     onChange={(e) => setSkipFirst(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     className="block w-full rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -845,7 +863,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     min="0"
                     value={skipLast}
                     onChange={(e) => setSkipLast(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     className="block w-full rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -859,7 +877,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={isProcessing}
+                disabled={isCldProcessing || isEmailProcessing}
                 className="block w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
               />
               {templateImage && (
@@ -880,7 +898,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
               <textarea
                 value={mailTemplate}
                 onChange={(e) => setMailTemplate(e.target.value)}
-                disabled={isProcessing}
+                disabled={isCldProcessing || isEmailProcessing}
                 rows={8}
                 className="block w-full rounded-xl border border-neutral-200 bg-white/60 p-3.5 font-sans text-xs text-neutral-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
@@ -903,7 +921,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
               <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
                 <FiSliders className="text-blue-500" /> Interactive Canvas Placement
               </h3>
-              {templateImage && !isProcessing && (
+              {templateImage && !isCldProcessing && !isEmailProcessing && (
                 <button
                   onClick={startDistribution}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-sm"
@@ -927,7 +945,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     max={templateImage ? templateImage.naturalWidth - qrSize : 1000}
                     value={xPos}
                     onChange={(e) => setXPos(parseInt(e.target.value, 10))}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
@@ -943,7 +961,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     max={templateImage ? templateImage.naturalHeight - qrSize : 1000}
                     value={yPos}
                     onChange={(e) => setYPos(parseInt(e.target.value, 10))}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
@@ -959,7 +977,7 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     max={templateImage ? Math.min(templateImage.naturalWidth, templateImage.naturalHeight) / 2 : 400}
                     value={qrSize}
                     onChange={(e) => setQrSize(parseInt(e.target.value, 10))}
-                    disabled={isProcessing}
+                    disabled={isCldProcessing || isEmailProcessing}
                     className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
@@ -983,169 +1001,48 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
           </div>
 
           {/* Cloudinary API Storage Card */}
-          {userRole === 'operations team' && (
-            <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
-                <FiCloud className="text-purple-600" /> Cloudinary Storage API
-              </h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Cloud Name</label>
-                  <input
-                    type="text"
-                    value={cldCloudName}
-                    onChange={(e) => setCldCloudName(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="e.g. ggsc-cloud"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Key</label>
-                  <input
-                    type="text"
-                    value={cldApiKey}
-                    onChange={(e) => setCldApiKey(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="Cloudinary API Key"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Secret</label>
-                  <input
-                    type="password"
-                    value={cldApiSecret}
-                    onChange={(e) => setCldApiSecret(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="••••••••••••••••"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* SMTP Credentials Card */}
           <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
-              <FiSettings className="text-green-600" /> SMTP Emailer Config
+              <FiCloud className="text-purple-600" /> Cloudinary Storage API
             </h3>
             
-            {userRole === 'operations team' ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Host</label>
-                  <input
-                    type="text"
-                    value={smtpHost}
-                    onChange={(e) => setSmtpHost(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="smtp.gmail.com"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[10px] font-bold text-neutral-500 mb-1">SMTP Port</label>
-                    <input
-                      type="text"
-                      value={smtpPort}
-                      onChange={(e) => setSmtpPort(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="587"
-                      className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                    />
-                  </div>
-                  <div className="flex items-center mt-4">
-                    <input
-                      type="checkbox"
-                      id="secure-toggle"
-                      checked={smtpSecure}
-                      onChange={(e) => setSmtpSecure(e.target.checked)}
-                      disabled={isProcessing}
-                      className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <label htmlFor="secure-toggle" className="ml-1.5 text-[10px] font-semibold text-neutral-600">SSL/TLS</label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Email</label>
-                  <input
-                    type="email"
-                    value={smtpUser}
-                    onChange={(e) => setSmtpUser(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="organizer@gmail.com"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Password / App Password</label>
-                  <input
-                    type="password"
-                    value={smtpPass}
-                    onChange={(e) => setSmtpPass(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="••••••••••••"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Sender Name</label>
-                  <input
-                    type="text"
-                    value={smtpFromName}
-                    onChange={(e) => setSmtpFromName(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="GGSC Committee"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1">Cloud Name</label>
+                <input
+                  type="text"
+                  value={cldCloudName}
+                  onChange={(e) => setCldCloudName(e.target.value)}
+                  disabled={isCldProcessing || isEmailProcessing}
+                  placeholder="e.g. ggsc-cloud"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                />
               </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="text-[11px] text-neutral-500 bg-neutral-100/50 p-3 rounded-2xl border border-neutral-200/20">
-                  Gmail credentials will be used automatically. Login email: <span className="font-bold text-neutral-800">{activeEmail}</span>
-                </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-neutral-500 mb-1">Gmail App Password</label>
-                  <input
-                    type="password"
-                    value={smtpPass}
-                    onChange={(e) => setSmtpPass(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="Enter 16-character App Password"
-                    className="block w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-neutral-500">Security Connection Mode:</span>
-                  <label className="flex items-center gap-1.5 text-xs text-neutral-700 font-bold cursor-pointer bg-neutral-50 hover:bg-neutral-100 px-3 py-1.5 rounded-xl border border-neutral-200/50 transition-all select-none">
-                    <input
-                      type="checkbox"
-                      checked={smtpSecure}
-                      onChange={(e) => {
-                        setSmtpSecure(e.target.checked);
-                        setSmtpPort(e.target.checked ? '465' : '587');
-                      }}
-                      disabled={isProcessing}
-                      className="rounded text-blue-600 focus:ring-blue-500"
-                    />
-                    <span>{smtpSecure ? 'Secure SSL/TLS (Port 465)' : 'Unsecure STARTTLS (Port 587)'}</span>
-                  </label>
-                </div>
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Key</label>
+                <input
+                  type="text"
+                  value={cldApiKey}
+                  onChange={(e) => setCldApiKey(e.target.value)}
+                  disabled={isCldProcessing || isEmailProcessing}
+                  placeholder="Cloudinary API Key"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                />
               </div>
-            )}
+
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1">API Secret</label>
+                <input
+                  type="password"
+                  value={cldApiSecret}
+                  onChange={(e) => setCldApiSecret(e.target.value)}
+                  disabled={isCldProcessing || isEmailProcessing}
+                  placeholder="••••••••••••••••"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/60 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-neutral-900"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

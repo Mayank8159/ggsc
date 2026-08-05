@@ -11,77 +11,86 @@ import BulkEmailer from './BulkEmailer';
 import EventsPortal from './EventsPortal';
 
 export default function AdminDashboard() {
-  const mockRole = localStorage.getItem('ggsc_mock_role');
-  const jwtToken = apiClient.getToken();
-
-  if (!jwtToken && !mockRole) {
-    return <Navigate to="/admin/login" replace />;
-  }
-
   const [activeTab, setActiveTab] = useState('generator'); // 'generator' | 'scanner' | 'biometrics'
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if user is logged in, and fetch role
-    const checkAuth = async () => {
-      // Check for mock session stored during local offline testing
-      const mockRole = localStorage.getItem('ggsc_mock_role');
-      const mockEmail = localStorage.getItem('ggsc_mock_email');
+  const mockRole = typeof window !== 'undefined' ? localStorage.getItem('ggsc_mock_role') : null;
+  const jwtToken = apiClient.getToken();
 
-      if (mockRole) {
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAuth = async () => {
+      const storedMockRole = localStorage.getItem('ggsc_mock_role');
+      const storedMockEmail = localStorage.getItem('ggsc_mock_email');
+
+      if (storedMockRole) {
+        if (!isMounted) return;
         const mockProf = {
-          display_name: mockEmail ? mockEmail.split('@')[0] : mockRole,
-          role: mockRole,
-          email: mockEmail || `${mockRole}@ggsc.org`
+          display_name: storedMockEmail ? storedMockEmail.split('@')[0] : storedMockRole,
+          role: storedMockRole === 'oops' ? 'operations team' : storedMockRole,
+          email: storedMockEmail || `${storedMockRole}@ggsc.org`
         };
         setProfile(mockProf);
-        if (mockRole === 'volunteer') {
-          setActiveTab('scanner');
-        } else {
-          setActiveTab('generator');
-        }
+        setActiveTab(mockProf.role === 'volunteer' ? 'scanner' : 'generator');
         setLoading(false);
         return;
       }
 
-      const jwtToken = apiClient.getToken();
-      if (!jwtToken) {
-        navigate('/admin/login');
+      const activeToken = apiClient.getToken();
+      if (!activeToken) {
+        if (isMounted) setLoading(false);
+        navigate('/admin/login', { replace: true });
         return;
       }
 
       try {
         const data = await apiClient.get('/api/me');
-        const prof = data.profile;
+        if (!isMounted) return;
 
-        if (!prof || (prof.role !== 'admin' && prof.role !== 'operations team' && prof.role !== 'member' && prof.role !== 'volunteer')) {
-          // If not permitted role
-          apiClient.setToken(null);
-          navigate('/admin/login');
-          return;
-        }
+        let prof = data?.profile;
+        if (prof?.role === 'oops') prof.role = 'operations team';
 
-        setProfile(prof);
-
-        // Auto-select the first tab that the user has permission to view
-        if (prof.role === 'volunteer') {
-          setActiveTab('scanner');
+        if (prof) {
+          setProfile(prof);
+          setActiveTab(prof.role === 'volunteer' ? 'scanner' : 'generator');
         } else {
-          setActiveTab('generator');
+          apiClient.setToken(null);
+          navigate('/admin/login', { replace: true });
         }
       } catch (err) {
-        console.error('Error verifying admin profile:', err);
-        apiClient.setToken(null);
-        navigate('/admin/login');
+        console.warn('Error fetching /api/me profile:', err);
+        if (!isMounted) return;
+
+        // Fail-safe: Decode JWT payload so authenticated session never white-screens
+        const payload = apiClient.getTokenPayload();
+        if (payload) {
+          const derivedRole = payload.role === 'oops' ? 'operations team' : (payload.role || 'operations team');
+          const derivedProf = {
+            id: payload.id || 'usr-default',
+            email: payload.email || 'admin@ggsc.org',
+            role: derivedRole,
+            display_name: payload.display_name || (payload.email ? payload.email.split('@')[0] : 'Admin User')
+          };
+          setProfile(derivedProf);
+          setActiveTab(derivedRole === 'volunteer' ? 'scanner' : 'generator');
+        } else {
+          apiClient.setToken(null);
+          navigate('/admin/login', { replace: true });
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [navigate]);
 
   const handleLogout = async () => {
@@ -100,6 +109,10 @@ export default function AdminDashboard() {
         </div>
       </div>
     );
+  }
+
+  if (!jwtToken && !mockRole) {
+    return <Navigate to="/admin/login" replace />;
   }
 
   const getMenuItems = () => {
