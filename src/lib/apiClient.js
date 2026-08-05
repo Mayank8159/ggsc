@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_URL || '';
+let envUrl = import.meta.env.VITE_API_URL;
+if (!envUrl || envUrl.includes('localhost:5000')) {
+  envUrl = 'https://45gjru746d.execute-api.ap-south-1.amazonaws.com';
+}
+const API_BASE = envUrl;
 
 export const apiClient = {
   getToken() {
@@ -10,6 +14,20 @@ export const apiClient = {
       localStorage.setItem('ggsc_jwt', token);
     } else {
       localStorage.removeItem('ggsc_jwt');
+    }
+  },
+
+  // Decode JWT payload without verification (for client-side fallback only)
+  getTokenPayload() {
+    try {
+      const token = this.getToken();
+      if (!token) return null;
+      const base64 = token.split('.')[1];
+      if (!base64) return null;
+      const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(json);
+    } catch {
+      return null;
     }
   },
 

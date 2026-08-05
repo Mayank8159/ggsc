@@ -48,13 +48,15 @@ export default function AdminLogin() {
       // Establish the session locally if tokens exist
       const { session } = data;
       if (session?.access_token) {
+        localStorage.removeItem('ggsc_mock_role');
+        localStorage.removeItem('ggsc_mock_email');
         apiClient.setToken(session.access_token);
       }
 
       setSuccess('Login successful! Redirecting to dashboard...');
       setTimeout(() => {
-        navigate('/admin/dashboard');
-      }, 1500);
+        navigate('/admin/dashboard', { replace: true });
+      }, 800);
     } catch (err) {
       setError(err.message || 'An error occurred during login.');
     } finally {
