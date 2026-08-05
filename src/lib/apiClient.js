@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export const apiClient = {
   getToken() {
@@ -22,7 +22,10 @@ export const apiClient = {
   },
 
   async get(endpoint) {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const url = `${API_BASE}${endpoint}${separator}_t=${Date.now()}`;
+    
+    const res = await fetch(url, {
       method: 'GET',
       headers: this.getHeaders()
     });

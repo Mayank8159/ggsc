@@ -35,7 +35,7 @@ export default function NotFound() {
           ref={subtitleRef}
           className="text-xl sm:text-2xl font-medium text-gray-700 mb-10"
         >
-          Oops! This page took a wrong turn.
+          Sorry! This page took a wrong turn.
         </p>
         <Link
           ref={btnRef}

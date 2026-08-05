@@ -8,9 +8,9 @@ import Papa from 'papaparse';
 const MOCK_PROFILES = [
   { id: '1a111111-1111-4111-a111-111111111111', email: 'debojeetbanerjee06@gmail.com', display_name: 'Debojeet Baneerjee', role: 'admin', position: 'Secretary' },
   { id: '2b222222-2222-4222-a222-222222222222', email: 'swastikmanna2006@gmail.com', display_name: 'Swastik Manna', role: 'admin', position: 'Vice chairperson' },
-  { id: '3c333333-3333-4333-a333-333333333333', email: 'tridibeshsen2002@gmail.com', display_name: 'Tridibesh Sen', role: 'oops', position: 'Webdev' },
-  { id: '4d444444-4444-4444-a444-444444444444', email: 'diptodeepbofficial@gmail.com', display_name: 'Diptodeep Biswas', role: 'oops', position: 'Webdev' },
-  { id: '5e555555-5555-4555-a555-555555555555', email: 'mayankfhacker@gmail.com', display_name: 'Mayank Kumar Sharma', role: 'oops', position: 'Webdev Lead' }
+  { id: '3c333333-3333-4333-a333-333333333333', email: 'tridibeshsen2002@gmail.com', display_name: 'Tridibesh Sen', role: 'operations team', position: 'Webdev' },
+  { id: '4d444444-4444-4444-a444-444444444444', email: 'diptodeepbofficial@gmail.com', display_name: 'Diptodeep Biswas', role: 'operations team', position: 'Webdev' },
+  { id: '5e555555-5555-4555-a555-555555555555', email: 'mayankfhacker@gmail.com', display_name: 'Mayank Kumar Sharma', role: 'operations team', position: 'Webdev Lead' }
 ];
 
 export default function BiometricEnrollment() {
@@ -44,8 +44,8 @@ export default function BiometricEnrollment() {
         setCurrentUser(liveUser);
         setCurrentUserRole(liveUser.role);
 
-        // Fetch all members list if admin/oops
-        if (liveUser.role === 'admin' || liveUser.role === 'oops') {
+        // Fetch all members list if admin/operations team
+        if (liveUser.role === 'admin' || liveUser.role === 'operations team') {
           const profilesData = await apiClient.get('/api/profiles');
           if (profilesData?.profiles) setProfiles(profilesData.profiles);
         } else {
@@ -192,7 +192,7 @@ export default function BiometricEnrollment() {
             <select
               value={selectedMemberId}
               onChange={(e) => handleMemberChange(e.target.value)}
-              className="block w-full rounded-xl border border-neutral-200 bg-white py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="block w-full rounded-xl border border-neutral-200 bg-white py-2.5 px-3 text-xs text-neutral-900 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 truncate"
             >
               {profiles.map(p => (
                 <option key={p.id} value={p.id}>
@@ -275,20 +275,20 @@ export default function BiometricEnrollment() {
           ) : (
             <div className="divide-y divide-neutral-100 border border-neutral-100 rounded-2xl overflow-hidden bg-white/60">
               {credentials.map((cred, idx) => (
-                <div key={cred.id} className="flex items-center justify-between p-4 hover:bg-neutral-50/50 transition-all">
+                <div key={cred.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 hover:bg-neutral-50/50 transition-all">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-blue-50 text-blue-500">
+                    <div className="p-2.5 rounded-xl bg-blue-50 text-blue-500 flex-shrink-0">
                       <Fingerprint size={18} />
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-neutral-800">Biometric Authenticator #{idx + 1}</p>
                       <p className="text-xs text-neutral-400">Enrolled on: {cred.created_at ? new Date(cred.created_at).toLocaleDateString() : 'N/A'} {cred.created_at ? new Date(cred.created_at).toLocaleTimeString() : ''}</p>
-                      <p className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate max-w-xs sm:max-w-md">ID: {cred.id}</p>
+                      <p className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate w-full max-w-[200px] xs:max-w-xs sm:max-w-md" title={cred.id}>ID: {cred.id}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => handleDeleteCredential(cred.id)}
-                    className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                    className="self-end sm:self-auto p-2 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex-shrink-0"
                     title="Remove key"
                   >
                     <FiTrash2 size={16} />

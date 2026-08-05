@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { apiClient } from '../../lib/apiClient';
 import TicketGeneratorPortal from './TicketGeneratorPortal';
 import AttendancePortal from './AttendancePortal';
@@ -11,6 +11,13 @@ import BulkEmailer from './BulkEmailer';
 import EventsPortal from './EventsPortal';
 
 export default function AdminDashboard() {
+  const mockRole = localStorage.getItem('ggsc_mock_role');
+  const jwtToken = apiClient.getToken();
+
+  if (!jwtToken && !mockRole) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
   const [activeTab, setActiveTab] = useState('generator'); // 'generator' | 'scanner' | 'biometrics'
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +30,7 @@ export default function AdminDashboard() {
       // Check for mock session stored during local offline testing
       const mockRole = localStorage.getItem('ggsc_mock_role');
       const mockEmail = localStorage.getItem('ggsc_mock_email');
-      
+
       if (mockRole) {
         const mockProf = {
           display_name: mockEmail ? mockEmail.split('@')[0] : mockRole,
@@ -50,7 +57,7 @@ export default function AdminDashboard() {
         const data = await apiClient.get('/api/me');
         const prof = data.profile;
 
-        if (!prof || (prof.role !== 'admin' && prof.role !== 'oops' && prof.role !== 'member' && prof.role !== 'volunteer')) {
+        if (!prof || (prof.role !== 'admin' && prof.role !== 'operations team' && prof.role !== 'member' && prof.role !== 'volunteer')) {
           // If not permitted role
           apiClient.setToken(null);
           navigate('/admin/login');
@@ -97,7 +104,7 @@ export default function AdminDashboard() {
 
   const getMenuItems = () => {
     const role = profile?.role;
-    if (role === 'admin' || role === 'oops') {
+    if (role === 'admin' || role === 'operations team') {
       return [
         { id: 'generator', label: 'Ticket Generator', icon: FiSliders },
         { id: 'emailer', label: 'Bulk Emailer', icon: FiMail },
@@ -125,7 +132,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f8f6f2] flex relative z-10">
-      
+
       {/* Mobile Sidebar Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -176,8 +183,8 @@ export default function AdminDashboard() {
                     setSidebarOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all
-                    ${activeTab === item.id 
-                      ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500' 
+                    ${activeTab === item.id
+                      ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
                       : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'}
                   `}
                 >

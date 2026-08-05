@@ -26,3 +26,4 @@ dist-ssr
 structure.md 
 db_config_guide.md
 prod_mock_ready_checklist.md
+vite.config.js.timestamp*
