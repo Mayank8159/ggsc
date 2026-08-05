@@ -427,12 +427,12 @@ app.post('/api/login', async (req, res) => {
     }
 
     // 4. Log success and generate JWT session
-    await writeLoginLog(normEmail, 'operations team', 'success', req, profile.display_name, profile.position);
+    await writeLoginLog(normEmail, dbRole, 'success', req, profile.display_name, profile.position);
 
     const token = jwt.sign({
       id: profile.id,
       email: profile.email,
-      role: 'operations team',
+      role: dbRole,
       display_name: profile.display_name
     }, JWT_SECRET, { expiresIn: '1d' });
 
