@@ -145,21 +145,41 @@ export default function AttendancePortal() {
       const name = findValue(['full name', 'fullname', 'name']) || decodedData.name;
       const year = findValue(['year of study', 'yearofstudy', 'year']);
       const phone_number = findValue(['phone number', 'phonenumber', 'phone']);
-      const enrolment_number = findValue(['enrollment number', 'enrollmentnumber', 'enrolment']);
-      const sectionValue = findValue(['sec & roll', 'sec and roll', 'section', 'roll']);
+      const enrolment_number = findValue([
+        'enrollment number', 'enrollmentnumber',
+        'enrolment number', 'enrolmentnumber',
+        'enrollment no', 'enrolment no',
+        'enrollment', 'enrolment',
+        'enroll', 'enrol',
+        'reg'
+      ]);
       const position = findValue(['department', 'dept', 'position']);
 
       if (!email || !name) {
         throw new Error('Corrupted QR data. Essential fields name/email are missing.');
       }
 
+      // Check for combined Section & Roll column first (e.g. "Sec & Roll", "Sec - Roll (A-45)")
+      const secAndRollValue = findValue(['sec & roll', 'sec and roll', 'sec - roll', 'sec-roll', 'sec -', 'sec/roll']);
+      let section = '';
       let roll_number = '';
-      let section = sectionValue || '';
-      if (sectionValue) {
-        const match = sectionValue.toString().match(/[- ](\d+)$/);
+
+      if (secAndRollValue) {
+        const valStr = secAndRollValue.toString().trim();
+        const match = valStr.match(/(\d+)$/);
         if (match) {
           roll_number = match[1];
+          section = valStr.replace(/\d+$/, '').replace(/\s*[- ]\s*$/, '').trim();
+        } else {
+          section = valStr;
         }
+      } else {
+        // If not combined, search for section and roll number separately
+        const parsedSection = findValue(['section', 'sec']);
+        const parsedRoll = findValue(['roll number', 'rollno', 'roll no', 'roll_no', 'roll']);
+        
+        section = parsedSection !== undefined ? parsedSection.toString().trim() : '';
+        roll_number = parsedRoll !== undefined ? parsedRoll.toString().trim() : '';
       }
 
       // Set matched student details for UI render
