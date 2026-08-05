@@ -691,6 +691,9 @@ app.post('/api/send-ticket', async (req, res) => {
     return res.status(400).json({ error: 'Missing SMTP configuration details' });
   }
 
+  const cleanUser = String(user).trim();
+  const cleanPass = String(pass).replace(/\s+/g, '');
+
   try {
     const base64Data = ticketImage.split(',')[1] || ticketImage;
     const ticketImageBuffer = Buffer.from(base64Data, 'base64');
@@ -699,7 +702,7 @@ app.post('/api/send-ticket', async (req, res) => {
       host,
       port: parseInt(port, 10),
       secure: secure === true || secure === 'true',
-      auth: { user, pass },
+      auth: { user: cleanUser, pass: cleanPass },
       tls: { rejectUnauthorized: false }
     });
 
@@ -723,7 +726,7 @@ app.post('/api/send-ticket', async (req, res) => {
 
     const displaySender = fromName || 'GGSC Organizing Team';
     const mailOptions = {
-      from: `"${displaySender}" <${user}>`,
+      from: `"${displaySender}" <${cleanUser}>`,
       to: recipientEmail,
       subject: `🎟️ Entry Ticket for GGSC - ${recipientName}`,
       html: finalHtml,
@@ -739,7 +742,11 @@ app.post('/api/send-ticket', async (req, res) => {
     return res.status(200).json({ success: true, messageId: info.messageId });
   } catch (err) {
     console.error('Email sending error:', err);
-    return res.status(500).json({ error: `Failed to deliver email: ${err.message}` });
+    let errMsg = err.message || 'SMTP delivery failure';
+    if (errMsg.includes('535') || errMsg.includes('Username and Password not accepted')) {
+      errMsg = 'Invalid login credentials (535 Bad Credentials). For Gmail, please enter a 16-character Google App Password (not your regular Gmail password).';
+    }
+    return res.status(500).json({ error: `Failed to deliver email: ${errMsg}` });
   }
 });
 
@@ -1333,10 +1340,14 @@ app.post('/api/upload-ticket-cloudinary', authenticateToken, async (req, res) =>
 
   try {
     const timestamp = Math.floor(Date.now() / 1000);
-    const folder = `ggsc-tickets/${(eventName || 'general').toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const cleanEvent = (eventName || 'general').trim().replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const cleanParticipant = (recipientName || 'participant').trim().replace(/[^a-zA-Z0-9_\-]/g, '_');
 
-    // Generate SHA-1 signature for Cloudinary upload
-    const stringToSign = `folder=${folder}&timestamp=${timestamp}${targetApiSecret}`;
+    const folder = cleanEvent;
+    const public_id = `${cleanParticipant}_${cleanEvent}`;
+
+    // Generate SHA-1 signature for Cloudinary upload (sorted keys: folder, public_id, timestamp)
+    const stringToSign = `folder=${folder}&public_id=${public_id}&timestamp=${timestamp}${targetApiSecret}`;
     const cryptoModule = await import('crypto');
     const signature = cryptoModule.createHash('sha1').update(stringToSign).digest('hex');
 
@@ -1345,6 +1356,7 @@ app.post('/api/upload-ticket-cloudinary', authenticateToken, async (req, res) =>
     formData.append('api_key', targetApiKey);
     formData.append('timestamp', String(timestamp));
     formData.append('folder', folder);
+    formData.append('public_id', public_id);
     formData.append('signature', signature);
 
     const uploadUrl = `https://api.cloudinary.com/v1_1/${targetCloudName}/image/upload`;

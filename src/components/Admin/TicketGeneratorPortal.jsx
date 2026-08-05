@@ -70,8 +70,8 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
   const [smtpHost, setSmtpHost] = useState(localStorage.getItem('ggsc_smtp_host') || 'smtp.gmail.com');
   const [smtpPort, setSmtpPort] = useState(localStorage.getItem('ggsc_smtp_port') || '587');
   const [smtpSecure, setSmtpSecure] = useState(localStorage.getItem('ggsc_smtp_secure') === 'true');
-  const [smtpUser, setSmtpUser] = useState(localStorage.getItem('ggsc_smtp_user') || '');
-  const [smtpPass, setSmtpPass] = useState(localStorage.getItem('ggsc_smtp_pass') || '');
+  const [smtpUser, setSmtpUser] = useState(localStorage.getItem('ggsc_smtp_user') || 'ggscuemk@gmail.com');
+  const [smtpPass, setSmtpPass] = useState(localStorage.getItem('ggsc_smtp_pass') || 'nfeqxxzhrswejoxh');
   const [smtpFromName, setSmtpFromName] = useState(localStorage.getItem('ggsc_smtp_from_name') || 'GGSC Organizing Team');
 
   // Cloudinary API Settings
@@ -92,10 +92,14 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
   const [selectedPresetId, setSelectedPresetId] = useState('');
   const [presetNameInput, setPresetNameInput] = useState('');
 
-  // Queue states
-  const [logs, setLogs] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  // Independent Queue states
+  const [cldLogs, setCldLogs] = useState([]);
+  const [isCldProcessing, setIsCldProcessing] = useState(false);
+  const [cldProgress, setCldProgress] = useState(0);
+
+  const [emailLogs, setEmailLogs] = useState([]);
+  const [isEmailProcessing, setIsEmailProcessing] = useState(false);
+  const [emailProgress, setEmailProgress] = useState(0);
 
   const canvasRef = useRef(null);
 
@@ -298,13 +302,20 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
         setEmailColumn(detectedEmail);
         setSelectedQrColumns(headers); // Default to including all columns in the QR payload
         
-        // Populate initial logs queue
-        setLogs(rawRows.map(row => ({
+        // Populate initial independent logs queues
+        setCldLogs(rawRows.map(row => ({
           email: row[detectedEmail] || '',
           name: row[detectedName] || '',
           status: 'ready',
           message: '',
-          cldUrl: ''
+          url: ''
+        })));
+
+        setEmailLogs(rawRows.map(row => ({
+          email: row[detectedEmail] || '',
+          name: row[detectedName] || '',
+          status: 'ready',
+          message: ''
         })));
       }
     });
@@ -339,132 +350,20 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
     reader.readAsDataURL(file);
   };
 
-  // Retries sending email only to the entries that failed
-  const retryFailedEmails = async () => {
-    if (isProcessing) return;
-    
-    const failedEntries = logs.filter(l => l.status === 'failed');
-    if (failedEntries.length === 0) {
-      alert('There are no failed entries in the queue to retry.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setProgress(0);
-
-    const smtpConfig = {
-      host: userRole === 'operations team' ? smtpHost : 'smtp.gmail.com',
-      port: userRole === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
-      secure: smtpSecure,
-      user: userRole === 'operations team' ? smtpUser : activeEmail,
-      pass: smtpPass,
-      fromName: userRole === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
-    };
-
-    const cloudinaryConfig = {
-      cloudName: cldCloudName || undefined,
-      apiKey: cldApiKey || undefined,
-      apiSecret: cldApiSecret || undefined
-    };
-
-    let updatedLogs = [...logs];
-    let completedRetries = 0;
-
-    for (let i = 0; i < updatedLogs.length; i++) {
-      if (updatedLogs[i].status !== 'failed') continue;
-
-      const studentName = updatedLogs[i].name;
-      const studentEmail = updatedLogs[i].email;
-
-      // Locate corresponding raw CSV dataset row matching this email
-      const rawRow = csvRawData.find(row => (row[emailColumn] || '').toLowerCase() === studentEmail.toLowerCase()) || {};
-
-      updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Rendering QR...' };
-      setLogs([...updatedLogs]);
-
-      try {
-        const qrPayload = {};
-        selectedQrColumns.forEach(col => {
-          qrPayload[col] = rawRow[col] || '';
-        });
-
-        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), {
-          margin: 1,
-          width: qrSize,
-          errorCorrectionLevel: 'L'
-        });
-
-        // Overlay onto Canvas
-        const renderCanvas = document.createElement('canvas');
-        renderCanvas.width = templateImage.naturalWidth;
-        renderCanvas.height = templateImage.naturalHeight;
-        const renderCtx = renderCanvas.getContext('2d');
-
-        renderCtx.drawImage(templateImage, 0, 0);
-
-        const qrImg = new Image();
-        await new Promise((resolve, reject) => {
-          qrImg.onload = resolve;
-          qrImg.onerror = reject;
-          qrImg.src = qrDataUrl;
-        });
-
-        renderCtx.imageSmoothingEnabled = false;
-        renderCtx.webkitImageSmoothingEnabled = false;
-        renderCtx.mozImageSmoothingEnabled = false;
-        renderCtx.msImageSmoothingEnabled = false;
-
-        renderCtx.drawImage(qrImg, xPos, yPos, qrSize, qrSize);
-        const finalTicketDataUrl = renderCanvas.toDataURL('image/jpeg', 0.85);
-
-        // Upload to Cloudinary
-        let cldPublicUrl = '';
-        if ((userRole === 'operations team' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'operations team') {
-          updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Uploading to Cloudinary...' };
-          setLogs([...updatedLogs]);
-
-          try {
-            const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
-              ticketImage: finalTicketDataUrl,
-              eventName: selectedEvent,
-              recipientName: studentName,
-              cloudinaryConfig
-            });
-            cldPublicUrl = cldData.secure_url;
-            updatedLogs[i] = { ...updatedLogs[i], cldUrl: cldPublicUrl };
-          } catch (cldErr) {
-            console.warn('Cloudinary upload error:', cldErr);
-          }
-        }
-
-        // Send Email
-        updatedLogs[i] = { ...updatedLogs[i], message: 'Retrying: Connecting to SMTP...' };
-        setLogs([...updatedLogs]);
-
-        await apiClient.post('/api/send-ticket', {
-          recipientEmail: studentEmail,
-          recipientName: studentName,
-          ticketImage: finalTicketDataUrl,
-          smtpConfig,
-          mailTemplate
-        });
-
-        updatedLogs[i] = { ...updatedLogs[i], status: 'sent', message: 'Email sent successfully on retry!' };
-      } catch (err) {
-        console.error(`Retry failed for ${studentEmail}:`, err);
-        updatedLogs[i] = { ...updatedLogs[i], status: 'failed', message: err.message || 'Retry failed.' };
-      }
-
-      setLogs([...updatedLogs]);
-      completedRetries++;
-      setProgress(Math.round((completedRetries / failedEntries.length) * 100));
-    }
-
-    setIsProcessing(false);
+  // Refresh Cloudinary Queue
+  const handleRefreshCldQueue = () => {
+    setCldLogs(prev => prev.map(item => ({ ...item, status: 'ready', message: '' })));
+    setCldProgress(0);
   };
 
-  // Triggers batch distribution
-  const startDistribution = async () => {
+  // Refresh Email Queue
+  const handleRefreshEmailQueue = () => {
+    setEmailLogs(prev => prev.map(item => ({ ...item, status: 'ready', message: '' })));
+    setEmailProgress(0);
+  };
+
+  // Independent Cloudinary Upload Execution
+  const runCloudinaryUploads = async (targetFailedOnly = false) => {
     if (csvRawData.length === 0) {
       alert('Please upload a participants CSV list.');
       return;
@@ -473,65 +372,44 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
       alert('Please upload a visual ticket template image.');
       return;
     }
-    if (!nameColumn || !emailColumn) {
-      alert('Please configure Name and Email column mappings.');
-      return;
-    }
-    if (!smtpUser || !smtpPass) {
-      alert('Please configure SMTP Sender credentials.');
-      return;
-    }
 
-    // Apply row slicing boundaries
+    setIsCldProcessing(true);
+    setCldProgress(0);
+
     let dataToProcess = [...csvRawData];
     if (skipFirst > 0 || skipLast > 0) {
       const endLimit = Math.max(skipFirst, dataToProcess.length - skipLast);
       dataToProcess = dataToProcess.slice(skipFirst, endLimit);
     }
 
-    if (dataToProcess.length === 0) {
-      alert('No rows left to process after applying skip range slicing.');
+    let updatedCldLogs = cldLogs.length === dataToProcess.length ? [...cldLogs] : dataToProcess.map(row => ({
+      name: row[nameColumn] || '',
+      email: row[emailColumn] || '',
+      status: 'ready',
+      message: '',
+      url: ''
+    }));
+
+    const indicesToRun = updatedCldLogs
+      .map((item, idx) => ({ item, idx }))
+      .filter(x => !targetFailedOnly || x.item.status === 'failed');
+
+    if (indicesToRun.length === 0) {
+      alert('No Cloudinary upload entries to process.');
+      setIsCldProcessing(false);
       return;
     }
 
-    setIsProcessing(true);
-    setProgress(0);
+    let completed = 0;
+    for (const { idx } of indicesToRun) {
+      const rawRow = dataToProcess[idx] || {};
+      const studentName = rawRow[nameColumn] || updatedCldLogs[idx].name || '';
+      const studentEmail = rawRow[emailColumn] || updatedCldLogs[idx].email || '';
 
-    const smtpConfig = {
-      host: userRole === 'operations team' ? smtpHost : 'smtp.gmail.com',
-      port: userRole === 'operations team' ? smtpPort : (smtpSecure ? '465' : '587'),
-      secure: smtpSecure,
-      user: userRole === 'operations team' ? smtpUser : activeEmail,
-      pass: smtpPass,
-      fromName: userRole === 'operations team' ? smtpFromName : 'GGSC Organizing Team'
-    };
-
-    const cloudinaryConfig = {
-      cloudName: cldCloudName || undefined,
-      apiKey: cldApiKey || undefined,
-      apiSecret: cldApiSecret || undefined
-    };
-
-    // Reset logs tracker to match active processed items
-    let updatedLogs = dataToProcess.map(row => ({
-      email: row[emailColumn] || '',
-      name: row[nameColumn] || '',
-      status: 'ready',
-      message: '',
-      cldUrl: ''
-    }));
-    setLogs(updatedLogs);
-
-    for (let i = 0; i < dataToProcess.length; i++) {
-      const rawRow = dataToProcess[i];
-      const studentName = rawRow[nameColumn] || '';
-      const studentEmail = rawRow[emailColumn] || '';
-      
-      updatedLogs[i] = { ...updatedLogs[i], status: 'mailing', message: 'Rendering QR code...' };
-      setLogs([...updatedLogs]);
+      updatedCldLogs[idx] = { ...updatedCldLogs[idx], status: 'uploading', message: 'Rendering canvas & uploading...' };
+      setCldLogs([...updatedCldLogs]);
 
       try {
-        // Compile ONLY the selected columns into the QR code payload JSON
         const qrPayload = {};
         selectedQrColumns.forEach(col => {
           qrPayload[col] = rawRow[col] || '';
@@ -543,12 +421,10 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
           errorCorrectionLevel: 'L'
         });
 
-        // Overlay onto Canvas
         const renderCanvas = document.createElement('canvas');
         renderCanvas.width = templateImage.naturalWidth;
         renderCanvas.height = templateImage.naturalHeight;
         const renderCtx = renderCanvas.getContext('2d');
-
         renderCtx.drawImage(templateImage, 0, 0);
 
         const qrImg = new Image();
@@ -559,37 +435,125 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
         });
 
         renderCtx.imageSmoothingEnabled = false;
-        renderCtx.webkitImageSmoothingEnabled = false;
-        renderCtx.mozImageSmoothingEnabled = false;
-        renderCtx.msImageSmoothingEnabled = false;
-
         renderCtx.drawImage(qrImg, xPos, yPos, qrSize, qrSize);
-        // Compress as JPEG to keep payload lightweight
         const finalTicketDataUrl = renderCanvas.toDataURL('image/jpeg', 0.85);
 
-        // Upload to Cloudinary in event-specific folder via Serverless API
-        let cldPublicUrl = '';
-        if ((userRole === 'operations team' && cldCloudName && cldApiKey && cldApiSecret) || userRole !== 'operations team') {
-          updatedLogs[i] = { ...updatedLogs[i], message: `Uploading ticket to Cloudinary (${selectedEvent})...` };
-          setLogs([...updatedLogs]);
+        const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
+          ticketImage: finalTicketDataUrl,
+          eventName: selectedEvent,
+          recipientName: studentName
+        });
 
-          try {
-            const cldData = await apiClient.post('/api/upload-ticket-cloudinary', {
-              ticketImage: finalTicketDataUrl,
-              eventName: selectedEvent,
-              recipientName: studentName,
-              cloudinaryConfig
-            });
-            cldPublicUrl = cldData.secure_url;
-            updatedLogs[i] = { ...updatedLogs[i], cldUrl: cldPublicUrl };
-          } catch (cldErr) {
-            console.warn('Cloudinary upload error:', cldErr);
-          }
-        }
+        updatedCldLogs[idx] = {
+          ...updatedCldLogs[idx],
+          status: 'uploaded',
+          url: cldData.url || cldData.secure_url || '',
+          message: 'Uploaded to Cloudinary successfully!'
+        };
+      } catch (err) {
+        console.error(`Cloudinary upload error for ${studentName}:`, err);
+        updatedCldLogs[idx] = {
+          ...updatedCldLogs[idx],
+          status: 'failed',
+          message: err.message || 'Upload failed.'
+        };
+      }
 
-        // Send Email via Nodemailer
-        updatedLogs[i] = { ...updatedLogs[i], message: 'Connecting to SMTP & sending email...' };
-        setLogs([...updatedLogs]);
+      setCldLogs([...updatedCldLogs]);
+      completed++;
+      setCldProgress(Math.round((completed / indicesToRun.length) * 100));
+    }
+
+    setIsCldProcessing(false);
+  };
+
+  // Independent Email Dispatch Execution
+  const runEmailDispatches = async (targetFailedOnly = false) => {
+    if (csvRawData.length === 0) {
+      alert('Please upload a participants CSV list.');
+      return;
+    }
+    if (!templateImage) {
+      alert('Please upload a visual ticket template image.');
+      return;
+    }
+    if (!smtpUser || !smtpPass) {
+      alert('Please configure SMTP Sender credentials.');
+      return;
+    }
+
+    setIsEmailProcessing(true);
+    setEmailProgress(0);
+
+    let dataToProcess = [...csvRawData];
+    if (skipFirst > 0 || skipLast > 0) {
+      const endLimit = Math.max(skipFirst, dataToProcess.length - skipLast);
+      dataToProcess = dataToProcess.slice(skipFirst, endLimit);
+    }
+
+    let updatedEmailLogs = emailLogs.length === dataToProcess.length ? [...emailLogs] : dataToProcess.map(row => ({
+      name: row[nameColumn] || '',
+      email: row[emailColumn] || '',
+      status: 'ready',
+      message: ''
+    }));
+
+    const indicesToRun = updatedEmailLogs
+      .map((item, idx) => ({ item, idx }))
+      .filter(x => !targetFailedOnly || x.item.status === 'failed');
+
+    if (indicesToRun.length === 0) {
+      alert('No email dispatch entries to process.');
+      setIsEmailProcessing(false);
+      return;
+    }
+
+    const smtpConfig = {
+      host: smtpHost || 'smtp.gmail.com',
+      port: smtpPort || (smtpSecure ? '465' : '587'),
+      secure: smtpSecure,
+      user: (smtpUser || activeEmail).trim(),
+      pass: (smtpPass || '').replace(/\s+/g, ''),
+      fromName: smtpFromName || 'GGSC Organizing Team'
+    };
+
+    let completed = 0;
+    for (const { idx } of indicesToRun) {
+      const rawRow = dataToProcess[idx] || {};
+      const studentName = rawRow[nameColumn] || updatedEmailLogs[idx].name || '';
+      const studentEmail = rawRow[emailColumn] || updatedEmailLogs[idx].email || '';
+
+      updatedEmailLogs[idx] = { ...updatedEmailLogs[idx], status: 'sending', message: 'Connecting to SMTP & sending ticket email...' };
+      setEmailLogs([...updatedEmailLogs]);
+
+      try {
+        const qrPayload = {};
+        selectedQrColumns.forEach(col => {
+          qrPayload[col] = rawRow[col] || '';
+        });
+
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), {
+          margin: 1,
+          width: qrSize,
+          errorCorrectionLevel: 'L'
+        });
+
+        const renderCanvas = document.createElement('canvas');
+        renderCanvas.width = templateImage.naturalWidth;
+        renderCanvas.height = templateImage.naturalHeight;
+        const renderCtx = renderCanvas.getContext('2d');
+        renderCtx.drawImage(templateImage, 0, 0);
+
+        const qrImg = new Image();
+        await new Promise((resolve, reject) => {
+          qrImg.onload = resolve;
+          qrImg.onerror = reject;
+          qrImg.src = qrDataUrl;
+        });
+
+        renderCtx.imageSmoothingEnabled = false;
+        renderCtx.drawImage(qrImg, xPos, yPos, qrSize, qrSize);
+        const finalTicketDataUrl = renderCanvas.toDataURL('image/jpeg', 0.85);
 
         await apiClient.post('/api/send-ticket', {
           recipientEmail: studentEmail,
@@ -599,17 +563,32 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
           mailTemplate
         });
 
-        updatedLogs[i] = { ...updatedLogs[i], status: 'sent', message: 'Email sent successfully!' };
+        updatedEmailLogs[idx] = {
+          ...updatedEmailLogs[idx],
+          status: 'sent',
+          message: 'Email delivered successfully!'
+        };
       } catch (err) {
-        console.error(`Error sending to ${studentEmail}:`, err);
-        updatedLogs[i] = { ...updatedLogs[i], status: 'failed', message: err.message || 'Processing error.' };
+        console.error(`Email dispatch error for ${studentEmail}:`, err);
+        updatedEmailLogs[idx] = {
+          ...updatedEmailLogs[idx],
+          status: 'failed',
+          message: err.message || 'Email delivery failed.'
+        };
       }
 
-      setLogs([...updatedLogs]);
-      setProgress(Math.round(((i + 1) / dataToProcess.length) * 100));
+      setEmailLogs([...updatedEmailLogs]);
+      completed++;
+      setEmailProgress(Math.round((completed / indicesToRun.length) * 100));
     }
 
-    setIsProcessing(false);
+    setIsEmailProcessing(false);
+  };
+
+  // Master Distribution Trigger (Runs Cloudinary first, then Email dispatches)
+  const startDistribution = async () => {
+    await runCloudinaryUploads(false);
+    await runEmailDispatches(false);
   };
 
   const hasFailedLogs = logs.some(l => l.status === 'failed');
@@ -680,6 +659,80 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
                     Save
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SMTP Configuration Card */}
+          <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+              <FiSettings className="text-blue-500" /> SMTP Server Credentials
+            </h3>
+
+            <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-2xl text-[11px] text-amber-900 leading-snug">
+              💡 <strong>Gmail Note:</strong> Enter your sender email and 16-character <strong>Google App Password</strong> (not your regular login password).
+            </div>
+
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1 uppercase">SMTP Host</label>
+                  <input
+                    type="text"
+                    value={smtpHost}
+                    onChange={(e) => setSmtpHost(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="smtp.gmail.com"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-neutral-500 mb-1 uppercase">Port</label>
+                  <input
+                    type="text"
+                    value={smtpPort}
+                    onChange={(e) => setSmtpPort(e.target.value)}
+                    disabled={isProcessing}
+                    placeholder="587"
+                    className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1 uppercase">Sender Email (Username)</label>
+                <input
+                  type="email"
+                  value={smtpUser}
+                  onChange={(e) => setSmtpUser(e.target.value)}
+                  disabled={isProcessing}
+                  placeholder="your-email@gmail.com"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1 uppercase">App Password</label>
+                <input
+                  type="password"
+                  value={smtpPass}
+                  onChange={(e) => setSmtpPass(e.target.value)}
+                  disabled={isProcessing}
+                  placeholder="•••• •••• •••• ••••"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-neutral-500 mb-1 uppercase">From Display Name</label>
+                <input
+                  type="text"
+                  value={smtpFromName}
+                  onChange={(e) => setSmtpFromName(e.target.value)}
+                  disabled={isProcessing}
+                  placeholder="GGSC Organizing Team"
+                  className="block w-full rounded-xl border border-neutral-200 bg-white/70 px-3 py-2 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
             </div>
           </div>
@@ -1097,78 +1150,165 @@ export default function TicketGeneratorPortal({ userRole: propUserRole, userEmai
         </div>
       </div>
 
-      {/* Logs and distribution status card */}
-      {logs.length > 0 && (
+      {/* Dual Queue Management Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2">
+        {/* Section 1: Cloudinary Ticket Storage Upload Queue */}
         <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4 animate-fade-in">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
-              <FiList className="text-neutral-600" /> Mailing Queue Logs
+              <FiCloud className="text-purple-600" /> 1. Cloudinary Asset Upload Queue
             </h3>
             <div className="flex gap-2 items-center">
-              {hasFailedLogs && !isProcessing && (
+              {cldLogs.length > 0 && (
                 <button
-                  onClick={retryFailedEmails}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-sm"
+                  onClick={handleRefreshCldQueue}
+                  disabled={isCldProcessing}
+                  className="p-1.5 rounded-lg text-xs font-bold text-neutral-600 bg-white border border-neutral-200 hover:bg-neutral-50 transition-all shadow-xs"
+                  title="Reset Cloudinary Queue"
                 >
-                  <FiRefreshCw size={11} className="animate-spin-slow" /> Retry Failed Only
+                  <FiRefreshCw size={12} />
                 </button>
               )}
-              {isProcessing && (
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md animate-pulse">
-                  Mailing Status: {progress}%
+              {cldLogs.some(l => l.status === 'failed') && !isCldProcessing && (
+                <button
+                  onClick={() => runCloudinaryUploads(true)}
+                  className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-xs"
+                >
+                  <FiRefreshCw size={11} /> Retry Failed Only
+                </button>
+              )}
+              {!isCldProcessing && cldLogs.length > 0 && (
+                <button
+                  onClick={() => runCloudinaryUploads(false)}
+                  className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-white bg-purple-600 hover:bg-purple-700 transition-all shadow-xs"
+                >
+                  <FiPlay size={10} /> Run Uploads
+                </button>
+              )}
+              {isCldProcessing && (
+                <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-md animate-pulse">
+                  Uploading: {cldProgress}%
                 </span>
               )}
             </div>
           </div>
 
-          {/* Progress bar */}
-          {isProcessing && (
+          {/* Cloudinary Progress Bar */}
+          {isCldProcessing && (
             <div className="w-full bg-neutral-200 h-2 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+              <div className="h-full bg-purple-600 transition-all duration-300" style={{ width: `${cldProgress}%` }} />
             </div>
           )}
 
-          {/* Log List View */}
-          <div className="max-h-[220px] overflow-y-auto space-y-2 border border-neutral-100 rounded-2xl p-3 bg-neutral-50/50">
-            {logs.map((log, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center text-xs p-2 rounded-xl bg-white border border-neutral-100"
-              >
-                <div>
-                  <span className="font-bold text-neutral-800">{log.name}</span>
-                  <span className="text-neutral-400 font-mono ml-2">({log.email})</span>
-                  {log.cldUrl && (
-                    <a href={log.cldUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-purple-600 underline truncate max-w-xs mt-0.5">
-                      Cloudinary Image: {log.cldUrl}
-                    </a>
-                  )}
-                  {log.message && <p className="text-[10px] text-neutral-500 mt-0.5">{log.message}</p>}
+          {/* Cloudinary Log Items List */}
+          <div className="max-h-[260px] overflow-y-auto space-y-2 border border-neutral-100 rounded-2xl p-3 bg-neutral-50/50">
+            {cldLogs.length === 0 ? (
+              <p className="text-center text-xs text-neutral-400 py-8 italic">Upload a CSV to view Cloudinary upload items.</p>
+            ) : (
+              cldLogs.map((log, index) => (
+                <div key={index} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-white border border-neutral-100">
+                  <div className="truncate pr-2">
+                    <span className="font-bold text-neutral-800">{log.name}</span>
+                    <span className="text-neutral-400 font-mono ml-2">({log.email})</span>
+                    {log.url && (
+                      <a href={log.url} target="_blank" rel="noreferrer" className="block text-[10px] text-purple-600 font-bold underline truncate max-w-xs mt-0.5">
+                        🔗 {log.url}
+                      </a>
+                    )}
+                    {log.message && <p className="text-[10px] text-neutral-500 mt-0.5">{log.message}</p>}
+                  </div>
+                  <div className="flex-shrink-0">
+                    {log.status === 'ready' && <span className="text-neutral-400 bg-neutral-100 px-2.5 py-0.5 rounded-full font-bold">Ready</span>}
+                    {log.status === 'uploading' && <span className="text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full font-bold animate-pulse">Uploading...</span>}
+                    {log.status === 'uploaded' && <span className="text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full font-bold">Uploaded</span>}
+                    {log.status === 'failed' && (
+                      <span className="text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-0.5" title={log.message}>
+                        <FiAlertCircle size={10} /> Failed
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {log.status === 'ready' && (
-                    <span className="text-neutral-400 bg-neutral-100 px-2.5 py-0.5 rounded-full font-bold">Ready</span>
-                  )}
-                  {log.status === 'mailing' && (
-                    <span className="text-blue-500 bg-blue-50 px-2.5 py-0.5 rounded-full font-bold animate-pulse">Sending...</span>
-                  )}
-                  {log.status === 'sent' && (
-                    <span className="text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full font-bold">Delivered</span>
-                  )}
-                  {log.status === 'failed' && (
-                    <span className="text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-0.5" title={log.message}>
-                      <FiAlertCircle size={10} /> Failed
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
-      )}
+
+        {/* Section 2: Nodemailer Email Dispatch Queue */}
+        <div className="bg-white/50 backdrop-blur-md p-6 rounded-3xl border border-white/80 shadow-sm space-y-4 animate-fade-in">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h3 className="text-sm font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-2">
+              <FiMail className="text-blue-600" /> 2. Nodemailer Email Dispatch Queue
+            </h3>
+            <div className="flex gap-2 items-center">
+              {emailLogs.length > 0 && (
+                <button
+                  onClick={handleRefreshEmailQueue}
+                  disabled={isEmailProcessing}
+                  className="p-1.5 rounded-lg text-xs font-bold text-neutral-600 bg-white border border-neutral-200 hover:bg-neutral-50 transition-all shadow-xs"
+                  title="Reset Email Queue"
+                >
+                  <FiRefreshCw size={12} />
+                </button>
+              )}
+              {emailLogs.some(l => l.status === 'failed') && !isEmailProcessing && (
+                <button
+                  onClick={() => runEmailDispatches(true)}
+                  className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-all shadow-xs"
+                >
+                  <FiRefreshCw size={11} /> Retry Failed Only
+                </button>
+              )}
+              {!isEmailProcessing && emailLogs.length > 0 && (
+                <button
+                  onClick={() => runEmailDispatches(false)}
+                  className="flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-xs"
+                >
+                  <FiPlay size={10} /> Send Emails
+                </button>
+              )}
+              {isEmailProcessing && (
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md animate-pulse">
+                  Mailing: {emailProgress}%
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Email Progress Bar */}
+          {isEmailProcessing && (
+            <div className="w-full bg-neutral-200 h-2 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${emailProgress}%` }} />
+            </div>
+          )}
+
+          {/* Email Log Items List */}
+          <div className="max-h-[260px] overflow-y-auto space-y-2 border border-neutral-100 rounded-2xl p-3 bg-neutral-50/50">
+            {emailLogs.length === 0 ? (
+              <p className="text-center text-xs text-neutral-400 py-8 italic">Upload a CSV to view email dispatch items.</p>
+            ) : (
+              emailLogs.map((log, index) => (
+                <div key={index} className="flex justify-between items-center text-xs p-2.5 rounded-xl bg-white border border-neutral-100">
+                  <div className="truncate pr-2">
+                    <span className="font-bold text-neutral-800">{log.name}</span>
+                    <span className="text-neutral-400 font-mono ml-2">({log.email})</span>
+                    {log.message && <p className="text-[10px] text-neutral-500 mt-0.5">{log.message}</p>}
+                  </div>
+                  <div className="flex-shrink-0">
+                    {log.status === 'ready' && <span className="text-neutral-400 bg-neutral-100 px-2.5 py-0.5 rounded-full font-bold">Ready</span>}
+                    {log.status === 'sending' && <span className="text-blue-500 bg-blue-50 px-2.5 py-0.5 rounded-full font-bold animate-pulse">Sending...</span>}
+                    {log.status === 'sent' && <span className="text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full font-bold">Delivered</span>}
+                    {log.status === 'failed' && (
+                      <span className="text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full font-bold flex items-center gap-0.5" title={log.message}>
+                        <FiAlertCircle size={10} /> Failed
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

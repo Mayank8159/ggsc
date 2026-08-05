@@ -136,7 +136,8 @@ export default function AdminDashboard() {
       {/* Mobile Sidebar Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-24 left-4 z-40 lg:hidden p-2 rounded-xl bg-white border border-neutral-200 shadow"
+        className="fixed top-4 left-4 z-50 lg:hidden p-2.5 rounded-xl bg-white/90 backdrop-blur-md border border-neutral-200 shadow-md text-neutral-800 hover:bg-white"
+        aria-label="Toggle navigation menu"
       >
         {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
       </button>
