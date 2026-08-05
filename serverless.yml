@@ -5,6 +5,7 @@ provider:
   runtime: nodejs18.x
   region: ap-south-1  # Mumbai
   stage: dev
+  timeout: 30
   environment:
     JWT_SECRET: ${env:JWT_SECRET, 'ggsc-jwt-super-secret-key-2026'}
     PROFILES_TABLE: ggsc-profiles
