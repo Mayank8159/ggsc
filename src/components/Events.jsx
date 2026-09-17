@@ -81,6 +81,16 @@ const PAST_EVENTS = [
   },
 ];
 
+/* ─── EVENT REVIEWS ─── */
+const event_reviews = [
+  { name: "Debdip G.", text: "It was a lovely event really enjoyed a lot and lastly learned something." },
+  { name: "Shrabani M.", text: "Thank you to the entire Cydropreneur team for organizing such a wonderful event. ❤️ Keep inspiring and creating more opportunities!" },
+  { name: "Shaurya D.", text: "You killed it guys.👍👍" },
+  { name: "Vaishnavi G.", text: "You all just have taken initiative for us to climb our first career related milestone." },
+  { name: "Hardik B.", text: "Organizing such events are no joke so this was a job very well done." },
+  { name: "Swayang N.", text: "Website is very good..." },
+];
+
 /* ─── PILL ─── */
 function Pill({ children, color = T.blue }) {
   return (
@@ -152,6 +162,91 @@ function SectionLabel({ label, title }) {
     </div>
   );
 }
+
+/* ─── DRAGGABLE MARQUEE ─── */
+const DraggableMarquee = ({ reviews }) => {
+  const containerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  useEffect(() => {
+    let animationFrameId;
+    const container = containerRef.current;
+
+    const play = () => {
+      if (container && !isDragging && !container.matches(':hover')) {
+        container.scrollLeft += 1;
+        // infinite scroll wrap
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0;
+        }
+      }
+      animationFrameId = requestAnimationFrame(play);
+    };
+
+    play();
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isDragging]);
+
+  const getPageX = (e) => e.type.includes('touch') ? e.touches[0].pageX : e.pageX;
+
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    const x = getPageX(e);
+    setStartX(x - containerRef.current.offsetLeft);
+    setScrollLeft(containerRef.current.scrollLeft);
+  };
+
+  const handleDragEnd = () => setIsDragging(false);
+
+  const handleDragMove = (e) => {
+    if (!isDragging) return;
+    const x = getPageX(e);
+    const walk = (x - startX) * 1.5;
+
+    let nextScroll = scrollLeft - walk;
+    const maxScroll = containerRef.current.scrollWidth / 2;
+
+    if (nextScroll <= 0) {
+      nextScroll += maxScroll;
+      setStartX(x);
+      setScrollLeft(nextScroll);
+    } else if (nextScroll >= maxScroll) {
+      nextScroll -= maxScroll;
+      setStartX(x);
+      setScrollLeft(nextScroll);
+    }
+
+    containerRef.current.scrollLeft = nextScroll;
+  };
+
+  return (
+    <div className="review-marquee-container" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={containerRef}
+        className="review-marquee-scroll"
+        onMouseDown={handleDragStart}
+        onMouseLeave={handleDragEnd}
+        onMouseUp={handleDragEnd}
+        onMouseMove={handleDragMove}
+        onTouchStart={handleDragStart}
+        onTouchEnd={handleDragEnd}
+        onTouchMove={handleDragMove}
+      >
+        <div className="review-marquee-track">
+          {/* Double the list to allow for seamless infinite loop */}
+          {[...reviews, ...reviews].map((review, idx) => (
+            <div key={idx} className="review-card">
+              <span className="review-name">{review.name}</span>
+              <span className="review-text">"{review.text}"</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ─── PAST EVENT CARD ─── */
 function PastCard({ event, onClick }) {
@@ -442,7 +537,7 @@ function EventModal({ event, onClose }) {
             </p>
           </div>
 
-          
+
         </div>
 
         {/* Close */}
@@ -587,7 +682,106 @@ const Events = () => {
           grid-template-columns: 1fr 1fr;
         }
 
+        .review-marquee-container {
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+          border-radius: 12px;
+          background: #fafafa;
+          margin-top: 12px;
+        }
+        
+        .testimonials-wrapper {
+          margin-top: 56px;
+        }
+        
+        .review-marquee-container::before,
+        .review-marquee-container::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 40px;
+          z-index: 2;
+          pointer-events: none;
+        }
+        
+        .review-marquee-container::before {
+          left: 0;
+          background: linear-gradient(to right, #fafafa, transparent);
+        }
+        
+        .review-marquee-container::after {
+          right: 0;
+          background: linear-gradient(to left, #fafafa, transparent);
+        }
+        
+        .review-marquee-scroll {
+          overflow-x: hidden;
+          cursor: grab;
+          width: 100%;
+          /* Hide scrollbar */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        
+        .review-marquee-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .review-marquee-scroll:active {
+          cursor: grabbing;
+        }
+
+        .review-marquee-track {
+          display: inline-flex;
+          gap: 24px;
+          padding: 24px 0 24px 24px;
+        }
+        
+        .review-card {
+          display: inline-flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 8px;
+          min-width: 320px;
+          min-height: 140px;
+          padding: 24px;
+          background: rgba(255, 255, 255, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(0, 0, 0, 0.25);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+          white-space: normal;
+          transition: all 0.4s ease;
+          user-select: none;
+        }
+        
+        .review-card:hover {
+          background: rgba(255, 255, 255, 0.9);
+          border-color: rgba(0, 0, 0, 0.4);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        }
+        
+        .review-name {
+          font-weight: 700;
+          font-size: 13px;
+          color: #0d1117;
+        }
+        
+        .review-text {
+          font-size: 13px;
+          color: #6b7280;
+          line-height: 1.5;
+          font-style: italic;
+        }
+
         @media (max-width: 960px) {
+          .testimonials-wrapper {
+            margin-top: 32px;
+          }
           .upcoming-card {
             grid-template-columns: 1fr;
           }
@@ -756,13 +950,6 @@ const Events = () => {
                 <div
                   key={event.id}
                   className="featured-card-grid"
-                  onClick={() => {
-                    if (event.route) {
-                      navigate(event.route);
-                    } else {
-                      setSelected(event);
-                    }
-                  }}
                   style={{
                     borderRadius: 28,
                     overflow: "hidden",
@@ -770,7 +957,6 @@ const Events = () => {
                     border: `1px solid ${T.border}`,
                     boxShadow: "0 8px 40px rgba(0,0,0,0.06)",
                     minHeight: 420,
-                    cursor: "pointer",
                     transition: "transform 0.4s cubic-bezier(0.19,1,0.22,1), box-shadow 0.4s ease",
                   }}
                   onMouseEnter={(e) => {
@@ -791,6 +977,7 @@ const Events = () => {
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
+                      minWidth: 0,
                     }}
                   >
                     <div>
@@ -857,6 +1044,21 @@ const Events = () => {
                           </div>
                         ))}
                       </div>
+
+                      {/* Marquee Reviews */}
+                      <div className="testimonials-wrapper">
+                        <span style={{
+                          fontSize: 14,
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: T.text,
+                          marginLeft: 4
+                        }}>
+                          Event Testimonials
+                        </span>
+                        <DraggableMarquee reviews={event_reviews} />
+                      </div>
                     </div>
 
                     <div style={{ marginTop: 36 }}>
@@ -878,11 +1080,20 @@ const Events = () => {
 
                   {/* Left – image (via order) */}
                   <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (event.route) {
+                        navigate(event.route);
+                      } else {
+                        setSelected(event);
+                      }
+                    }}
                     style={{
                       order: 1,
                       position: "relative",
                       overflow: "hidden",
                       minHeight: 380,
+                      cursor: "pointer",
                     }}
                   >
                     <img
