@@ -1364,6 +1364,93 @@ app.post('/api/upload-ticket-cloudinary', authenticateToken, async (req, res) =>
   }
 });
 
+// In-memory cache for Cloudinary gallery responses (15-min TTL)
+const galleryCache = new Map();
+const GALLERY_CACHE_TTL = 15 * 60 * 1000;
+
+// 22. GET /api/gallery (Public endpoint to fetch event gallery photos from Cloudinary with caching)
+app.get('/api/gallery', async (req, res) => {
+  // Security allowlist: strictly prevent expression injection, unauthorized folder access & cache exhaustion
+  const ALLOWED_FOLDERS = new Set([
+    'cydropreneur/event_gallery',
+    'cydropreneur',
+    'event_gallery'
+  ]);
+  const requestedFolder = String(req.query.folder || '').toLowerCase().trim();
+  const folder = ALLOWED_FOLDERS.has(requestedFolder) ? requestedFolder : 'cydropreneur/event_gallery';
+
+  res.setHeader('Cache-Control', 'public, max-age=900, stale-while-revalidate=3600');
+
+  // Check in-memory cache first
+  const cached = galleryCache.get(folder);
+  if (cached && Date.now() - cached.timestamp < GALLERY_CACHE_TTL) {
+    return res.status(200).json({
+      success: true,
+      cached: true,
+      folder,
+      count: cached.images.length,
+      images: cached.images
+    });
+  }
+
+  const targetCloudName = process.env.CLOUDINARY_CLOUD_NAME || 'e2qvanrx';
+  const targetApiKey = process.env.CLOUDINARY_API_KEY || '453893951347733';
+  const targetApiSecret = process.env.CLOUDINARY_API_SECRET || 'H4U5yHil42FC0Su25JavgKl1eRs';
+
+  cloudinary.config({
+    cloud_name: targetCloudName,
+    api_key: targetApiKey,
+    api_secret: targetApiSecret,
+    secure: true
+  });
+
+  try {
+    // Search Cloudinary for photos under Cydropreneur/Event_Gallery
+    const searchRes = await cloudinary.search
+      .expression(`folder:${folder}* OR asset_folder:"Cydropreneur/Event_Gallery" OR ${folder}*`)
+      .sort_by('created_at', 'desc')
+      .max_results(100)
+      .execute();
+
+    const images = (searchRes.resources || []).map(r => ({
+      id: r.public_id,
+      url: r.secure_url || r.url,
+      width: r.width,
+      height: r.height,
+      format: r.format,
+      created_at: r.created_at
+    }));
+
+    // Cache the response
+    galleryCache.set(folder, { timestamp: Date.now(), images });
+
+    return res.status(200).json({
+      success: true,
+      cached: false,
+      folder,
+      count: images.length,
+      images
+    });
+  } catch (err) {
+    console.error('Cloudinary gallery fetch error:', err.message);
+    // If cache exists even if expired, serve stale on error
+    if (cached) {
+      return res.status(200).json({
+        success: true,
+        stale: true,
+        folder,
+        count: cached.images.length,
+        images: cached.images
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+      folder
+    });
+  }
+});
+
 // Export Lambda handler
 export const handler = serverless(app);
 
