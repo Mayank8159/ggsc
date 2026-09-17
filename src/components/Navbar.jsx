@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 const navItems = [
   { label: "Discussion Board", to: "/discussion" },
   { label: "Events", to: "/events" },
+  { label: "Gallery", to: "/gallery" },
   { label: "Team", to: "/teams" },
 ];
 

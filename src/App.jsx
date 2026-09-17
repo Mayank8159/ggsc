@@ -12,6 +12,7 @@ import Features from "./components/Features";
 import StackedCards from "./components/StackedCards";
 import Story from "./components/Story";
 import Events from "./components/Events";
+import Gallery from "./components/Gallery";
 import Team from "./components/Team";
 import Contact from "./components/Contact";
 import VintageMemory from "./components/VintageMemory";
@@ -452,6 +453,7 @@ function App() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const isCydropreneur = location.pathname.toLowerCase().startsWith("/events/cydropreneur");
+  const isGallery = location.pathname.toLowerCase().startsWith("/gallery");
   const isAdminPage = location.pathname.toLowerCase().startsWith("/admin");
   const barRef = useRef(null);
 
@@ -467,7 +469,7 @@ function App() {
   }, [isHome]);
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: (isCydropreneur || isAdminPage) ? "auto" : "none", background: "transparent" }}>
+    <main className="relative min-h-screen w-full overflow-x-hidden" style={{ cursor: (isCydropreneur || isAdminPage || isGallery) ? "auto" : "none", background: "transparent" }}>
       <div ref={barRef} id="scroll-progress" style={{
         position: "fixed", top: 0, left: 0, height: "2px", width: "0%",
         background: "linear-gradient(90deg,#4285F4,#EA4335,#FBBC05,#34A853)",
@@ -481,7 +483,7 @@ function App() {
         @keyframes bgm-bar-3 { from { height: 70% } to { height: 90% } }
       `}</style>
 
-      {isAdminPage ? null : isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
+      {isAdminPage || isGallery ? null : isCydropreneur ? <CyberpunkCursor /> : <NegativeCursor />}
       <GoogleGradientBG />
       <BGMButton />
 
@@ -493,6 +495,7 @@ function App() {
           <Route path="/login" element={<DiscussionBoard />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/Cydropreneur" element={<Cydropreneur />} />
+          <Route path="/gallery" element={<Gallery />} />
           <Route path="/teams" element={<Team />} />
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
